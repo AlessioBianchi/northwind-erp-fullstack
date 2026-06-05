@@ -75,11 +75,14 @@ export class ProductsComponent implements OnInit {
   
   get filteredProducts() {
     if (!this.searchQuery) return this.productsList;
-    return this.productsList.filter(p => 
-      p.productName.toLowerCase().includes(this.searchQuery) ||
-      p.category?.categoryName.toLowerCase().includes(this.searchQuery) ||
-      p.supplier?.companyName.toLowerCase().includes(this.searchQuery)
-    );
+
+    return this.productsList.filter(p => {
+      const matchesName = p.productName?.toLowerCase().includes(this.searchQuery) ?? false;
+      const matchesCategory = p.category?.categoryName?.toLowerCase().includes(this.searchQuery) ?? false;
+      const matchesSupplier = p.supplier?.companyName?.toLowerCase().includes(this.searchQuery) ?? false;
+      
+      return matchesName || matchesCategory || matchesSupplier;
+    });
   }
 
   onPageChange(targetPage: number): void {

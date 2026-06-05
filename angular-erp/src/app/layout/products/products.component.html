@@ -37,7 +37,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (p of productsList; track p.productId) {
+                            @for (p of filteredProducts; track p.productId) {
                                 <tr [class.table-primary]="selectedProductId === p.productId"
                                     (click)="selectProduct(p)"
                                     style="cursor: pointer;">
