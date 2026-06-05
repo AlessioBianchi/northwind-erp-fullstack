@@ -80,7 +80,7 @@ export class ProductsComponent implements OnInit {
       const matchesName = p.productName?.toLowerCase().includes(this.searchQuery) ?? false;
       const matchesCategory = p.category?.categoryName?.toLowerCase().includes(this.searchQuery) ?? false;
       const matchesSupplier = p.supplier?.companyName?.toLowerCase().includes(this.searchQuery) ?? false;
-      
+
       return matchesName || matchesCategory || matchesSupplier;
     });
   }
@@ -120,8 +120,7 @@ export class ProductsComponent implements OnInit {
 
   cancelProductWorkspaceEdit(): void {
     this.selectedProductId = null;
-    this.currentWorkspaceState = 'empty';
-    this.activeProductForm = {};
+    this.initializeNewProductForm();
   }
 
   saveProductHeader(event: Event): void {
