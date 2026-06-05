@@ -1,1 +1,186 @@
-<p>employees works!</p>
+<div class="container-fluid p-3 d-flex flex-column" style="height: calc(100vh - 75px); padding-bottom: 5px;">
+    
+    <div class="row g-3 flex-grow-1 overflow-hidden" style="min-height: 0;">
+        
+        <div class="col-md-7 d-flex flex-column overflow-hidden" style="min-height: 0; height: 99% !important;">
+            <nav class="navbar navbar-expand-lg bg-white border rounded shadow-sm mb-3 py-2 px-3 flex-shrink-0">
+                <div class="container-fluid p-0 d-flex justify-content-between align-items-center">
+                    <span class="navbar-brand fw-bold text-primary m-0 fs-5">
+                        <i class="bi bi-people me-2"></i>Employees
+                    </span>
+                    <div class="d-flex gap-2">
+                        <div class="input-group input-group-sm" style="max-width: 220px;">
+                            <input type="text" class="form-control" placeholder="Search employee..." (input)="onSearchInput($event)">
+                            <button class="btn btn-outline-secondary" type="button"><i class="bi bi-search"></i></button>
+                        </div>
+                        <button class="btn btn-sm btn-success" title="New employee" (click)="initializeNewEmployeeForm()">
+                            <i class="bi bi-file-earmark-plus"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" title="Delete employee" [disabled]="!selectedEmployeeId" (click)="deleteActiveEmployee()">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                        <!--<button class="btn btn-sm btn-success" title="Export Excel" (click)="exportEmployeesToExcel()">
+                            <i class="bi bi-file-earmark-arrow-down"></i>
+                        </button>-->
+                    </div>
+                </div>
+            </nav>
+
+            <div class="card shadow-sm border-0 d-flex flex-column overflow-hidden flex-grow-1">
+                <div class="table-responsive flex-grow-1 overflow-auto">
+                    <table class="table table-hover table-sm align-middle mb-0">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th class="px-3">Lastname</th>
+                                <th>Firstname</th>
+                                <th>Title</th>
+                                <th>Reports To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (e of filteredEmployees; track e.employeeId) {
+                                <tr [class.table-primary]="selectedEmployeeId === e.employeeId"
+                                    (click)="selectEmployee(e)"
+                                    style="cursor: pointer;">
+                                    <td class="px-3 fw-bold text-secondary">{{ e.lastname }}</td>
+                                    <td>{{ e.firstname }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ e.title }}</span></td>
+                                    <td class="text-muted small">
+                                        {{ e.reportsTo ? (e.reportsTo.firstname + ' ' + e.reportsTo.lastname) : 'Executive Level' }}
+                                    </td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No active personnel files mapped in system database registries.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card-footer bg-white border-top py-2 d-flex justify-content-center align-items-center flex-shrink-0">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+                            <i class="bi bi-chevron-left me-1"></i>Prev
+                        </button>
+                        <span class="btn btn-sm btn-light disabled text-dark fw-bold px-3">
+                            Page: {{ currentPage }} / {{ totalPages || 1 }}
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                [disabled]="currentPage >= totalPages" (click)="onPageChange(currentPage + 1)">
+                            Next<i class="bi bi-chevron-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 d-flex flex-column overflow-hidden" style="min-height: 0; height: 99% !important;">
+            <div class="card shadow-sm border-0 d-flex flex-column overflow-hidden" style="height: 99% !important;">
+                
+                <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-center py-2 px-3 flex-shrink-0" style="height: 42px;">
+                    <span class="small fw-bold text-secondary text-uppercase tracking-wider">
+                        <i class="bi bi-person-lines-fill me-1"></i>Employee Details
+                    </span>
+                    <span [className]="badgeClass">{{ badgeText }}</span>
+                </div>
+
+                <div class="card-body overflow-auto p-3 flex-grow-1">
+                    @if (currentWorkspaceState === 'empty') {
+                        <div class="text-center text-muted py-5 my-4">
+                            <div class="fs-1 mb-2 text-black-50"><i class="bi bi-person-badge"></i></div>
+                            <h6 class="fw-semibold mb-1 text-dark">No File Selected</h6>
+                            <p class="small mb-0 px-4">Highlight a matrix roster row index line item to modify records profile parameters.</p>
+                        </div>
+                    } @else {
+                        <form class="row g-3" (ngSubmit)="saveEmployeeHeader($event)">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Lastname</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.lastname" name="lastname" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Firstname</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.firstname" name="firstname" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Corporate Title / Role</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.title" name="title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Reports To (Manager)</label>
+                                <select class="form-select form-select-sm" [(ngModel)]="activeEmployeeForm.reportsTo" [compareWith]="compareEmployeesById" name="reportsTo">
+                                    <option [ngValue]="undefined">Corporate Executive Hierarchy Level...</option>
+                                    @for (mgr of allEmployeesLookupList; track mgr.employeeId) {
+                                        @if (mgr.employeeId !== activeEmployeeForm.employeeId) {
+                                            <option [ngValue]="mgr">{{ mgr.lastname }}, {{ mgr.firstname }} ({{ mgr.title }})</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Birthdate</label>
+                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.birthdate" name="birthdate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Hire Date</label>
+                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.hiredate" name="hiredate" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Address</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.address" name="address">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold text-secondary mb-1">City</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.city" name="city">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Postal Code</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.postalCode" name="postalCode">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Region</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.region" name="region">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Country</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.country" name="country">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Home Phone</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                    <input type="text" class="form-control" [(ngModel)]="activeEmployeeForm.homePhone" name="homePhone">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Internal Extension</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.extension" name="extension">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Username</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.username" name="username" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Password</label>
+                                <input type="password" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.password" name="password" required>
+                            </div>
+
+                            <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-3">
+                                <button type="button" class="btn btn-sm btn-secondary" (click)="cancelEmployeeWorkspaceEdit()">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-save me-1"></i>Save Record</button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
