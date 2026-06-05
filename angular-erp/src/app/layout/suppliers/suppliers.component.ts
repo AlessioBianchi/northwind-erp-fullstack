@@ -184,11 +184,4 @@ export class SuppliersComponent implements OnInit {
       });
     }
   }
-
-  compareObjectsById(idPropertyKey: string): (o1: any, o2: any) => boolean {
-    return (o1: any, o2: any) => {
-      if (!o1 || !o2) return false;
-      return o1[idPropertyKey] === o2[idPropertyKey];
-    };
-  }
 }
