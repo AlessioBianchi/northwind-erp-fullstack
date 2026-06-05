@@ -36,7 +36,9 @@ export class AuthService {
         if (response && response.username) {
           this.usernameLogged = response.username;
           this.isManager = response.isManager;
+          
           sessionStorage.setItem('username', response.username);
+          sessionStorage.setItem('isManager', String(response.isManager));
         }
       })
     );
@@ -50,6 +52,10 @@ export class AuthService {
   }
 
   isUserManager(): boolean {
+    if (!this.isManager) {
+      const storedManagerFlag = sessionStorage.getItem('isManager');
+      this.isManager = storedManagerFlag === 'true';
+    }
     return this.isManager;
   }
 }
