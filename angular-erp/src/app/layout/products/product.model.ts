@@ -11,5 +11,5 @@ export interface Product {
     unitsInStock: number;
     unitsOnOrder: number;
     reorderLevel: number;
-    discontinued: string;
+    discontinued: 'Y' | 'N';
 }
