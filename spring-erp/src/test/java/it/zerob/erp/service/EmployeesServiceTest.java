@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +24,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeesServiceTest {
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Mock
     private EmployeesDAO employeesDao;
@@ -78,6 +82,7 @@ class EmployeesServiceTest {
     @Test
     void save_ShouldReturnSavedEmployee() {
         // Arrange
+        when(passwordEncoder.encode(any())).thenReturn("hashed_password");
         when(employeesDao.save(any(Employee.class))).thenReturn(sampleEmployee);
 
         // Act

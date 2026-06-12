@@ -1,5 +1,6 @@
 package it.zerob.erp.service;
 
+import it.zerob.erp.config.PasswordConfig;
 import it.zerob.erp.dao.OrdersDAO;
 import it.zerob.erp.dao.EmployeesDAO;
 import it.zerob.erp.model.Employee;
@@ -7,6 +8,7 @@ import it.zerob.erp.model.EmployeeBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,10 +19,12 @@ public class EmployeesService {
 
     private final EmployeesDAO employeesDao;
     private final OrdersDAO ordersDao;
+    private final PasswordEncoder passwordEncoder;
 
-    public EmployeesService(EmployeesDAO employeesDao, OrdersDAO ordersDao) {
+    public EmployeesService(EmployeesDAO employeesDao, OrdersDAO ordersDao, PasswordEncoder passwordEncoder) {
         this.employeesDao = employeesDao;
         this.ordersDao = ordersDao;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Optional<Employee> findByUsername(String username) { return employeesDao.findByUsername(username); }
@@ -35,6 +39,10 @@ public class EmployeesService {
     }
 
     public Employee save(Employee employee) {
+        Employee employeeToSave = new EmployeeBuilder(employee)
+                .withPassword(passwordEncoder.encode(employee.getPassword()))
+                .build();
+
         return employeesDao.save(employee);
     }
 
