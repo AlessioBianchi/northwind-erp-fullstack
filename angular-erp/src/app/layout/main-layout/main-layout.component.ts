@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../service/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-main-layout',
@@ -17,7 +18,7 @@ export class MainLayoutComponent implements OnInit{
 
   isSidebarCollapsed = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private http: HttpClient) {}
 
   ngOnInit(): void {
     this.usernameLogged = this.authService.getUsernameLogged();
@@ -29,7 +30,15 @@ export class MainLayoutComponent implements OnInit{
   }
 
   onLogout(): void {
-    // localStorage.removeItem('isLoggedIn');
-    this.router.navigate(['/login']);
+    this.http.post('/api/auth/logout', {}, { withCredentials: true }).subscribe({
+      complete: () => {
+        sessionStorage.clear();
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        sessionStorage.clear();
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }
