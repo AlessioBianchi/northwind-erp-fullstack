@@ -1,0 +1,64 @@
+package com.github.alessiobianchi.erp.controller;
+
+import com.github.alessiobianchi.erp.model.Order;
+import com.github.alessiobianchi.erp.model.Product;
+import com.github.alessiobianchi.erp.service.ProductsService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+@RequestMapping("/products")
+public class ProductsController {
+
+    private final ProductsService service;
+
+    public ProductsController(ProductsService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public String showProducts(Model model){
+        return "products";
+    }
+
+    @GetMapping("/paginated")
+    @ResponseBody
+    public Page<Product> findAllByOrderByProductIdDesc(
+            @RequestParam int pageNumber,
+            @RequestParam int pageSize) {
+        return service.findAllByOrderByProductIdDesc(pageNumber, pageSize);
+    }
+
+    @GetMapping("/all")
+    @ResponseBody
+    public List<Product> findAllByOrderByProductIdDesc() {
+        return service.findAllByOrderByProductIdDesc();
+    }
+
+    @PostMapping("/save")
+    @ResponseBody
+    public ResponseEntity<Product> save(@RequestBody Product product) {
+        Product productSaved = service.save(product);
+        return ResponseEntity.ok(productSaved);
+    }
+
+    @GetMapping("/delete/{productId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> delete(@PathVariable Long productId) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Product deleted!");
+
+        if(!service.delete(productId)) {
+            response.put("message", "This product is connected to an order. It can't be deleted.");
+        }
+
+        return ResponseEntity.ok(response);
+    }
+}

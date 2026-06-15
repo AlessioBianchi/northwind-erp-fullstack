@@ -1,0 +1,192 @@
+<div class="container-fluid p-3 d-flex flex-column" style="height: calc(100vh - 75px); padding-bottom: 5px;">
+    
+    <div class="row g-3 flex-grow-1 overflow-hidden" style="min-height: 0;">
+        
+        <div class="col-md-7 d-flex flex-column overflow-hidden" style="min-height: 0; height: 99% !important;">
+            <nav class="navbar navbar-expand-lg bg-white border rounded shadow-sm mb-3 py-2 px-3 flex-shrink-0">
+                <div class="container-fluid p-0 d-flex justify-content-between align-items-center">
+                    <span class="navbar-brand fw-bold text-primary m-0 fs-5">
+                        <i class="bi bi-receipt me-2"></i>Suppliers
+                    </span>
+                    <div class="d-flex gap-2">
+                        <div class="input-group input-group-sm" style="max-width: 200px;">
+                            <input type="text" class="form-control" placeholder="Search supplier..." (input)="onSearchInput($event)">
+                            <button class="btn btn-outline-secondary" type="button"><i class="bi bi-search"></i></button>
+                        </div>
+                        <button class="btn btn-sm btn-success" title="New supplier" (click)="initializeNewSupplierForm()">
+                            <i class="bi bi-file-earmark-plus"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" title="Delete supplier" [disabled]="!selectedSupplierId" (click)="deleteActiveSupplier()">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="card shadow-sm border-0 d-flex flex-column overflow-hidden flex-grow-1">
+                <div class="table-responsive flex-grow-1 overflow-auto">
+                    <table class="table table-hover table-sm align-middle mb-0">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th class="px-3 py-2">Company Name</th>
+                                <th>Contact Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (s of filteredSuppliers; track s.supplierId) {
+                                <tr [class.table-primary]="selectedSupplierId === s.supplierId"
+                                    (click)="selectSupplier(s)"
+                                    style="cursor: pointer;">
+                                    <td class="px-3 fw-bold text-secondary">{{ s.companyName }}</td>
+                                    <td>{{ s.contactName }}</td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted py-4">No supplier listings found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card-footer bg-white border-top py-2 d-flex justify-content-center align-items-center flex-shrink-0">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+                            <i class="bi bi-chevron-left me-1"></i>Prev
+                        </button>
+                        <span class="btn btn-sm btn-light disabled text-dark fw-bold px-3">
+                            Page: {{ currentPage }} / {{ totalPages || 1 }}
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                [disabled]="currentPage >= totalPages" (click)="onPageChange(currentPage + 1)">
+                            Next<i class="bi bi-chevron-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 d-flex flex-column overflow-hidden" style="min-height: 0; height: 99% !important;">
+            <div class="card shadow-sm border-0 d-flex flex-column overflow-hidden" style="height: 99% !important;">
+                
+                <div class="card-header bg-light border-bottom p-0 flex-shrink-0">
+                    <ul class="nav nav-tabs border-0 px-3 pt-2" id="detailTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link" [class.active]="activeTab === 'supplier'" (click)="switchTab('supplier')" type="button">
+                                <i class="bi bi-person-lines-fill me-1"></i>Suppliers
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" [class.active]="activeTab === 'shipper'" (click)="switchTab('shipper')" type="button">
+                                <i class="bi bi-truck me-1"></i>Shippers
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body overflow-auto p-3 flex-grow-1">
+                    
+                    @if (activeTab === 'supplier') {
+                        @if (currentWorkspaceState === 'empty') {
+                            <div class="text-center text-muted py-5 my-4">
+                                <div class="fs-1 mb-2 text-black-50"><i class="bi bi-info-circle"></i></div>
+                                <h6 class="fw-semibold mb-1 text-dark">No Supplier Selected</h6>
+                                <p class="small mb-0 px-4">Highlight a matrix index line item row or spawn a fresh record configuration profile.</p>
+                            </div>
+                        } @else {
+                            <form class="row g-3" (ngSubmit)="saveSupplierHeader($event)">
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Company Name</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.companyName" name="companyName" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Contact Title</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.contactTitle" name="contactTitle" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Contact Name</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.contactName" name="contactName" required>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Address</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.address" name="address">
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">City</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.city" name="city">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Postal Code</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.postalCode" name="postalCode">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Region</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.region" name="region">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Country</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.country" name="country">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Phone</label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                        <input type="text" class="form-control" [(ngModel)]="activeSupplierForm.phone" name="phone">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Fax</label>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="activeSupplierForm.fax" name="fax">
+                                </div>
+
+                                <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-3">
+                                    <button type="button" class="btn btn-sm btn-secondary" (click)="cancelSupplierWorkspaceEdit()">Cancel</button>
+                                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-save me-1"></i>Save Supplier</button>
+                                </div>
+                            </form>
+                        }
+                    }
+
+                    @if (activeTab === 'shipper') {
+                        <form class="row g-3" (ngSubmit)="saveShipperHeader($event)">
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Inspect/Load Profile Shipper Mapping</label>
+                                <select class="form-select form-select-sm" [(ngModel)]="selectedShipperDropdownTarget" (change)="onShipperDropdownSelectionChange()" name="shipperInspector">
+                                    <option [ngValue]="undefined">Generate New Shipper Record...</option>
+                                    @for (sh of referenceShippersList; track sh.shipperId) {
+                                        <option [ngValue]="sh">{{ sh.companyName }}</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Company Name</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeShipperForm.companyName" name="shipperCompanyName" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Phone</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeShipperForm.phone" name="shipperPhone" required>
+                            </div>
+
+                            <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-3">
+                                <button type="button" class="btn btn-sm btn-danger" [disabled]="!activeShipperForm.shipperId" (click)="deleteActiveShipper()">
+                                    <i class="bi bi-trash3 me-1"></i>Delete
+                                </button>
+                                <button type="button" class="btn btn-sm btn-secondary" (click)="cancelShipperWorkspaceEdit()">Clear / Reset</button>
+                                <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-save me-1"></i>Save Shipper</button>
+                            </div>
+                        </form>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,19 @@
+:host {
+    display: block;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.login-container {
+    margin-top: 100px;
+    max-width: 400px;
+    padding: 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border: none;
+}

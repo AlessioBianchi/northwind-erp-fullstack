@@ -1,0 +1,90 @@
+<div class="container-fluid p-4">
+    <h2 class="mb-4">Dashboard</h2>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Orders (Current Month)</h6>
+                    <h2>{{ stats?.lastMonthOrdersCount ?? 0 }}</h2>
+                    <h2>{{ stats?.lastMonthRevenue ?? 0 }} €</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Total Orders</h6>
+                    <h2>{{ stats?.totalOrdersCount ?? 0 }}</h2>
+                    <h2>{{ stats?.totalRevenue ?? 0 }} €</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-bold">Orders by Category</div>
+                <div class="card-body" style="position: relative; min-height: 250px;">
+                    <canvas id="categoryPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-bold">Last 10 Orders</div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Customer</th>
+                            <th>Order Date</th>
+                            <th>Shipper</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            @for (order of stats?.lastTenOrders; track order.orderId) {
+                                <tr>
+                                    <td>{{ order.customer?.companyName }}</td>
+                                    <td>{{ getFormatDate(order.orderDate) }}</td>
+                                    <td>{{ order.shipper?.companyName }}</td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">No orders found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-danger text-white fw-bold">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Low Stock Products (&lt; 10)
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead><tr><th>Product</th></tr></thead>
+                        <tbody>
+                            @for (p of stats?.productStock; track p.productName) {
+                                <tr>
+                                    <td>{{ p.productName }}</td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td class="text-center text-muted py-3">Stock is fine.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

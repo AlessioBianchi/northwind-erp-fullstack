@@ -1,0 +1,15 @@
+.container-fluid {
+    box-sizing: border-box;
+}
+
+.pointer-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+.pointer-row:hover {
+    background-color: rgba(13, 110, 253, 0.04) !important;
+}
+
+.table-responsive, .card-body {
+    scrollbar-width: thin;
+}
