@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/employees")
+@RequestMapping("/api/v1/employees")
 public class EmployeesController {
 
     private final EmployeesService service;

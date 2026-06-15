@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/products")
+@RequestMapping("/api/v1/products")
 public class ProductsController {
 
     private final ProductsService service;

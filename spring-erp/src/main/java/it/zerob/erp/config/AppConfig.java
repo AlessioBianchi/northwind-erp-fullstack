@@ -31,12 +31,12 @@ import java.util.List;
 @EnableWebSecurity
 public class AppConfig {
 
-    private final PasswordConfig passwordConfig;
+    private final PasswordEncoder passwordEncoder;
     private final UsersDetailsService usersDetailsService;
     private final EmployeesService employeesService;
 
-    public AppConfig(PasswordConfig passwordConfig, UsersDetailsService usersDetailsService, EmployeesService employeesService) {
-        this.passwordConfig = passwordConfig;
+    public AppConfig(PasswordEncoder passwordEncoder, UsersDetailsService usersDetailsService, EmployeesService employeesService) {
+        this.passwordEncoder = passwordEncoder;
         this.usersDetailsService = usersDetailsService;
         this.employeesService = employeesService;
     }
@@ -114,7 +114,7 @@ public class AppConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(this.usersDetailsService);
-        authProvider.setPasswordEncoder(passwordConfig.passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
 
