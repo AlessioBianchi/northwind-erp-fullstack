@@ -22,12 +22,6 @@ public class CustomersController {
         this.service = service;
     }
 
-    @GetMapping
-    public String showCustomers(Model model){
-        return "customers";
-    }
-
-    @GetMapping("/all")
     @ResponseBody
     public List<Customer> findAllByOrderByCustomerIdDesc() {
         return service.findAllByOrderByCustomerIdDesc();
@@ -48,7 +42,14 @@ public class CustomersController {
         return ResponseEntity.ok(customerSaved);
     }
 
-    @GetMapping("/delete/{customerId}")
+    @PutMapping("/save")
+    @ResponseBody
+    public ResponseEntity<Customer> update(@RequestBody Customer customer) {
+        Customer customerSaved = service.save(customer);
+        return ResponseEntity.ok(customerSaved);
+    }
+
+    @DeleteMapping("/delete/{customerId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long customerId) {
         Map<String, String> response = new HashMap<>();

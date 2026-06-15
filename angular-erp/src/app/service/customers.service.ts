@@ -31,6 +31,10 @@ export class CustomersService {
     return this.http.post<Customer>(this.apiBaseUrl + '/save', customer, this.httpOptions);
   }
 
+  updateCustomer(customer: Customer): Observable<Customer> {
+    return this.http.put<Customer>(this.apiBaseUrl + '/save', customer, this.httpOptions);
+  }
+
   deleteCustomer(customerId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + customerId, this.httpOptions);
   }

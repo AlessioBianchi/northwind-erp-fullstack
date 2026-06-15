@@ -23,9 +23,9 @@ public class ProductsController {
         this.service = service;
     }
 
-    @GetMapping
-    public String showProducts(Model model){
-        return "products";
+    @ResponseBody
+    public List<Product> findAllByOrderByProductIdDesc() {
+        return service.findAllByOrderByProductIdDesc();
     }
 
     @GetMapping("/paginated")
@@ -36,12 +36,6 @@ public class ProductsController {
         return service.findAllByOrderByProductIdDesc(pageNumber, pageSize);
     }
 
-    @GetMapping("/all")
-    @ResponseBody
-    public List<Product> findAllByOrderByProductIdDesc() {
-        return service.findAllByOrderByProductIdDesc();
-    }
-
     @PostMapping("/save")
     @ResponseBody
     public ResponseEntity<Product> save(@RequestBody Product product) {
@@ -49,7 +43,14 @@ public class ProductsController {
         return ResponseEntity.ok(productSaved);
     }
 
-    @GetMapping("/delete/{productId}")
+    @PutMapping("/save")
+    @ResponseBody
+    public ResponseEntity<Product> update(@RequestBody Product product) {
+        Product productSaved = service.save(product);
+        return ResponseEntity.ok(productSaved);
+    }
+
+    @DeleteMapping("/delete/{productId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long productId) {
         Map<String, String> response = new HashMap<>();

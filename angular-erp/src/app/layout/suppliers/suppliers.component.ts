@@ -117,14 +117,25 @@ export class SuppliersComponent implements OnInit {
   saveSupplierHeader(event: Event): void {
     event.preventDefault(); 
     
-    this.suppliersService.saveSupplier(this.activeSupplierForm as Supplier).subscribe({
-      next: (savedResult) => {
-        alert('Supplier saved successfully.');
-        this.loadPaginatedSuppliers();
-        this.cancelSupplierWorkspaceEdit();
-      },
-      error: (err) => console.error('Error saving supplier:', err)
-    });
+    if (this.activeSupplierForm.supplierId === null) {
+      this.suppliersService.saveSupplier(this.activeSupplierForm as Supplier).subscribe({
+        next: (savedResult) => {
+          alert('Supplier saved successfully.');
+          this.loadPaginatedSuppliers();
+          this.cancelSupplierWorkspaceEdit();
+        },
+        error: (err) => console.error('Error saving supplier:', err)
+      });
+    } else {
+      this.suppliersService.updateSupplier(this.activeSupplierForm as Supplier).subscribe({
+        next: (savedResult) => {
+          alert('Supplier saved successfully.');
+          this.loadPaginatedSuppliers();
+          this.cancelSupplierWorkspaceEdit();
+        },
+        error: (err) => console.error('Error saving supplier:', err)
+      });
+    }
   }
 
   deleteActiveSupplier(): void {
@@ -157,15 +168,28 @@ export class SuppliersComponent implements OnInit {
 
   saveShipperHeader(event: Event): void {
     event.preventDefault();
-    this.shippersService.saveShipper(this.activeShipperForm).subscribe({
-      next: (savedShip) => {
-        alert('Shipper saved successfully.');
-        this.preloadDropdownRelationshipDependencies(); 
-        this.cancelShipperWorkspaceEdit();
-        this.loadPaginatedSuppliers(); 
-      },
-      error: (err) => console.error('Error saving shipper:', err)
-    });
+
+    if (this.activeShipperForm.shipperId === null) {
+      this.shippersService.saveShipper(this.activeShipperForm).subscribe({
+        next: (savedShip) => {
+          alert('Shipper saved successfully.');
+          this.preloadDropdownRelationshipDependencies(); 
+          this.cancelShipperWorkspaceEdit();
+          this.loadPaginatedSuppliers(); 
+        },
+        error: (err) => console.error('Error saving shipper:', err)
+      });
+    } else {
+      this.shippersService.updateShipper(this.activeShipperForm).subscribe({
+        next: (savedShip) => {
+          alert('Shipper saved successfully.');
+          this.preloadDropdownRelationshipDependencies(); 
+          this.cancelShipperWorkspaceEdit();
+          this.loadPaginatedSuppliers(); 
+        },
+        error: (err) => console.error('Error saving shipper:', err)
+      });
+    }
   }
 
   deleteActiveShipper(): void {

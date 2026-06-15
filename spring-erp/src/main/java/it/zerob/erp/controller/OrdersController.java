@@ -35,6 +35,12 @@ public class OrdersController {
         return ResponseEntity.ok(orderSaved);
     }
 
+    @PutMapping("/save")
+    public ResponseEntity<Order> update(@RequestBody Order order, Principal principal) {
+        Order orderSaved = service.save(order, principal.getName());
+        return ResponseEntity.ok(orderSaved);
+    }
+
     @DeleteMapping("/delete/{orderId}")
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long orderId) {
         Map<String, String> response = new HashMap<>();
@@ -54,6 +60,12 @@ public class OrdersController {
 
     @PostMapping("/details/save")
     public ResponseEntity<OrderDetail> save(@RequestBody OrderDetail orderDetail) {
+        OrderDetail orderDetailSaved = service.save(orderDetail);
+        return ResponseEntity.ok(orderDetailSaved);
+    }
+
+    @PutMapping("/details/save")
+    public ResponseEntity<OrderDetail> update(@RequestBody OrderDetail orderDetail) {
         OrderDetail orderDetailSaved = service.save(orderDetail);
         return ResponseEntity.ok(orderDetailSaved);
     }

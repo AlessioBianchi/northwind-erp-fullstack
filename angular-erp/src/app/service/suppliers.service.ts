@@ -31,6 +31,10 @@ export class SuppliersService {
   saveSupplier(supplier: Supplier): Observable<Supplier> {
     return this.http.post<Supplier>(this.apiBaseUrl + '/save', supplier, this.httpOptions);
   }
+
+  updateSupplier(supplier: Supplier): Observable<Supplier> {
+    return this.http.put<Supplier>(this.apiBaseUrl + '/save', supplier, this.httpOptions);
+  }
   
   deleteSupplier(supplierId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + supplierId, this.httpOptions);

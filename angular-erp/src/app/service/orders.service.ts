@@ -27,6 +27,10 @@ export class OrdersService {
     return this.http.post<Order>(this.apiBaseUrl + '/save', order, this.httpOptions);
   }
 
+  updateOrder(order: Order): Observable<Order> {
+    return this.http.put<Order>(this.apiBaseUrl + '/save', order, this.httpOptions);
+  }
+
   deleteOrder(orderId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + orderId, this.httpOptions);
   }
@@ -37,6 +41,10 @@ export class OrdersService {
 
   saveOrderDetail(orderDetail: OrderDetail): Observable<OrderDetail> {
     return this.http.post<OrderDetail>(this.apiBaseUrl + '/details/save', orderDetail, this.httpOptions);
+  }
+
+  updateOrderDetail(orderDetail: OrderDetail): Observable<OrderDetail> {
+    return this.http.put<OrderDetail>(this.apiBaseUrl + '/details/save', orderDetail, this.httpOptions);
   }
 
   deleteOrderDetail(orderDetail: OrderDetail): Observable<{ message: string }> {

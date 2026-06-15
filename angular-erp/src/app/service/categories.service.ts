@@ -19,6 +19,10 @@ export class CategoriesService {
   saveCategory(category: Category): Observable<Category> {
     return this.http.post<Category>(this.apiBaseUrl + '/save', category, this.httpOptions);
   }
+
+  updateCategory(category: Category): Observable<Category> {
+    return this.http.put<Category>(this.apiBaseUrl + '/save', category, this.httpOptions);
+  }
   
   deleteCategory(categoryId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + categoryId, this.httpOptions);

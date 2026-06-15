@@ -31,6 +31,10 @@ export class EmployeesService {
     save(employee: Employee): Observable<Employee> {
         return this.http.post<Employee>(this.apiBaseUrl + '/save', employee, this.httpOptions);
     }
+
+    update(employee: Employee): Observable<Employee> {
+        return this.http.put<Employee>(this.apiBaseUrl + '/save', employee, this.httpOptions);
+    }
     
     delete(employeeId: number): Observable<{ message: string }> {
         return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + employeeId, this.httpOptions);

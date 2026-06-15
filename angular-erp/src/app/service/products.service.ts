@@ -31,6 +31,10 @@ export class ProductsService {
   saveProduct(product: Product): Observable<Product> {
     return this.http.post<Product>(this.apiBaseUrl + '/save', product, this.httpOptions);
   }
+
+  updateProduct(product: Product): Observable<Product> {
+    return this.http.put<Product>(this.apiBaseUrl + '/save', product, this.httpOptions);
+  }
   
   deleteProduct(productId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + productId, this.httpOptions);

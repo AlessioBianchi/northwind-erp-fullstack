@@ -20,7 +20,6 @@ public class ShippersController {
         this.service = service;
     }
 
-    @GetMapping("/all")
     @ResponseBody
     public List<Shipper> findAllByOrderByShipperIdDesc() {
         return service.findAllByOrderByShipperIdDesc();
@@ -32,7 +31,13 @@ public class ShippersController {
         return service.save(shipper);
     }
 
-    @GetMapping("/delete/{shipperId}")
+    @PutMapping("/save")
+    @ResponseBody
+    public Shipper update(@RequestBody Shipper shipper) {
+        return service.save(shipper);
+    }
+
+    @DeleteMapping("/delete/{shipperId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long shipperId) {
         Map<String, String> response = new HashMap<>();

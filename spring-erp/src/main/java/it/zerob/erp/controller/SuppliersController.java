@@ -23,10 +23,6 @@ public class SuppliersController {
         this.service = service;
     }
 
-    @GetMapping
-    public String showSuppliers(Model model) { return "suppliers"; }
-
-    @GetMapping("/all")
     @ResponseBody
     public List<Supplier> findAllByOrderBySupplierIdDesc() {
         return service.findAllByOrderBySupplierIdDesc();
@@ -46,7 +42,13 @@ public class SuppliersController {
         return service.save(supplier);
     }
 
-    @GetMapping("/delete/{supplierId}")
+    @PutMapping("/save")
+    @ResponseBody
+    public Supplier update(@RequestBody Supplier supplier) {
+        return service.save(supplier);
+    }
+
+    @DeleteMapping("/delete/{supplierId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long supplierId) {
         Map<String, String> response = new HashMap<>();

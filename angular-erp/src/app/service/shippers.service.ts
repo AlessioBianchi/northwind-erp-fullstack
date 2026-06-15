@@ -19,6 +19,10 @@ export class ShippersService {
   saveShipper(shipper: Shipper): Observable<Shipper> {
     return this.http.post<Shipper>(this.apiBaseUrl + '/save', shipper, this.httpOptions);
   }
+
+  updateShipper(shipper: Shipper): Observable<Shipper> {
+    return this.http.put<Shipper>(this.apiBaseUrl + '/save', shipper, this.httpOptions);
+  }
   
   deleteShipper(shipperId: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + shipperId, this.httpOptions);

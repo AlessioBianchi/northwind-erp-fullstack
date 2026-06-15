@@ -20,7 +20,6 @@ public class CategoriesController {
         this.service = service;
     }
 
-    @GetMapping("/all")
     @ResponseBody
     public List<Category> findAllByOrderByCategoryIdDesc() {
         return service.findAllByOrderByCategoryIdDesc();
@@ -33,7 +32,14 @@ public class CategoriesController {
         return ResponseEntity.ok(categorySaved);
     }
 
-    @GetMapping("/delete/{categoryId}")
+    @PutMapping("/save")
+    @ResponseBody
+    public ResponseEntity<Category> update(@RequestBody Category category) {
+        Category categorySaved = service.save(category);
+        return ResponseEntity.ok(categorySaved);
+    }
+
+    @DeleteMapping("/delete/{categoryId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long categoryId) {
         Map<String, String> response = new HashMap<>();

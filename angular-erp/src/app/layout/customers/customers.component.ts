@@ -93,14 +93,25 @@ export class CustomersComponent implements OnInit {
   }
 
   saveCustomerHeader(): void {
-    this.customersService.saveCustomer(this.activeCustomerForm as Customer).subscribe({
-      next: () => {
-        alert('Customer saved successfully.');
-        this.loadPaginatedCustomers();
-        this.cancelCustomerEdit();
-      },
-      error: (err) => console.error('Error saving customer:', err)
-    });
+    if (this.activeCustomerForm.customerId === null) {
+      this.customersService.saveCustomer(this.activeCustomerForm as Customer).subscribe({
+        next: () => {
+          alert('Customer saved successfully.');
+          this.loadPaginatedCustomers();
+          this.cancelCustomerEdit();
+        },
+        error: (err) => console.error('Error saving customer:', err)
+      });
+    } else {
+      this.customersService.updateCustomer(this.activeCustomerForm as Customer).subscribe({
+        next: () => {
+          alert('Customer saved successfully.');
+          this.loadPaginatedCustomers();
+          this.cancelCustomerEdit();
+        },
+        error: (err) => console.error('Error saving customer:', err)
+      });
+    }
   }
 
   deleteCustomer(): void {

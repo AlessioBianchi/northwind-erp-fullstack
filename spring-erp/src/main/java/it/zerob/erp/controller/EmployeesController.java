@@ -23,10 +23,6 @@ public class EmployeesController {
         this.service = service;
     }
 
-    @GetMapping
-    public String showEmployees(Model model) { return "employees"; }
-
-    @GetMapping("/all")
     @ResponseBody
     public List<Employee> findAllByOrderByEmployeeIdDesc() {
         return service.findAllByOrderByEmployeeIdDesc();
@@ -47,7 +43,14 @@ public class EmployeesController {
         return ResponseEntity.ok(employeeSaved);
     }
 
-    @GetMapping("/delete/{employeeId}")
+    @PutMapping("/save")
+    @ResponseBody
+    public ResponseEntity<Employee> update(@RequestBody Employee employee) {
+        Employee employeeSaved = service.save(employee);
+        return ResponseEntity.ok(employeeSaved);
+    }
+
+    @DeleteMapping("/delete/{employeeId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long employeeId) {
         Map<String, String> response = new HashMap<>();
