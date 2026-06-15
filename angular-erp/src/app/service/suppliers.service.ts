@@ -10,7 +10,7 @@ import { PageResponse } from '../page-response.model';
 export class SuppliersService {
   private http = inject(HttpClient);
   
-  private apiBaseUrl = 'http://localhost:8080/suppliers'; 
+  private apiBaseUrl = 'http://localhost:8080/api/v1/suppliers'; 
   private httpOptions = { withCredentials: true };
 
   getAllSuppliers(): Observable<Supplier[]> {

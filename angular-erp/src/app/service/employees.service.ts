@@ -10,7 +10,7 @@ import { PageResponse } from '../page-response.model';
 export class EmployeesService {
     private http = inject(HttpClient);
     
-    private apiBaseUrl = 'http://localhost:8080/employees';
+    private apiBaseUrl = 'http://localhost:8080/api/v1/employees';
     private httpOptions = { withCredentials: true };
     
     findAllByOrderByEmployeeIdDesc(): Observable<Employee[]> {
