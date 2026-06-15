@@ -38,7 +38,7 @@ export class EmployeesComponent implements OnInit {
 
   loadPaginatedEmployees(): void {
     const apiIndex = this.currentPage - 1;
-    this.employeesService.findPaginated(apiIndex, this.pageSize).subscribe({
+    this.employeesService.getPaginatedEmployees(apiIndex, this.pageSize).subscribe({
       next: (res) => {
         this.employeesList = res.content;
         this.totalElements = res.page.totalElements;
@@ -50,7 +50,7 @@ export class EmployeesComponent implements OnInit {
 
   preloadDropdownRelationshipDependencies(): void {
     // Fetches everyone so any employee can be assigned as a manager
-    this.employeesService.findAllByOrderByEmployeeIdDesc().subscribe({
+    this.employeesService.getAllByOrderByEmployeeIdDesc().subscribe({
       next: (data) => this.allEmployeesLookupList = data,
       error: (err) => console.error('Error syncing management roster dictionary listings:', err)
     });

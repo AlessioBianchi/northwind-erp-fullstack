@@ -14,7 +14,7 @@ export class SuppliersService {
   private httpOptions = { withCredentials: true };
 
   getAllSuppliers(): Observable<Supplier[]> {
-    return this.http.get<Supplier[]>(this.apiBaseUrl + '/all', this.httpOptions);
+    return this.http.get<Supplier[]>(this.apiBaseUrl, this.httpOptions);
   }
   
   getPaginatedSuppliers(pageNumber: number, pageSize: number): Observable<PageResponse<Supplier>> {
@@ -33,6 +33,6 @@ export class SuppliersService {
   }
   
   deleteSupplier(supplierId: number): Observable<{ message: string }> {
-    return this.http.get<{ message: string }>(this.apiBaseUrl + '/delete/' + supplierId, this.httpOptions);
+    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + supplierId, this.httpOptions);
   }
 }

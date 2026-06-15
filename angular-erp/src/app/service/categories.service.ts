@@ -13,7 +13,7 @@ export class CategoriesService {
   private httpOptions = { withCredentials: true };
 
   getAllCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(this.apiBaseUrl + '/all', this.httpOptions);
+    return this.http.get<Category[]>(this.apiBaseUrl, this.httpOptions);
   }
   
   saveCategory(category: Category): Observable<Category> {
@@ -21,6 +21,6 @@ export class CategoriesService {
   }
   
   deleteCategory(categoryId: number): Observable<{ message: string }> {
-    return this.http.get<{ message: string }>(this.apiBaseUrl + '/delete/' + categoryId, this.httpOptions);
+    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + categoryId, this.httpOptions);
   }
 }

@@ -13,11 +13,11 @@ export class EmployeesService {
     private apiBaseUrl = 'http://localhost:8080/api/v1/employees';
     private httpOptions = { withCredentials: true };
     
-    findAllByOrderByEmployeeIdDesc(): Observable<Employee[]> {
-        return this.http.get<Employee[]>(this.apiBaseUrl + '/all', this.httpOptions);
+    getAllByOrderByEmployeeIdDesc(): Observable<Employee[]> {
+        return this.http.get<Employee[]>(this.apiBaseUrl, this.httpOptions);
     }
     
-    findPaginated(pageNumber: number, pageSize: number): Observable<PageResponse<Employee>> {
+    getPaginatedEmployees(pageNumber: number, pageSize: number): Observable<PageResponse<Employee>> {
         const params = new HttpParams()
             .set('pageNumber', pageNumber.toString())
             .set('pageSize', pageSize.toString());
@@ -33,6 +33,6 @@ export class EmployeesService {
     }
     
     delete(employeeId: number): Observable<{ message: string }> {
-        return this.http.get<{ message: string }>(this.apiBaseUrl + '/delete/' + employeeId, this.httpOptions);
+        return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + employeeId, this.httpOptions);
     }
 }

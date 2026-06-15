@@ -13,7 +13,7 @@ export class CustomersService {
   private httpOptions = { withCredentials: true };
 
   getAllCustomers(): Observable<Customer[]> {
-    return this.http.get<Customer[]>(this.apiBaseUrl + '/all', this.httpOptions);
+    return this.http.get<Customer[]>(this.apiBaseUrl, this.httpOptions);
   }
 
   getPaginatedCustomers(pageNumber: number, pageSize: number): Observable<PageResponse<Customer>> {
@@ -32,6 +32,6 @@ export class CustomersService {
   }
 
   deleteCustomer(customerId: number): Observable<{ message: string }> {
-    return this.http.get<{ message: string }>(this.apiBaseUrl + '/delete/' + customerId, this.httpOptions);
+    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + customerId, this.httpOptions);
   }
 }

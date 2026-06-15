@@ -13,7 +13,7 @@ export class ShippersService {
   private httpOptions = { withCredentials: true };
   
   getAllShippers(): Observable<Shipper[]> {
-    return this.http.get<Shipper[]>(this.apiBaseUrl + '/all', this.httpOptions);
+    return this.http.get<Shipper[]>(this.apiBaseUrl, this.httpOptions);
   }
   
   saveShipper(shipper: Shipper): Observable<Shipper> {
@@ -21,6 +21,6 @@ export class ShippersService {
   }
   
   deleteShipper(shipperId: number): Observable<{ message: string }> {
-    return this.http.get<{ message: string }>(this.apiBaseUrl + '/delete/' + shipperId, this.httpOptions);
+    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + shipperId, this.httpOptions);
   }
 }
