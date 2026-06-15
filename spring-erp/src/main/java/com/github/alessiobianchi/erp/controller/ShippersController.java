@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/shippers")
+@RequestMapping("/api/v1/shippers")
 public class ShippersController {
 
     private final ShippersService service;

@@ -9,7 +9,7 @@ import { PageResponse } from '../page-response.model';
 })
 export class CustomersService {
   private http = inject(HttpClient);
-  private apiBaseUrl = 'http://localhost:8080/customers'; 
+  private apiBaseUrl = 'http://localhost:8080/api/v1/customers'; 
   private httpOptions = { withCredentials: true };
 
   getAllCustomers(): Observable<Customer[]> {

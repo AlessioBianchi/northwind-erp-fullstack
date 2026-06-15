@@ -9,7 +9,7 @@ import { Shipper } from '../layout/suppliers/shipper.model';
 export class ShippersService {
   private http = inject(HttpClient);
   
-  private apiBaseUrl = 'http://localhost:8080/shippers'; 
+  private apiBaseUrl = 'http://localhost:8080/api/v1/shippers'; 
   private httpOptions = { withCredentials: true };
   
   getAllShippers(): Observable<Shipper[]> {
