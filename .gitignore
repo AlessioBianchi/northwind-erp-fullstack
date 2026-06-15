@@ -1,0 +1,46 @@
+# ==========================================
+# 1. Java / Spring Boot (spring-erp)
+# ==========================================
+# Compiled class files
+**/spring-erp/target/
+**/spring-erp/bin/
+*.class
+
+# Log files
+*.log
+
+# Crash dumps
+*.crash
+
+# Eclipse/IntelliJ/NetBeans project files
+**/spring-erp/.classpath
+**/spring-erp/.project
+**/spring-erp/.settings/
+**/spring-erp/.idea/
+**/spring-erp/*.iml
+**/spring-erp/*.ipr
+**/spring-erp/*.iws
+**/spring-erp/.mvn/wrapper/maven-wrapper.jar
+
+# ==========================================
+# 2. Angular (angular-erp)
+# ==========================================
+# Dependencies (The massive folder!)
+**/angular-erp/node_modules/
+
+# Compiled output
+**/angular-erp/dist/
+**/angular-erp/.angular/
+
+# Logs
+**/angular-erp/logs/
+**/angular-erp/*.log
+**/angular-erp/npm-debug.log*
+
+# IDEs and editors
+**/angular-erp/.editorconfig
+**/angular-erp/.vscode/
+
+# System Files
+.DS_Store
+Thumbs.db

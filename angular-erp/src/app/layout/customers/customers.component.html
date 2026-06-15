@@ -1,0 +1,168 @@
+<div class="container-fluid p-3 d-flex flex-column" style="height: calc(100vh - 75px); padding-bottom: 5px;">
+
+    <div class="row g-3 flex-grow-1 overflow-hidden" style="min-height: 0;">
+
+        <div class="col-md-7 d-flex flex-column overflow-hidden" style="min-height: 0; height: 99% !important;">
+            <nav class="navbar navbar-expand-lg bg-white border rounded shadow-sm mb-3 py-2 px-3 flex-shrink-0">
+                <div class="container-fluid p-0 d-flex justify-content-between align-items-center">
+                    <span class="navbar-brand fw-bold text-primary m-0 fs-5">
+                        <i class="bi bi-receipt me-2"></i>Customers
+                    </span>
+                    <div class="d-flex gap-2">
+                        <div class="input-group input-group-sm" style="max-width: 200px;">
+                            <input type="text" class="form-control" placeholder="Search customer..." (input)="onSearchInput($event)">
+                            <button class="btn btn-outline-secondary" type="button"><i class="bi bi-search"></i></button>
+                        </div>
+                        <button class="btn btn-sm btn-success" title="New customer" (click)="initializeNewCustomerForm()">
+                            <i class="bi bi-file-earmark-plus"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" title="Delete customer" [disabled]="!selectedCustomerId" (click)="deleteCustomer()">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                        <!--<button class="btn btn-sm btn-success" title="Export Excel" (click)="exportCustomer()">
+                            <i class="bi bi-file-earmark-arrow-down"></i>
+                        </button>-->
+                    </div>
+                </div>
+            </nav>
+
+            <div class="card shadow-sm border-0 d-flex flex-column overflow-hidden flex-grow-1">
+                <div class="table-responsive flex-grow-1 overflow-auto">
+                    <table class="table table-hover table-sm align-middle mb-0">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th class="px-3 py-2">Customer Code</th>
+                                <th>Company Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (c of filteredCustomers; track c.customerCode) {
+                                <tr [class.table-primary]="selectedCustomerId === c.customerId"
+                                    (click)="selectCustomer(c)"
+                                    style="cursor: pointer;">
+                                    <td class="px-3 fw-bold text-secondary">{{ c.customerCode }}</td>
+                                    <td>{{ c.companyName }}</td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted py-4">No customers found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card-footer bg-white border-top py-2 d-flex justify-content-center align-items-center flex-shrink-0">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                [disabled]="currentPage <= 1" (click)="onPageChange(-1)">
+                            <i class="bi bi-chevron-left me-1"></i>Prev
+                        </button>
+                        <span class="btn btn-sm btn-light disabled text-dark fw-bold px-3">
+                            Page: {{ currentPage }} / {{ totalPages || 1 }}
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                [disabled]="currentPage >= totalPages" (click)="onPageChange(1)">
+                            Next<i class="bi bi-chevron-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 d-flex flex-column overflow-hidden" style="min-height: 0; height: 99% !important;">
+            <div class="card shadow-sm border-0 d-flex flex-column overflow-hidden" style="height: 99% !important;">
+            
+                <div class="card-header bg-light border-bottom p-2 d-flex justify-content-between align-items-center flex-shrink-0">
+                    <ul class="nav nav-tabs border-0" id="detailTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" type="button">
+                                <i class="bi bi-person-lines-fill me-1"></i>Customer Details
+                            </button>
+                        </li>
+                    </ul>
+                    @if (currentWorkspaceState === 'new') {
+                        <span class="badge bg-primary">New Customer</span>
+                    }
+                </div>
+
+                <div class="card-body overflow-auto p-3 flex-grow-1">
+                    @if (currentWorkspaceState === 'empty') {
+                        <div class="text-center text-muted py-5 my-4">
+                            <div class="fs-1 mb-2 text-black-50"><i class="bi bi-info-circle"></i></div>
+                            <h6 class="fw-semibold mb-1 text-dark">No Customer Selected</h6>
+                            <p class="small mb-0 px-4">Select a customer from the list to see its details or create a new profile records index.</p>
+                        </div>
+                    } @else {
+                        <form class="row g-3" (ngSubmit)="saveCustomerHeader()">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Customer Code</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.customerCode" name="customerCode" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Company Name</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.companyName" name="companyName" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Contact Name</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.contactName" name="contactName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Contact Title</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.contactTitle" name="contactTitle" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Address</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.address" name="address">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">City</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.city" name="city">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Postal Code</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.postalCode" name="postalCode">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Region</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.region" name="region">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Country</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.country" name="country">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Phone</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                    <input type="text" class="form-control" [(ngModel)]="activeCustomerForm.phone" name="phone">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Fax</label>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeCustomerForm.fax" name="fax">
+                            </div>
+
+                            <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-2">
+                                <button type="button" class="btn btn-sm btn-secondary" (click)="cancelCustomerEdit()">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
+                                </button>
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-save me-1"></i>Save
+                                </button>
+                            </div>
+                        </form>
+                    }
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>

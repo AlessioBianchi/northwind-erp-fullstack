@@ -1,0 +1,286 @@
+<div class="container-fluid p-3 d-flex flex-column" style="height: calc(100vh - 75px); padding-bottom: 5px;">
+    
+    <nav class="navbar navbar-expand-lg bg-white border rounded shadow-sm mb-3 py-2 px-3 flex-shrink-0">
+        <div class="container-fluid p-0 d-flex justify-content-between align-items-center">
+            <span class="navbar-brand fw-bold text-primary m-0 fs-5">
+                <i class="bi bi-receipt me-2"></i>Orders
+            </span>
+            <div class="d-flex gap-2">
+                <div class="input-group input-group-sm" style="max-width: 200px;">
+                    <input type="text" class="form-control" placeholder="Search order...">
+                    <button class="btn btn-outline-secondary" type="button"><i class="bi bi-search"></i></button>
+                </div>
+                <button class="btn btn-sm btn-success" title="New order" (click)="initializeNewOrderForm()">
+                    <i class="bi bi-file-earmark-plus"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" title="Delete order" [disabled]="!selectedOrderId" (click)="deleteActiveOrder()">
+                    <i class="bi bi-trash3"></i>
+                </button>
+                <button class="btn btn-sm btn-success" title="Export Excel">
+                    <i class="bi bi-file-earmark-arrow-down"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-primary" title="Send PDF email" [disabled]="!selectedOrderId">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="row g-3 flex-grow-1 overflow-hidden" style="min-height: 0;">
+        
+        <div class="col-md-7 d-flex flex-column overflow-hidden" style="min-height: 0; height: 99% !important;">
+            <div class="card shadow-sm border-0 d-flex flex-column overflow-hidden" style="height: 99% !important;">
+                <div class="table-responsive flex-grow-1 overflow-auto">
+                    <table class="table table-hover table-sm align-middle mb-0">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th class="px-3 py-2">ID</th>
+                                <th>Customer</th>
+                                <th>Destination Country</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (order of ordersList; track order.orderId) {
+                                <tr class="pointer-row" 
+                                    [class.table-primary]="selectedOrderId === order.orderId"
+                                    (click)="selectOrder(order)"
+                                    style="cursor: pointer;">
+                                    <td class="px-3 fw-bold text-secondary">#{{ order.orderId }}</td>
+                                    <td>{{ order.customer?.companyName ?? 'Walk-in Customer' }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border px-2">
+                                            {{ order.shipCountry }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">No orders currently populated.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card-footer bg-white border-top py-2 d-flex justify-content-between align-items-center flex-shrink-0">
+                    <small class="text-muted">Total records: {{ totalElements }}</small>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                [disabled]="currentPage === 1" 
+                                (click)="onPageChange(currentPage - 1)">
+                            <i class="bi bi-chevron-left me-1"></i>Prev
+                        </button>
+                        <span class="btn btn-sm btn-light disabled text-dark fw-bold px-3">
+                            Page: {{ currentPage }} / {{ totalPages || 1 }}
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                [disabled]="currentPage >= totalPages" 
+                                (click)="onPageChange(currentPage + 1)">
+                            Next<i class="bi bi-chevron-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 d-flex flex-column overflow-hidden" style="min-height: 0; height: 99% !important;">
+            <div class="card shadow-sm border-0 d-flex flex-column overflow-hidden" style="height: 99% !important;">
+                
+                <div class="card-header bg-light border-bottom p-0 flex-shrink-0">
+                    <div class="d-flex justify-content-between align-items-center px-3 pt-2 pb-0">
+                        <ul class="nav nav-tabs border-0" id="detailTabs" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link" [class.active]="activeTab === 'form'" (click)="switchTab('form')" type="button">
+                                    <i class="bi bi-card-text me-1"></i>Order
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" [class.active]="activeTab === 'details'" 
+                                        [disabled]="currentWorkspaceState === 'empty' || currentWorkspaceState === 'new'" 
+                                        (click)="switchTab('details')" type="button">
+                                    <i class="bi bi-cart3 me-1"></i>Order Details
+                                </button>
+                            </li>
+                        </ul>
+                        <span class="badge mb-2" [ngClass]="badgeClass">{{ badgeText }}</span>
+                    </div>
+                </div>
+
+                <div class="card-body overflow-auto p-3 flex-grow-1">
+                    
+                    @if (currentWorkspaceState === 'empty') {
+                        <div class="text-center text-muted py-5 my-4">
+                            <div class="fs-1 mb-2 text-black-50"><i class="bi bi-arrow-left-square"></i></div>
+                            <h6 class="fw-semibold mb-1 text-dark">No Order Inspected</h6>
+                            <p class="small mb-0 px-4">Select an existing order row from the grid list or generate a new profile ledger tab.</p>
+                        </div>
+                    }
+
+                    @if (currentWorkspaceState !== 'empty' && activeTab === 'form') {
+                        <form class="row g-3" (ngSubmit)="saveActiveOrder($event)">
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Customer</label>
+                                <select class="form-select form-select-sm" [(ngModel)]="activeForm.customer" [compareWith]="compareCustomers" name="customer">
+                                    <option [ngValue]="undefined">Select a customer...</option>
+                                    @for (c of customersList; track c.customerId) {
+                                        <option [ngValue]="c">{{ c.companyName }}</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small mb-1">Order Date</label>
+                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeForm.orderDate" name="orderDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small mb-1">Required Date</label>
+                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeForm.requiredDate" name="requiredDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small mb-1">Shipped Date</label>
+                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeForm.shippedDate" name="shippedDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small mb-1">Freight €</label>
+                                <input type="number" step="0.01" class="form-control form-control-sm" [(ngModel)]="activeForm.freight" name="freight">
+                            </div>
+
+                            <div class="col-12">
+                                <div class="small fw-bold text-primary border-bottom pb-1 my-2">
+                                    <i class="bi bi-truck me-1"></i>Destination Routing Matrix
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold text-secondary mb-1">Shippers</label>
+                                <select class="form-select form-select-sm" [(ngModel)]="activeForm.shipper" [compareWith]="compareShippers" name="shipper">
+                                    <option [ngValue]="undefined">Select a shipper...</option>
+                                    @for (s of shippersList; track s.shipperId) {
+                                        <option [ngValue]="s">{{ s.companyName }}</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <input type="text" class="form-control form-control-sm" placeholder="Street Address Info" [(ngModel)]="activeForm.shipAddress" name="shipAddress">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control form-control-sm" placeholder="City" [(ngModel)]="activeForm.shipCity" name="shipCity">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control form-control-sm" placeholder="Region / State" [(ngModel)]="activeForm.shipRegion" name="shipRegion">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control form-control-sm" placeholder="Postal Zip Code" [(ngModel)]="activeForm.shipPostalCode" name="shipPostalCode">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control form-control-sm" placeholder="Country Target" [(ngModel)]="activeForm.shipCountry" name="shipCountry">
+                            </div>
+
+                            <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-3">
+                                <button type="button" class="btn btn-sm btn-secondary" (click)="cancelWorkspaceEdit()">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-save me-1"></i>Save</button>
+                            </div>
+                        </form>
+                    }
+
+                    @if (currentWorkspaceState !== 'empty' && activeTab === 'details') {
+                        <div class="d-flex flex-column" style="height: 99% !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                <span class="small fw-bold text-muted text-uppercase">Sub-Items Breakdown</span>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-success" title="Add item"><i class="bi bi-plus-circle" (click)="addDetail()"></i></button>
+                                    <button class="btn btn-danger" title="Remove item" [disabled]="!selectedDetail" (click)="deleteActiveDetail()"><i class="bi bi-dash-circle"></i></button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive border rounded flex-grow-1 overflow-auto">
+                                <table class="table table-striped table-sm align-middle mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-end">Price</th>
+                                            <th class="text-end">Discount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (detail of orderDetailsList; track detail.product?.productId) {
+                                            <tr class="pointer-row" 
+                                                [class.table-primary]="selectedDetail?.order?.orderId === detail.order?.orderId && selectedDetail?.product?.productId == detail.product?.productId"
+                                                (click)="selectDetail(detail)"
+                                                style="cursor: pointer;">
+                                                <td>{{ detail.product?.productName }}</td>
+                                                <td class="text-center">{{ detail.quantity }}</td>
+                                                <td class="text-end">{{ detail.unitPrice | currency:'EUR' }}</td>
+                                                <td class="text-end">{{ (detail.discount * 100) }}%</td>
+                                            </tr>
+                                        } @empty {
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-3">No line items registered on this ledger receipt.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @if (isDetailModalOpen) {
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5); z-index: 1050;">
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+                
+                <div class="modal-header bg-success text-white py-2 px-3">
+                <h6 class="modal-title fw-bold"><i class="bi bi-cart-plus me-2"></i>Add Line Item Detail</h6>
+                <button type="button" class="btn-close btn-close-white shadow-none" (click)="closeDetailModal()"></button>
+                </div>
+
+                <form (ngSubmit)="submitDetailForm()">
+                <div class="modal-body p-3">
+                    <div class="row g-3">
+                    
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Product Target</label>
+                        <select class="form-select form-select-sm" [(ngModel)]="modalDetailForm.product" name="product" required (change)="onProductSelectChange()">
+                        <option [ngValue]="undefined">Choose item stock catalog reference...</option>
+                        @for (p of productsList; track p.productId) {
+                            <option [ngValue]="p">{{ p.productName }} (In Stock: {{ p.unitsInStock }})</option>
+                        }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Quantity</label>
+                        <input type="number" min="1" class="form-control form-control-sm text-center" [(ngModel)]="modalDetailForm.quantity" name="quantity" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Unit Price (€)</label>
+                        <input type="number" step="0.01" min="0" class="form-control form-control-sm text-end" [(ngModel)]="modalDetailForm.unitPrice" name="unitPrice" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Discount (%)</label>
+                        <input type="number" step="1" min="0" max="100" class="form-control form-control-sm text-center" [ngModel]="modalDetailForm.discount * 100" (ngModelChange)="updateDiscountFraction($event)" name="discountPercent">
+                    </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light py-2 px-3 justify-content-end gap-2">
+                    <button type="button" class="btn btn-xs btn-secondary py-1" (click)="closeDetailModal()">Discard</button>
+                    <button type="submit" class="btn btn-xs btn-success py-1 fw-bold" [disabled]="!modalDetailForm.product || !modalDetailForm.quantity"><i class="bi bi-plus-lg me-1"></i>Append Item</button>
+                </div>
+                </form>
+
+            </div>
+            </div>
+        </div>
+    }
+</div>
