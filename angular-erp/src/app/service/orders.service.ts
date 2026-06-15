@@ -9,7 +9,7 @@ import { PageResponse } from '../page-response.model';
 })
 export class OrdersService {
   private http = inject(HttpClient); 
-  private apiBaseUrl = 'http://localhost:8080/api/orders';
+  private apiBaseUrl = 'http://localhost:8080/api/v1/orders';
   private httpOptions = { withCredentials: true };
 
   getPaginatedOrders(pageNumber: number, pageSize: number): Observable<PageResponse<Order>> {

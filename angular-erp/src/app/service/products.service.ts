@@ -10,7 +10,7 @@ import { PageResponse } from '../page-response.model';
 export class ProductsService {
   private http = inject(HttpClient);
   
-  private apiBaseUrl = 'http://localhost:8080/products'; 
+  private apiBaseUrl = 'http://localhost:8080/api/v1/products'; 
   private httpOptions = { withCredentials: true };
 
   getAllProducts(): Observable<Product[]> {

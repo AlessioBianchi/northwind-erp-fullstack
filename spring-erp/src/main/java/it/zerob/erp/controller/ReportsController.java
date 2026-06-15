@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/reports")
+@RequestMapping("/api/v1/reports")
 public class ReportsController {
 
     private final ReportsService service;

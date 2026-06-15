@@ -9,7 +9,7 @@ import { Category } from '../layout/products/category.model';
 export class CategoriesService {
   private http = inject(HttpClient);
   
-  private apiBaseUrl = 'http://localhost:8080/categories'; 
+  private apiBaseUrl = 'http://localhost:8080/api/v1/categories'; 
   private httpOptions = { withCredentials: true };
 
   getAllCategories(): Observable<Category[]> {
