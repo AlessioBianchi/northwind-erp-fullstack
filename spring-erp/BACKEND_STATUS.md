@@ -311,12 +311,10 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 | POST | `/api/v1/orders/details` | Unit price auto-set from product |
 | DELETE | `/api/v1/orders/details/delete` | Body: `OrderDetail` |
 
-### DashboardController — `@RestController`
-> **Bug:** controller is mapped to `/api/v1/api/dashboard` (double prefix). Frontend calls `/api/v1/dashboard/stats` — dashboard is broken until fixed.
-
+### DashboardController (`/api/v1/dashboard`) — `@RestController`
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/v1/api/dashboard/stats` | `ResponseEntity<DashboardDTO>` |
+| GET | `/api/v1/dashboard/stats` | `ResponseEntity<DashboardDTO>` |
 
 ### ReportsController (`/reports`)
 | Method | Path | Response |
@@ -417,7 +415,6 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 ## Known Gaps & TODOs
 
 - [ ] **No global exception handler** — no `@RestControllerAdvice`; errors fall through to Spring Boot default.
-- [ ] **Dashboard controller double-prefix bug** — `DashboardController` uses `@RequestMapping("/api/v1/api/dashboard")` instead of `/api/v1/dashboard`. Dashboard endpoint is unreachable from the frontend.
 - [ ] **No input validation** — no `@Valid` or `@NotNull` constraints on controllers or entities.
 - [ ] **No API documentation** — Swagger / SpringDoc OpenAPI not configured.
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
@@ -441,6 +438,10 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 > ```
 
 ---
+
+### [2026-06-22] — Fixed DashboardController double-prefix path
+
+- `DashboardController`: corrected `@RequestMapping` from `/api/v1/api/dashboard` to `/api/v1/dashboard`.
 
 ### [2026-06-22] — Proper HTTP methods + create/update service split
 
