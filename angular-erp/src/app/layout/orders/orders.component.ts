@@ -91,16 +91,21 @@ export class OrdersComponent implements OnInit{
   saveActiveOrder(event?: Event): void {
     if (event) event.preventDefault();
 
-    this.ordersService.saveOrder(this.activeForm as Order).subscribe({
+    const order = this.activeForm as Order;
+    const request$ = order.orderId
+      ? this.ordersService.updateOrder(order)
+      : this.ordersService.createOrder(order);
+
+    request$.subscribe({
       next: (savedOrder) => {
-        alert('Order saved successfully!');
-        this.loadPaginatedOrders();
-        this.cancelWorkspaceEdit();
-      },
-      error: (err) => {
-        console.error('Error saving order properties:', err);
-        alert('Failed to save order changes.');
-      }
+          alert('Order saved successfully!');
+          this.loadPaginatedOrders();
+          this.cancelWorkspaceEdit();
+        },
+        error: (err) => {
+          console.error('Error saving order properties:', err);
+          alert('Failed to save order changes.');
+        }
     });
   }
 
@@ -217,7 +222,7 @@ export class OrdersComponent implements OnInit{
   submitDetailForm(): void {
     if (!this.modalDetailForm.product || !this.modalDetailForm.quantity) return;
     
-    this.ordersService.saveOrderDetail(this.modalDetailForm as OrderDetail).subscribe({
+    this.ordersService.createOrderDetail(this.modalDetailForm as OrderDetail).subscribe({
       next: (savedDetail) => {
         alert('Order detail saved successfully!');
         this.loadPaginatedOrders();

@@ -53,7 +53,7 @@ class OrdersServiceTest {
     }
 
     @Test
-    void saveOrder_ShouldAssociateUserAndSave() {
+    void createOrder_ShouldAssociateUserAndSave() {
         // Arrange
         String username = "admin";
         Employee mockEmployee = new EmployeeBuilder()
@@ -65,12 +65,34 @@ class OrdersServiceTest {
         when(ordersDao.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
-        Order savedOrder = ordersService.save(inputOrder, username);
+        Order createdOrder = ordersService.create(inputOrder, username);
 
         // Assert
-        assertNotNull(savedOrder);
-        assertEquals(mockEmployee, savedOrder.getEmployee());
+        assertNotNull(createdOrder);
+        assertEquals(mockEmployee, createdOrder.getEmployee());
         verify(employeesDao).findByUsername(username);
+        verify(ordersDao).save(any(Order.class));
+    }
+
+    @Test
+    void updateOrder_ShouldUpdate() {
+        // Arrange
+        Long orderId = 1L;
+        Double freight = 10.0;
+        Order orderUpdated = new OrderBuilder()
+                .withOrderId(orderId)
+                .withFreight(freight)
+                .build();
+
+        when(ordersDao.save(any(Order.class))).thenReturn(orderUpdated);
+
+        // Act
+        Order createdOrder = ordersService.update(orderId, new Order());
+
+        // Assert
+        assertNotNull(createdOrder);
+        assertEquals(orderId, createdOrder.getOrderId());
+        assertEquals(freight, createdOrder.getFreight());
         verify(ordersDao).save(any(Order.class));
     }
 
@@ -89,7 +111,7 @@ class OrdersServiceTest {
     }
 
     @Test
-    void saveOrderDetail_ShouldSetUnitPriceFromProduct() {
+    void createOrderDetail_ShouldSetUnitPriceFromProduct() {
         // Arrange
         Product mockProduct = new ProductBuilder()
                 .withProductId(50L)
@@ -104,10 +126,10 @@ class OrdersServiceTest {
         when(orderDetailsDao.save(any(OrderDetail.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
-        OrderDetail savedDetail = ordersService.save(inputDetail);
+        OrderDetail createdDetail = ordersService.create(inputDetail);
 
         // Assert
-        assertEquals(25.50, savedDetail.getUnitPrice());
+        assertEquals(25.50, createdDetail.getUnitPrice());
         verify(orderDetailsDao).save(any(OrderDetail.class));
     }
 
@@ -124,7 +146,7 @@ class OrdersServiceTest {
         when(productsDao.findById(99L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> ordersService.save(detail));
+        assertThrows(RuntimeException.class, () -> ordersService.create(detail));
     }
 
     @Test

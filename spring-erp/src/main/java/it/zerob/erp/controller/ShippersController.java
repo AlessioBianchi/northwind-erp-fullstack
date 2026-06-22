@@ -20,23 +20,31 @@ public class ShippersController {
         this.service = service;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     @ResponseBody
     public List<Shipper> findAllByOrderByShipperIdDesc() {
         return service.findAllByOrderByShipperIdDesc();
     }
 
-    @PostMapping("/save")
+    @PostMapping()
     @ResponseBody
-    public Shipper save(@RequestBody Shipper shipper) {
-        return service.save(shipper);
+    public ResponseEntity<Shipper> create(@RequestBody Shipper shipper) {
+        Shipper shipperSaved = service.create(shipper);
+        return ResponseEntity.ok(shipperSaved);
     }
 
-    @GetMapping("/delete/{shipperId}")
+    @PutMapping("/{shipperId}")
+    @ResponseBody
+    public ResponseEntity<Shipper> update(@PathVariable Long shipperId, @RequestBody Shipper shipper) {
+        Shipper shipperSaved = service.update(shipperId, shipper);
+        return ResponseEntity.ok(shipperSaved);
+    }
+
+    @DeleteMapping("/delete/{shipperId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long shipperId) {
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Supplier deleted!");
+        response.put("message", "Shipper deleted!");
 
         if(!service.delete(shipperId)) {
             response.put("message", "There are orders connected to this shipper. It can't be deleted.");

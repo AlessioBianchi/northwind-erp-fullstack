@@ -31,8 +31,16 @@ public class SuppliersService {
         return suppliersDao.findAllByOrderBySupplierIdDesc(pageable);
     }
 
-    public Supplier save(Supplier supplier) {
+    public Supplier create(Supplier supplier) {
         return suppliersDao.save(supplier);
+    }
+
+    public Supplier update(Long supplierId, Supplier supplier) {
+        Supplier supplierToUpdate = new SupplierBuilder(supplier)
+                .withSupplierId(supplierId)
+                .build();
+
+        return suppliersDao.save(supplierToUpdate);
     }
 
     public boolean delete(Long supplierId) {

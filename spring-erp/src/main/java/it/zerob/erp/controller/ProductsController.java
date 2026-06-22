@@ -1,12 +1,10 @@
 package it.zerob.erp.controller;
 
-import it.zerob.erp.model.Order;
 import it.zerob.erp.model.Product;
 import it.zerob.erp.service.ProductsService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -24,8 +22,9 @@ public class ProductsController {
     }
 
     @GetMapping
-    public String showProducts(Model model){
-        return "products";
+    @ResponseBody
+    public List<Product> findAllByOrderByProductIdDesc() {
+        return service.findAllByOrderByProductIdDesc();
     }
 
     @GetMapping("/paginated")
@@ -36,20 +35,21 @@ public class ProductsController {
         return service.findAllByOrderByProductIdDesc(pageNumber, pageSize);
     }
 
-    @GetMapping("/all")
+    @PostMapping()
     @ResponseBody
-    public List<Product> findAllByOrderByProductIdDesc() {
-        return service.findAllByOrderByProductIdDesc();
-    }
-
-    @PostMapping("/save")
-    @ResponseBody
-    public ResponseEntity<Product> save(@RequestBody Product product) {
-        Product productSaved = service.save(product);
+    public ResponseEntity<Product> create(@RequestBody Product product) {
+        Product productSaved = service.create(product);
         return ResponseEntity.ok(productSaved);
     }
 
-    @GetMapping("/delete/{productId}")
+    @PutMapping("/{productId}")
+    @ResponseBody
+    public ResponseEntity<Product> update(@PathVariable Long productId, @RequestBody Product product) {
+        Product productSaved = service.update(productId, product);
+        return ResponseEntity.ok(productSaved);
+    }
+
+    @DeleteMapping("/delete/{productId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long productId) {
         Map<String, String> response = new HashMap<>();

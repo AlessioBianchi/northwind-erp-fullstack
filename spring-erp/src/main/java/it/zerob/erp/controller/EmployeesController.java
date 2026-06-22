@@ -1,12 +1,10 @@
 package it.zerob.erp.controller;
 
 import it.zerob.erp.model.Employee;
-import it.zerob.erp.model.User;
 import it.zerob.erp.service.EmployeesService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -24,9 +22,6 @@ public class EmployeesController {
     }
 
     @GetMapping
-    public String showEmployees(Model model) { return "employees"; }
-
-    @GetMapping("/all")
     @ResponseBody
     public List<Employee> findAllByOrderByEmployeeIdDesc() {
         return service.findAllByOrderByEmployeeIdDesc();
@@ -40,14 +35,21 @@ public class EmployeesController {
         return service.findAllByOrderByEmployeeIdDesc(pageNumber, pageSize);
     }
 
-    @PostMapping("/save")
+    @PostMapping()
     @ResponseBody
-    public ResponseEntity<Employee> save(@RequestBody Employee employee) {
-        Employee employeeSaved = service.save(employee);
+    public ResponseEntity<Employee> create(@RequestBody Employee employee) {
+        Employee employeeSaved = service.create(employee);
         return ResponseEntity.ok(employeeSaved);
     }
 
-    @GetMapping("/delete/{employeeId}")
+    @PutMapping("/{employeeId}")
+    @ResponseBody
+    public ResponseEntity<Employee> update(@PathVariable Long employeeId, @RequestBody Employee employee) {
+        Employee employeeSaved = service.update(employeeId, employee);
+        return ResponseEntity.ok(employeeSaved);
+    }
+
+    @DeleteMapping("/delete/{employeeId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long employeeId) {
         Map<String, String> response = new HashMap<>();

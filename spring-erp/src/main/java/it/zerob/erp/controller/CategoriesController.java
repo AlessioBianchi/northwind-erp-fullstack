@@ -1,6 +1,7 @@
 package it.zerob.erp.controller;
 
 import it.zerob.erp.model.Category;
+import it.zerob.erp.model.CategoryBuilder;
 import it.zerob.erp.service.CategoriesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,20 +21,27 @@ public class CategoriesController {
         this.service = service;
     }
 
-    @GetMapping("/all")
+    @GetMapping
     @ResponseBody
     public List<Category> findAllByOrderByCategoryIdDesc() {
         return service.findAllByOrderByCategoryIdDesc();
     }
 
-    @PostMapping("/save")
+    @PostMapping()
     @ResponseBody
-    public ResponseEntity<Category> save(@RequestBody Category category) {
-        Category categorySaved = service.save(category);
+    public ResponseEntity<Category> create(@RequestBody Category category) {
+        Category categorySaved = service.create(category);
         return ResponseEntity.ok(categorySaved);
     }
 
-    @GetMapping("/delete/{categoryId}")
+    @PutMapping("/{categoryId}")
+    @ResponseBody
+    public ResponseEntity<Category> update(@PathVariable Long categoryId, @RequestBody Category category) {
+        Category categorySaved = service.update(categoryId, category);
+        return ResponseEntity.ok(categorySaved);
+    }
+
+    @DeleteMapping("/delete/{categoryId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long categoryId) {
         Map<String, String> response = new HashMap<>();

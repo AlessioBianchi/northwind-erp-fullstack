@@ -23,8 +23,12 @@ export class OrdersService {
     });
   }
 
-  saveOrder(order: Order): Observable<Order> {
-    return this.http.post<Order>(this.apiBaseUrl + '/save', order, this.httpOptions);
+  createOrder(order: Order): Observable<Order> {
+    return this.http.post<Order>(this.apiBaseUrl, order, this.httpOptions);
+  }
+
+  updateOrder(order: Order): Observable<Order> {
+    return this.http.put<Order>(this.apiBaseUrl + '/' + order.orderId, order, this.httpOptions);
   }
 
   deleteOrder(orderId: number): Observable<{ message: string }> {
@@ -35,8 +39,8 @@ export class OrdersService {
     return this.http.get<OrderDetail[]>(this.apiBaseUrl + '/details/' + orderId, this.httpOptions);
   }
 
-  saveOrderDetail(orderDetail: OrderDetail): Observable<OrderDetail> {
-    return this.http.post<OrderDetail>(this.apiBaseUrl + '/details/save', orderDetail, this.httpOptions);
+  createOrderDetail(orderDetail: OrderDetail): Observable<OrderDetail> {
+    return this.http.post<OrderDetail>(this.apiBaseUrl + '/details', orderDetail, this.httpOptions);
   }
 
   deleteOrderDetail(orderDetail: OrderDetail): Observable<{ message: string }> {

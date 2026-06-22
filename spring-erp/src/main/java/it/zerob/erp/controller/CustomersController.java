@@ -5,7 +5,6 @@ import it.zerob.erp.service.CustomersService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,11 +22,6 @@ public class CustomersController {
     }
 
     @GetMapping
-    public String showCustomers(Model model){
-        return "customers";
-    }
-
-    @GetMapping("/all")
     @ResponseBody
     public List<Customer> findAllByOrderByCustomerIdDesc() {
         return service.findAllByOrderByCustomerIdDesc();
@@ -41,14 +35,21 @@ public class CustomersController {
         return service.findAllByOrderByCustomerIdDesc(pageNumber, pageSize);
     }
 
-    @PostMapping("/save")
+    @PostMapping()
     @ResponseBody
-    public ResponseEntity<Customer> save(@RequestBody Customer customer) {
-        Customer customerSaved = service.save(customer);
+    public ResponseEntity<Customer> create(@RequestBody Customer customer) {
+        Customer customerSaved = service.create(customer);
         return ResponseEntity.ok(customerSaved);
     }
 
-    @GetMapping("/delete/{customerId}")
+    @PutMapping("/{customerId}")
+    @ResponseBody
+    public ResponseEntity<Customer> update(@PathVariable Long customerId, @RequestBody Customer customer) {
+        Customer customerSaved = service.update(customerId, customer);
+        return ResponseEntity.ok(customerSaved);
+    }
+
+    @DeleteMapping("/delete/{customerId}")
     @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable Long customerId) {
         Map<String, String> response = new HashMap<>();
