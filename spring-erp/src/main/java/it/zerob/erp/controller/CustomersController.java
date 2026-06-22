@@ -5,7 +5,6 @@ import it.zerob.erp.service.CustomersService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -22,6 +21,7 @@ public class CustomersController {
         this.service = service;
     }
 
+    @GetMapping
     @ResponseBody
     public List<Customer> findAllByOrderByCustomerIdDesc() {
         return service.findAllByOrderByCustomerIdDesc();
@@ -35,17 +35,17 @@ public class CustomersController {
         return service.findAllByOrderByCustomerIdDesc(pageNumber, pageSize);
     }
 
-    @PostMapping("/save")
+    @PostMapping()
     @ResponseBody
-    public ResponseEntity<Customer> save(@RequestBody Customer customer) {
-        Customer customerSaved = service.save(customer);
+    public ResponseEntity<Customer> create(@RequestBody Customer customer) {
+        Customer customerSaved = service.create(customer);
         return ResponseEntity.ok(customerSaved);
     }
 
-    @PutMapping("/save")
+    @PutMapping("/{customerId}")
     @ResponseBody
-    public ResponseEntity<Customer> update(@RequestBody Customer customer) {
-        Customer customerSaved = service.save(customer);
+    public ResponseEntity<Customer> update(@PathVariable Long customerId, @RequestBody Customer customer) {
+        Customer customerSaved = service.update(customerId, customer);
         return ResponseEntity.ok(customerSaved);
     }
 

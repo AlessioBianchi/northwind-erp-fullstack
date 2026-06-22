@@ -1,12 +1,11 @@
 package it.zerob.erp.controller;
 
-import it.zerob.erp.model.Order;
+import it.zerob.erp.model.Customer;
 import it.zerob.erp.model.Supplier;
 import it.zerob.erp.service.SuppliersService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,6 +22,7 @@ public class SuppliersController {
         this.service = service;
     }
 
+    @GetMapping
     @ResponseBody
     public List<Supplier> findAllByOrderBySupplierIdDesc() {
         return service.findAllByOrderBySupplierIdDesc();
@@ -36,16 +36,18 @@ public class SuppliersController {
         return service.findAllByOrderBySupplierIdDesc(pageNumber, pageSize);
     }
 
-    @PostMapping("/save")
+    @PostMapping()
     @ResponseBody
-    public Supplier save(@RequestBody Supplier supplier) {
-        return service.save(supplier);
+    public ResponseEntity<Supplier> create(@RequestBody Supplier supplier) {
+        Supplier supplierSaved = service.create(supplier);
+        return ResponseEntity.ok(supplierSaved);
     }
 
-    @PutMapping("/save")
+    @PutMapping("/{supplierId}")
     @ResponseBody
-    public Supplier update(@RequestBody Supplier supplier) {
-        return service.save(supplier);
+    public ResponseEntity<Supplier> update(@PathVariable Long supplierId, @RequestBody Supplier supplier) {
+        Supplier supplierSaved = service.update(supplierId, supplier);
+        return ResponseEntity.ok(supplierSaved);
     }
 
     @DeleteMapping("/delete/{supplierId}")

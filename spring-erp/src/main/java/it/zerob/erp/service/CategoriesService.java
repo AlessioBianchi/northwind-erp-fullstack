@@ -24,8 +24,16 @@ public class CategoriesService {
         return categoriesDao.findAllByOrderByCategoryIdDesc();
     }
 
-    public Category save(Category category) {
+    public Category create(Category category) {
         return categoriesDao.save(category);
+    }
+
+    public Category update(Long categoryId, Category category) {
+        Category categoryToUpdate = new CategoryBuilder(category)
+                .withCategoryId(categoryId)
+                .build();
+
+        return categoriesDao.save(categoryToUpdate);
     }
 
     public boolean delete(Long categoryId) {

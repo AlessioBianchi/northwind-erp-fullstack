@@ -80,17 +80,38 @@ class EmployeesServiceTest {
     }
 
     @Test
-    void save_ShouldReturnSavedEmployee() {
+    void create_ShouldReturnCreatedEmployee() {
         // Arrange
         when(passwordEncoder.encode(any())).thenReturn("hashed_password");
         when(employeesDao.save(any(Employee.class))).thenReturn(sampleEmployee);
 
         // Act
-        Employee saved = employeesService.save(new Employee());
+        Employee created = employeesService.create(new Employee());
 
         // Assert
-        assertNotNull(saved);
-        assertEquals(1L, saved.getEmployeeId());
+        assertNotNull(created);
+        assertEquals(1L, created.getEmployeeId());
+        verify(employeesDao).save(any(Employee.class));
+    }
+
+    @Test
+    void update_ShouldReturnUpdatedEmployee() {
+        // Arrange
+        Long employeeId = 1L;
+        String newEmployeeName = "Test";
+        Employee employeeUpdated = new EmployeeBuilder()
+                .withEmployeeId(employeeId)
+                .withFirstname(newEmployeeName)
+                .build();
+        when(employeesDao.save(any(Employee.class))).thenReturn(employeeUpdated);
+
+        // Act
+        Employee updated = employeesService.update(employeeId, new Employee());
+
+        // Assert
+        assertNotNull(updated);
+        assertEquals(1L, updated.getEmployeeId());
+        assertEquals("Test", updated.getFirstname());
         verify(employeesDao).save(any(Employee.class));
     }
 

@@ -23,8 +23,16 @@ public class ShippersService {
         return shippersDao.findAllByOrderByShipperIdDesc();
     }
 
-    public Shipper save(Shipper shipper) {
+    public Shipper create(Shipper shipper) {
         return shippersDao.save(shipper);
+    }
+
+    public Shipper update(Long shipperId, Shipper shipper) {
+        Shipper shipperToUpdate = new ShipperBuilder(shipper)
+                .withShipperId(shipperId)
+                .build();
+
+        return shippersDao.save(shipperToUpdate);
     }
 
     public boolean delete(Long shipperId) {

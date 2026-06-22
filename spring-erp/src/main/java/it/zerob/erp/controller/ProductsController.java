@@ -1,12 +1,10 @@
 package it.zerob.erp.controller;
 
-import it.zerob.erp.model.Order;
 import it.zerob.erp.model.Product;
 import it.zerob.erp.service.ProductsService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,6 +21,7 @@ public class ProductsController {
         this.service = service;
     }
 
+    @GetMapping
     @ResponseBody
     public List<Product> findAllByOrderByProductIdDesc() {
         return service.findAllByOrderByProductIdDesc();
@@ -36,17 +35,17 @@ public class ProductsController {
         return service.findAllByOrderByProductIdDesc(pageNumber, pageSize);
     }
 
-    @PostMapping("/save")
+    @PostMapping()
     @ResponseBody
-    public ResponseEntity<Product> save(@RequestBody Product product) {
-        Product productSaved = service.save(product);
+    public ResponseEntity<Product> create(@RequestBody Product product) {
+        Product productSaved = service.create(product);
         return ResponseEntity.ok(productSaved);
     }
 
-    @PutMapping("/save")
+    @PutMapping("/{productId}")
     @ResponseBody
-    public ResponseEntity<Product> update(@RequestBody Product product) {
-        Product productSaved = service.save(product);
+    public ResponseEntity<Product> update(@PathVariable Long productId, @RequestBody Product product) {
+        Product productSaved = service.update(productId, product);
         return ResponseEntity.ok(productSaved);
     }
 

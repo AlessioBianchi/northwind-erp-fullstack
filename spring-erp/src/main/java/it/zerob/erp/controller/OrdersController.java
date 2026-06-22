@@ -29,15 +29,15 @@ public class OrdersController {
         return service.findAllByOrderByOrderIdDesc(pageNumber, pageSize);
     }
 
-    @PostMapping("/save")
-    public ResponseEntity<Order> save(@RequestBody Order order, Principal principal) {
-        Order orderSaved = service.save(order, principal.getName());
+    @PostMapping()
+    public ResponseEntity<Order> create(@RequestBody Order order, Principal principal) {
+        Order orderSaved = service.create(order, principal.getName());
         return ResponseEntity.ok(orderSaved);
     }
 
-    @PutMapping("/save")
-    public ResponseEntity<Order> update(@RequestBody Order order, Principal principal) {
-        Order orderSaved = service.save(order, principal.getName());
+    @PutMapping("/{orderId}")
+    public ResponseEntity<Order> update(@PathVariable Long orderId, @RequestBody Order order, Principal principal) {
+        Order orderSaved = service.update(orderId, order);
         return ResponseEntity.ok(orderSaved);
     }
 
@@ -58,15 +58,9 @@ public class OrdersController {
         return service.findAllOrderDetailsByOrderId(orderId);
     }
 
-    @PostMapping("/details/save")
-    public ResponseEntity<OrderDetail> save(@RequestBody OrderDetail orderDetail) {
-        OrderDetail orderDetailSaved = service.save(orderDetail);
-        return ResponseEntity.ok(orderDetailSaved);
-    }
-
-    @PutMapping("/details/save")
-    public ResponseEntity<OrderDetail> update(@RequestBody OrderDetail orderDetail) {
-        OrderDetail orderDetailSaved = service.save(orderDetail);
+    @PostMapping("/details")
+    public ResponseEntity<OrderDetail> create(@RequestBody OrderDetail orderDetail) {
+        OrderDetail orderDetailSaved = service.create(orderDetail);
         return ResponseEntity.ok(orderDetailSaved);
     }
 
