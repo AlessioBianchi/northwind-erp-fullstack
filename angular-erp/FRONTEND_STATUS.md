@@ -204,36 +204,43 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 
 ### Endpoint map
 
+All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}` = update.
+
 | Feature | Method | Endpoint |
 |---|---|---|
 | Auth | POST | `/api/auth/login` |
-| Dashboard | GET | `/api/dashboard/stats` |
-| Orders | GET | `/api/orders/paginated` |
-| Orders | POST | `/api/orders/save` |
-| Orders | DELETE | `/api/orders/delete/{id}` |
-| Order Details | GET | `/api/orders/details/{orderId}` |
-| Order Details | POST | `/api/orders/details/save` |
-| Order Details | DELETE | `/api/orders/details/delete` (body) |
-| Products | GET | `/products/all`, `/products/paginated` |
-| Products | POST | `/products/save` |
-| Products | GET | `/products/delete/{id}` |
-| Categories | GET | `/categories/all` |
-| Categories | POST | `/categories/save` |
-| Categories | GET | `/categories/delete/{id}` |
-| Customers | GET | `/customers/all`, `/customers/paginated` |
-| Customers | POST | `/customers/save` |
-| Customers | GET | `/customers/delete/{id}` |
-| Suppliers | GET | `/suppliers/all`, `/suppliers/paginated` |
-| Suppliers | POST | `/suppliers/save` |
-| Suppliers | GET | `/suppliers/delete/{id}` |
-| Shippers | GET | `/shippers/all` |
-| Shippers | POST | `/shippers/save` |
-| Shippers | GET | `/shippers/delete/{id}` |
-| Employees | GET | `/employees/all`, `/employees/paginated` |
-| Employees | POST | `/employees/save` |
-| Employees | GET | `/employees/delete/{id}` |
-
-> Note: Products/Categories/Customers/Suppliers/Employees endpoints lack the `/api/` prefix. Orders and Dashboard use `/api/`. Verify with backend team if this is intentional.
+| Dashboard | GET | `/api/v1/dashboard/stats` |
+| Orders | GET | `/api/v1/orders/paginated` |
+| Orders | POST | `/api/v1/orders` |
+| Orders | PUT | `/api/v1/orders/{orderId}` |
+| Orders | DELETE | `/api/v1/orders/delete/{orderId}` |
+| Order Details | GET | `/api/v1/orders/details/{orderId}` |
+| Order Details | POST | `/api/v1/orders/details` |
+| Order Details | DELETE | `/api/v1/orders/details/delete` (body) |
+| Products | GET | `/api/v1/products`, `/api/v1/products/paginated` |
+| Products | POST | `/api/v1/products` |
+| Products | PUT | `/api/v1/products/{productId}` |
+| Products | DELETE | `/api/v1/products/delete/{productId}` |
+| Categories | GET | `/api/v1/categories` |
+| Categories | POST | `/api/v1/categories` |
+| Categories | PUT | `/api/v1/categories/{categoryId}` |
+| Categories | DELETE | `/api/v1/categories/delete/{categoryId}` |
+| Customers | GET | `/api/v1/customers`, `/api/v1/customers/paginated` |
+| Customers | POST | `/api/v1/customers` |
+| Customers | PUT | `/api/v1/customers/{customerId}` |
+| Customers | DELETE | `/api/v1/customers/delete/{customerId}` |
+| Suppliers | GET | `/api/v1/suppliers`, `/api/v1/suppliers/paginated` |
+| Suppliers | POST | `/api/v1/suppliers` |
+| Suppliers | PUT | `/api/v1/suppliers/{supplierId}` |
+| Suppliers | DELETE | `/api/v1/suppliers/delete/{supplierId}` |
+| Shippers | GET | `/api/v1/shippers` |
+| Shippers | POST | `/api/v1/shippers` |
+| Shippers | PUT | `/api/v1/shippers/{shipperId}` |
+| Shippers | DELETE | `/api/v1/shippers/delete/{shipperId}` |
+| Employees | GET | `/api/v1/employees`, `/api/v1/employees/paginated` |
+| Employees | POST | `/api/v1/employees` |
+| Employees | PUT | `/api/v1/employees/{employeeId}` |
+| Employees | DELETE | `/api/v1/employees/delete/{employeeId}` |
 
 ---
 
@@ -276,7 +283,6 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 - [ ] **Subscription cleanup** — components do not unsubscribe from Observables on destroy (no `takeUntilDestroyed`, no `unsubscribe`).
 - [ ] **No loading spinners** — no visual feedback during HTTP requests.
 - [ ] **No global error handling** — HTTP errors are handled per-component (or not at all).
-- [ ] **Delete uses GET** on products, customers, suppliers, employees — should be DELETE method.
 - [ ] **Logout is client-side only** — server session is not invalidated.
 - [ ] **No tests written** — Vitest is configured but no spec files exist yet.
 
@@ -292,6 +298,15 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 > ```
 
 ---
+
+### [2026-06-22] — Proper HTTP methods + POST/PUT split
+
+- All `DELETE` calls changed from `GET` to `DELETE` across every service.
+- `/all` suffix dropped from `GET` list endpoints — now call the base resource path.
+- `saveX()` methods split into `createX()` (POST to base) and `updateX()` (PUT to `/{id}`).
+- Components now branch on `id ? update() : create()` instead of a single `save()` call.
+- `orders.service.ts`: `createOrderDetail()` fixed to call `/details` (was `/details/save`).
+- Affected files: all `src/app/service/*.service.ts`, all `src/app/layout/*/\*.component.ts`.
 
 ### [2026-06-12] — Initial status document created
 
