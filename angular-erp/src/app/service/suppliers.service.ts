@@ -28,12 +28,12 @@ export class SuppliersService {
     });
   }
   
-  saveSupplier(supplier: Supplier): Observable<Supplier> {
-    return this.http.post<Supplier>(this.apiBaseUrl + '/save', supplier, this.httpOptions);
+  createSupplier(supplier: Supplier): Observable<Supplier> {
+    return this.http.post<Supplier>(this.apiBaseUrl, supplier, this.httpOptions);
   }
 
   updateSupplier(supplier: Supplier): Observable<Supplier> {
-    return this.http.put<Supplier>(this.apiBaseUrl + '/save', supplier, this.httpOptions);
+    return this.http.put<Supplier>(this.apiBaseUrl + '/' + supplier.supplierId, supplier, this.httpOptions);
   }
   
   deleteSupplier(supplierId: number): Observable<{ message: string }> {

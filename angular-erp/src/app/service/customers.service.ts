@@ -27,12 +27,12 @@ export class CustomersService {
     });
   }
 
-  saveCustomer(customer: Customer): Observable<Customer> {
-    return this.http.post<Customer>(this.apiBaseUrl + '/save', customer, this.httpOptions);
+  createCustomer(customer: Customer): Observable<Customer> {
+    return this.http.post<Customer>(this.apiBaseUrl, customer, this.httpOptions);
   }
 
   updateCustomer(customer: Customer): Observable<Customer> {
-    return this.http.put<Customer>(this.apiBaseUrl + '/save', customer, this.httpOptions);
+    return this.http.put<Customer>(this.apiBaseUrl + '/' + customer.customerId, customer, this.httpOptions);
   }
 
   deleteCustomer(customerId: number): Observable<{ message: string }> {

@@ -16,12 +16,12 @@ export class ShippersService {
     return this.http.get<Shipper[]>(this.apiBaseUrl, this.httpOptions);
   }
   
-  saveShipper(shipper: Shipper): Observable<Shipper> {
-    return this.http.post<Shipper>(this.apiBaseUrl + '/save', shipper, this.httpOptions);
+  createShipper(shipper: Shipper): Observable<Shipper> {
+    return this.http.post<Shipper>(this.apiBaseUrl, shipper, this.httpOptions);
   }
 
   updateShipper(shipper: Shipper): Observable<Shipper> {
-    return this.http.put<Shipper>(this.apiBaseUrl + '/save', shipper, this.httpOptions);
+    return this.http.put<Shipper>(this.apiBaseUrl + '/' + shipper.shipperId, shipper, this.httpOptions);
   }
   
   deleteShipper(shipperId: number): Observable<{ message: string }> {

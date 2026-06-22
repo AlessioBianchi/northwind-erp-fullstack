@@ -119,27 +119,20 @@ export class EmployeesComponent implements OnInit {
   saveEmployeeHeader(event: Event): void {
     event.preventDefault();
 
-    if (this.activeEmployeeForm.employeeId === null) {
-      this.employeesService.save(this.activeEmployeeForm as Employee).subscribe({
-        next: (savedResult) => {
-          alert('Employee profile record updated successfully.');
+    const employee = this.activeEmployeeForm as Employee;
+    const request$ = employee.employeeId
+      ? this.employeesService.update(employee)
+      : this.employeesService.create(employee);
+
+    request$.subscribe({
+      next: (savedResult) => {
+          alert('Employee profile record saved successfully.');
           this.loadPaginatedEmployees();
           this.preloadDropdownRelationshipDependencies();
           this.cancelEmployeeWorkspaceEdit();
         },
         error: (err) => console.error('Error processing server authentication profile updates:', err)
-      });
-    } else {
-      this.employeesService.update(this.activeEmployeeForm as Employee).subscribe({
-        next: (savedResult) => {
-          alert('Employee profile record updated successfully.');
-          this.loadPaginatedEmployees();
-          this.preloadDropdownRelationshipDependencies();
-          this.cancelEmployeeWorkspaceEdit();
-        },
-        error: (err) => console.error('Error processing server authentication profile updates:', err)
-      });
-    }
+    });
   }
 
   deleteActiveEmployee(): void {

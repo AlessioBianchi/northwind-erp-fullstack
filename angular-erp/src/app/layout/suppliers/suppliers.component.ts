@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Supplier } from './supplier.model';
 import { SuppliersService } from '../../service/suppliers.service';
 import { ShippersService } from '../../service/shippers.service';
+import { Shipper } from './shipper.model';
 
 @Component({
   selector: 'app-suppliers',
@@ -30,7 +31,7 @@ export class SuppliersComponent implements OnInit {
   referenceShippersList: any[] = [];
 
   activeSupplierForm: Partial<Supplier> = {};
-  activeShipperForm: any = {};
+  activeShipperForm: Partial<Shipper> = {};
   selectedShipperDropdownTarget: any = undefined;
   
   searchQuery = '';
@@ -115,27 +116,21 @@ export class SuppliersComponent implements OnInit {
   }
 
   saveSupplierHeader(event: Event): void {
-    event.preventDefault(); 
-    
-    if (this.activeSupplierForm.supplierId === null) {
-      this.suppliersService.saveSupplier(this.activeSupplierForm as Supplier).subscribe({
-        next: (savedResult) => {
+    event.preventDefault();
+
+    const supplier = this.activeSupplierForm as Supplier;
+    const request$ = supplier.supplierId
+      ? this.suppliersService.updateSupplier(supplier)
+      : this.suppliersService.createSupplier(supplier);
+
+    request$.subscribe({
+      next: (savedResult) => {
           alert('Supplier saved successfully.');
           this.loadPaginatedSuppliers();
           this.cancelSupplierWorkspaceEdit();
         },
         error: (err) => console.error('Error saving supplier:', err)
-      });
-    } else {
-      this.suppliersService.updateSupplier(this.activeSupplierForm as Supplier).subscribe({
-        next: (savedResult) => {
-          alert('Supplier saved successfully.');
-          this.loadPaginatedSuppliers();
-          this.cancelSupplierWorkspaceEdit();
-        },
-        error: (err) => console.error('Error saving supplier:', err)
-      });
-    }
+    });
   }
 
   deleteActiveSupplier(): void {
@@ -169,27 +164,20 @@ export class SuppliersComponent implements OnInit {
   saveShipperHeader(event: Event): void {
     event.preventDefault();
 
-    if (this.activeShipperForm.shipperId === null) {
-      this.shippersService.saveShipper(this.activeShipperForm).subscribe({
-        next: (savedShip) => {
+    const shipper = this.activeShipperForm as Shipper;
+    const request$ = shipper.shipperId
+      ? this.shippersService.updateShipper(shipper)
+      : this.shippersService.createShipper(shipper);
+    
+    request$.subscribe({
+      next: (savedShip) => {
           alert('Shipper saved successfully.');
           this.preloadDropdownRelationshipDependencies(); 
           this.cancelShipperWorkspaceEdit();
           this.loadPaginatedSuppliers(); 
         },
         error: (err) => console.error('Error saving shipper:', err)
-      });
-    } else {
-      this.shippersService.updateShipper(this.activeShipperForm).subscribe({
-        next: (savedShip) => {
-          alert('Shipper saved successfully.');
-          this.preloadDropdownRelationshipDependencies(); 
-          this.cancelShipperWorkspaceEdit();
-          this.loadPaginatedSuppliers(); 
-        },
-        error: (err) => console.error('Error saving shipper:', err)
-      });
-    }
+    });
   }
 
   deleteActiveShipper(): void {

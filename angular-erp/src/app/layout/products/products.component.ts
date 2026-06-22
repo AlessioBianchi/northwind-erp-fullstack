@@ -126,25 +126,19 @@ export class ProductsComponent implements OnInit {
   saveProductHeader(event: Event): void {
     event.preventDefault(); 
     
-    if (this.activeProductForm.productId === null) {
-      this.productsService.saveProduct(this.activeProductForm as Product).subscribe({
-        next: (savedResult) => {
+    const product = this.activeProductForm as Product;
+    const request$ = product.productId
+      ? this.productsService.updateProduct(product)
+      : this.productsService.createProduct(product);
+
+    request$.subscribe({
+      next: (savedResult) => {
           alert('Product saved successfully.');
           this.loadPaginatedProducts();
           this.cancelProductWorkspaceEdit();
         },
         error: (err) => console.error('Error saving product:', err)
-      });
-    } else {
-      this.productsService.updateProduct(this.activeProductForm as Product).subscribe({
-        next: (savedResult) => {
-          alert('Product saved successfully.');
-          this.loadPaginatedProducts();
-          this.cancelProductWorkspaceEdit();
-        },
-        error: (err) => console.error('Error saving product:', err)
-      });
-    }
+    });
   }
 
   deleteActiveProduct(): void {
@@ -178,27 +172,20 @@ export class ProductsComponent implements OnInit {
   saveCategoryHeader(event: Event): void {
     event.preventDefault();
 
-    if (this.activeCategoryForm.categoryId === null) {
-      this.categoriesService.saveCategory(this.activeCategoryForm as Category).subscribe({
-        next: (savedCat) => {
-          alert('Category saved successfully.');
-          this.preloadDropdownRelationshipDependencies(); 
-          this.cancelCategoryWorkspaceEdit();
-          this.loadPaginatedProducts(); 
-        },
-        error: (err) => console.error('Error saving category:', err)
-      });
-    } else {
-      this.categoriesService.updateCategory(this.activeCategoryForm as Category).subscribe({
-        next: (savedCat) => {
-          alert('Category saved successfully.');
-          this.preloadDropdownRelationshipDependencies(); 
-          this.cancelCategoryWorkspaceEdit();
-          this.loadPaginatedProducts(); 
-        },
-        error: (err) => console.error('Error saving category:', err)
-      });
-    }
+    const category = this.activeCategoryForm as Category;
+    const request$ = category.categoryId
+      ? this.categoriesService.updateCategory(category)
+      : this.categoriesService.createCategory(category);
+
+    request$.subscribe({
+      next: () => {
+        alert('Category saved successfully.');
+        this.preloadDropdownRelationshipDependencies();
+        this.cancelCategoryWorkspaceEdit();
+        this.loadPaginatedProducts();
+      },
+      error: (err) => console.error('Error saving category:', err)
+    });
   }
 
   deleteActiveCategory(): void {

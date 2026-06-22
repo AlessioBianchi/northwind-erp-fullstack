@@ -28,12 +28,12 @@ export class EmployeesService {
         });
     }
     
-    save(employee: Employee): Observable<Employee> {
-        return this.http.post<Employee>(this.apiBaseUrl + '/save', employee, this.httpOptions);
+    create(employee: Employee): Observable<Employee> {
+        return this.http.post<Employee>(this.apiBaseUrl, employee, this.httpOptions);
     }
 
     update(employee: Employee): Observable<Employee> {
-        return this.http.put<Employee>(this.apiBaseUrl + '/save', employee, this.httpOptions);
+        return this.http.put<Employee>(this.apiBaseUrl + '/' + employee.employeeId, employee, this.httpOptions);
     }
     
     delete(employeeId: number): Observable<{ message: string }> {

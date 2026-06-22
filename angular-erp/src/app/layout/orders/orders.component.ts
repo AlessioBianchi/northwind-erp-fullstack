@@ -91,9 +91,13 @@ export class OrdersComponent implements OnInit{
   saveActiveOrder(event?: Event): void {
     if (event) event.preventDefault();
 
-    if (this.activeForm.orderId === null) {
-      this.ordersService.saveOrder(this.activeForm as Order).subscribe({
-        next: (savedOrder) => {
+    const order = this.activeForm as Order;
+    const request$ = order.orderId
+      ? this.ordersService.updateOrder(order)
+      : this.ordersService.createOrder(order);
+
+    request$.subscribe({
+      next: (savedOrder) => {
           alert('Order saved successfully!');
           this.loadPaginatedOrders();
           this.cancelWorkspaceEdit();
@@ -102,20 +106,7 @@ export class OrdersComponent implements OnInit{
           console.error('Error saving order properties:', err);
           alert('Failed to save order changes.');
         }
-      });
-    } else {
-      this.ordersService.updateOrder(this.activeForm as Order).subscribe({
-        next: (savedOrder) => {
-          alert('Order saved successfully!');
-          this.loadPaginatedOrders();
-          this.cancelWorkspaceEdit();
-        },
-        error: (err) => {
-          console.error('Error saving order properties:', err);
-          alert('Failed to save order changes.');
-        }
-      });
-    }
+    });
   }
 
   deleteActiveOrder(): void {
@@ -231,32 +222,17 @@ export class OrdersComponent implements OnInit{
   submitDetailForm(): void {
     if (!this.modalDetailForm.product || !this.modalDetailForm.quantity) return;
     
-    // TODO: check this, I'm not sure about the condition
-    if (this.modalDetailForm.order === null && this.modalDetailForm.product === null) {
-      this.ordersService.saveOrderDetail(this.modalDetailForm as OrderDetail).subscribe({
-        next: (savedDetail) => {
-          alert('Order detail saved successfully!');
-          this.loadPaginatedOrders();
-          this.cancelWorkspaceEdit();
-        },
-        error: (err) => {
-          console.error('Error saving order detail properties:', err);
-          alert('Failed to save order detail.');
-        }
-      });
-    } else {
-      this.ordersService.updateOrderDetail(this.modalDetailForm as OrderDetail).subscribe({
-        next: (savedDetail) => {
-          alert('Order detail saved successfully!');
-          this.loadPaginatedOrders();
-          this.cancelWorkspaceEdit();
-        },
-        error: (err) => {
-          console.error('Error saving order detail properties:', err);
-          alert('Failed to save order detail.');
-        }
-      });
-    }
+    this.ordersService.createOrderDetail(this.modalDetailForm as OrderDetail).subscribe({
+      next: (savedDetail) => {
+        alert('Order detail saved successfully!');
+        this.loadPaginatedOrders();
+        this.cancelWorkspaceEdit();
+      },
+      error: (err) => {
+        console.error('Error saving order detail properties:', err);
+        alert('Failed to save order detail.');
+      }
+    });
 
     this.closeDetailModal();
   }
