@@ -77,16 +77,37 @@ class ProductsServiceTest {
     }
 
     @Test
-    void save_ShouldReturnSavedProduct() {
+    void create_ShouldReturnCreatedProduct() {
         // Arrange
         when(productsDao.save(any(Product.class))).thenReturn(sampleProduct);
 
         // Act
-        Product saved = productsService.save(new Product());
+        Product created = productsService.create(new Product());
 
         // Assert
-        assertNotNull(saved);
-        assertEquals(10L, saved.getProductId());
+        assertNotNull(created);
+        assertEquals(10L, created.getProductId());
+        verify(productsDao).save(any(Product.class));
+    }
+
+    @Test
+    void update_ShouldReturnUpdatedProduct() {
+        // Arrange
+        Long productId = 1L;
+        String productName = "Test";
+        Product productUpdated = new ProductBuilder()
+                .withProductId(productId)
+                .withProductName(productName)
+                .build();
+        when(productsDao.save(any(Product.class))).thenReturn(productUpdated);
+
+        // Act
+        Product updated = productsService.update(productId, new Product());
+
+        // Assert
+        assertNotNull(updated);
+        assertEquals(1L, updated.getProductId());
+        assertEquals("Test", updated.getProductName());
         verify(productsDao).save(any(Product.class));
     }
 

@@ -14,7 +14,7 @@ export class ProductsService {
   private httpOptions = { withCredentials: true };
 
   getAllProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.apiBaseUrl + '/all', this.httpOptions);
+    return this.http.get<Product[]>(this.apiBaseUrl, this.httpOptions);
   }
   
   getPaginatedProducts(pageNumber: number, pageSize: number): Observable<PageResponse<Product>> {
@@ -28,11 +28,15 @@ export class ProductsService {
     });
   }
   
-  saveProduct(product: Product): Observable<Product> {
-    return this.http.post<Product>(this.apiBaseUrl + '/save', product, this.httpOptions);
+  createProduct(product: Product): Observable<Product> {
+    return this.http.post<Product>(this.apiBaseUrl, product, this.httpOptions);
+  }
+
+  updateProduct(product: Product): Observable<Product> {
+    return this.http.put<Product>(this.apiBaseUrl + '/' + product.productId, product, this.httpOptions);
   }
   
   deleteProduct(productId: number): Observable<{ message: string }> {
-    return this.http.get<{ message: string }>(this.apiBaseUrl + '/delete/' + productId, this.httpOptions);
+    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + productId, this.httpOptions);
   }
 }

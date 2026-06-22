@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -38,12 +39,27 @@ public class EmployeesService {
         return employeesDao.findAllByOrderByEmployeeIdDesc(pageable);
     }
 
-    public Employee save(Employee employee) {
+    public Employee create(Employee employee) {
         Employee employeeToSave = new EmployeeBuilder(employee)
                 .withPassword(passwordEncoder.encode(employee.getPassword()))
                 .build();
 
-        return employeesDao.save(employee);
+        return employeesDao.save(employeeToSave);
+    }
+
+    public Employee update(Long employeeId, Employee employee) {
+        String oldPassword = employeesDao.findById(employeeId)
+                .map(Employee::getPassword)
+                .orElse(null);
+        String newPassword = passwordEncoder.encode(employee.getPassword());
+
+        EmployeeBuilder employeeToUpdateBuilder = new EmployeeBuilder(employee)
+                .withEmployeeId(employeeId);
+        if (!Objects.equals(newPassword, oldPassword)) {
+            employeeToUpdateBuilder.withPassword(newPassword);
+        }
+
+        return employeesDao.save(employeeToUpdateBuilder.build());
     }
 
     public boolean delete(Long employeeId) {

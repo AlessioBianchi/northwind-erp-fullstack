@@ -55,15 +55,35 @@ class CategoriesServiceTest {
     }
 
     @Test
-    void save_ShouldReturnSavedCategory() {
+    void create_ShouldReturnCreatedCategory() {
         // Arrange
         when(categoriesDao.save(any(Category.class))).thenReturn(sampleCategory);
 
         // Act
-        Category saved = categoriesService.save(new Category());
+        Category created = categoriesService.create(new Category());
 
         // Assert
-        assertEquals(1L, saved.getCategoryId());
+        assertEquals(1L, created.getCategoryId());
+        verify(categoriesDao, times(1)).save(any(Category.class));
+    }
+
+    @Test
+    void update_ShouldReturnSavedCategory() {
+        // Arrange
+        Long categoryId = 1L;
+        String newCategoryName = "Test";
+        Category categoryUpdated = new CategoryBuilder()
+                .withCategoryId(categoryId)
+                .withCategoryName(newCategoryName)
+                .build();
+        when(categoriesDao.save(any(Category.class))).thenReturn(categoryUpdated);
+
+        // Act
+        Category updated = categoriesService.update(categoryId, new Category());
+
+        // Assert
+        assertEquals(1L, updated.getCategoryId());
+        assertEquals("Test", updated.getCategoryName());
         verify(categoriesDao, times(1)).save(any(Category.class));
     }
 

@@ -31,8 +31,16 @@ public class ProductsService {
         return productsDao.findAllByOrderByProductIdDesc();
     }
 
-    public Product save(Product product) {
+    public Product create(Product product) {
         return productsDao.save(product);
+    }
+
+    public Product update(Long productId, Product product) {
+        Product productToUpdate = new ProductBuilder(product)
+                .withProductId(productId)
+                .build();
+
+        return productsDao.save(productToUpdate);
     }
 
     public boolean delete(Long productId) {

@@ -36,7 +36,7 @@ public class OrdersService {
         return ordersDao.findAllByOrderByOrderIdDesc(pageable);
     }
 
-    public Order save(Order order, String username) {
+    public Order create(Order order, String username) {
         Employee userLogged = employeesDao.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
@@ -45,6 +45,14 @@ public class OrdersService {
                 .build();
 
         return ordersDao.save(orderToSave);
+    }
+
+    public Order update(Long orderId, Order order) {
+        Order orderToUpdate = new OrderBuilder(order)
+                .withOrderId(orderId)
+                .build();
+
+        return ordersDao.save(orderToUpdate);
     }
 
     public boolean delete(Long orderId) {
@@ -67,7 +75,7 @@ public class OrdersService {
         return orderDetailsDao.findAllByOrder(order);
     }
 
-    public OrderDetail save(OrderDetail orderDetail) {
+    public OrderDetail create(OrderDetail orderDetail) {
         Product product = productsDao.findById(orderDetail.getProduct().getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 

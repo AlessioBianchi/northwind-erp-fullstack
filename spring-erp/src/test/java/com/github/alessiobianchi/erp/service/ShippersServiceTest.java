@@ -58,16 +58,35 @@ class ShippersServiceTest {
     }
 
     @Test
-    void save_ShouldReturnSavedShipper() {
+    void create_ShouldReturnCreatedShipper() {
         // Arrange
         when(shippersDao.save(any(Shipper.class))).thenReturn(sampleShipper);
 
         // Act
-        Shipper saved = shippersService.save(new Shipper());
+        Shipper created = shippersService.create(new Shipper());
 
         // Assert
-        assertNotNull(saved);
-        assertEquals(1L, saved.getShipperId());
+        assertNotNull(created);
+        assertEquals(1L, created.getShipperId());
+        verify(shippersDao).save(any(Shipper.class));
+    }
+
+    @Test
+    void update_ShouldReturnUpdatedShipper() {
+        // Arrange
+        Shipper shipperUpdated = new ShipperBuilder()
+                .withShipperId(1L)
+                .withCompanyName("Test")
+                .build();
+        when(shippersDao.save(any(Shipper.class))).thenReturn(shipperUpdated);
+
+        // Act
+        Shipper updated = shippersService.update(1L, new Shipper());
+
+        // Assert
+        assertNotNull(updated);
+        assertEquals(1L, updated.getShipperId());
+        assertEquals("Test", updated.getCompanyName());
         verify(shippersDao).save(any(Shipper.class));
     }
 

@@ -76,16 +76,37 @@ class CustomersServiceTest {
     }
 
     @Test
-    void save_ShouldReturnSavedCustomer() {
+    void create_ShouldReturnCreatedCustomer() {
         // Arrange
         when(customersDao.save(any(Customer.class))).thenReturn(sampleCustomer);
 
         // Act
-        Customer saved = customersService.save(new Customer());
+        Customer created = customersService.create(new Customer());
 
         // Assert
-        assertNotNull(saved);
-        assertEquals(1L, saved.getCustomerId());
+        assertNotNull(created);
+        assertEquals(1L, created.getCustomerId());
+        verify(customersDao).save(any(Customer.class));
+    }
+
+    @Test
+    void update_ShouldReturnSavedCustomer() {
+        // Arrange
+        Long customerId = 1L;
+        String newCompanyName = "Test";
+        Customer customerUpdated = new CustomerBuilder()
+                .withCompanyName(newCompanyName)
+                .withCustomerId(customerId)
+                .build();
+        when(customersDao.save(any(Customer.class))).thenReturn(customerUpdated);
+
+        // Act
+        Customer updated = customersService.update(customerId, new Customer());
+
+        // Assert
+        assertNotNull(updated);
+        assertEquals(1L, updated.getCustomerId());
+        assertEquals("Test", updated.getCompanyName());
         verify(customersDao).save(any(Customer.class));
     }
 

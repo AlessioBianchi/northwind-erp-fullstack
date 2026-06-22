@@ -77,16 +77,35 @@ class SuppliersServiceTest {
     }
 
     @Test
-    void save_ShouldReturnSavedSupplier() {
+    void create_ShouldReturnCreatedSupplier() {
         // Arrange
         when(suppliersDao.save(any(Supplier.class))).thenReturn(sampleSupplier);
 
         // Act
-        Supplier saved = suppliersService.save(new Supplier());
+        Supplier created = suppliersService.create(new Supplier());
 
         // Assert
-        assertNotNull(saved);
-        assertEquals(1L, saved.getSupplierId());
+        assertNotNull(created);
+        assertEquals(1L, created.getSupplierId());
+        verify(suppliersDao).save(any(Supplier.class));
+    }
+
+    @Test
+    void update_ShouldReturnUpdatedSupplier() {
+        // Arrange
+        Supplier supplierUpdated = new SupplierBuilder()
+                .withSupplierId(1L)
+                .withCompanyName("Test")
+                .build();
+        when(suppliersDao.save(any(Supplier.class))).thenReturn(supplierUpdated);
+
+        // Act
+        Supplier updated = suppliersService.update(1L, new Supplier());
+
+        // Assert
+        assertNotNull(updated);
+        assertEquals(1L, updated.getSupplierId());
+        assertEquals("Test", updated.getCompanyName());
         verify(suppliersDao).save(any(Supplier.class));
     }
 

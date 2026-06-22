@@ -38,7 +38,7 @@ export class EmployeesComponent implements OnInit {
 
   loadPaginatedEmployees(): void {
     const apiIndex = this.currentPage - 1;
-    this.employeesService.findPaginated(apiIndex, this.pageSize).subscribe({
+    this.employeesService.getPaginatedEmployees(apiIndex, this.pageSize).subscribe({
       next: (res) => {
         this.employeesList = res.content;
         this.totalElements = res.page.totalElements;
@@ -50,7 +50,7 @@ export class EmployeesComponent implements OnInit {
 
   preloadDropdownRelationshipDependencies(): void {
     // Fetches everyone so any employee can be assigned as a manager
-    this.employeesService.findAllByOrderByEmployeeIdDesc().subscribe({
+    this.employeesService.getAllByOrderByEmployeeIdDesc().subscribe({
       next: (data) => this.allEmployeesLookupList = data,
       error: (err) => console.error('Error syncing management roster dictionary listings:', err)
     });
@@ -119,14 +119,19 @@ export class EmployeesComponent implements OnInit {
   saveEmployeeHeader(event: Event): void {
     event.preventDefault();
 
-    this.employeesService.save(this.activeEmployeeForm as Employee).subscribe({
+    const employee = this.activeEmployeeForm as Employee;
+    const request$ = employee.employeeId
+      ? this.employeesService.update(employee)
+      : this.employeesService.create(employee);
+
+    request$.subscribe({
       next: (savedResult) => {
-        alert('Employee profile record updated successfully.');
-        this.loadPaginatedEmployees();
-        this.preloadDropdownRelationshipDependencies();
-        this.cancelEmployeeWorkspaceEdit();
-      },
-      error: (err) => console.error('Error processing server authentication profile updates:', err)
+          alert('Employee profile record saved successfully.');
+          this.loadPaginatedEmployees();
+          this.preloadDropdownRelationshipDependencies();
+          this.cancelEmployeeWorkspaceEdit();
+        },
+        error: (err) => console.error('Error processing server authentication profile updates:', err)
     });
   }
 

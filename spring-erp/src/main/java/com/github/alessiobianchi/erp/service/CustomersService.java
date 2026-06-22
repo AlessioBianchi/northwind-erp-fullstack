@@ -31,8 +31,16 @@ public class CustomersService {
         return customersDao.findAllByOrderByCustomerIdDesc(pageable);
     }
 
-    public Customer save(Customer customer) {
+    public Customer create(Customer customer) {
         return customersDao.save(customer);
+    }
+
+    public Customer update(Long customerId, Customer customer) {
+        Customer customerToUpdate = new CustomerBuilder(customer)
+                .withCustomerId(customerId)
+                .build();
+
+        return customersDao.save(customerToUpdate);
     }
 
     public boolean delete(Long customerId) {

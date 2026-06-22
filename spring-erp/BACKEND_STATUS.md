@@ -246,49 +246,77 @@ Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@
 
 ## API Endpoints
 
-### CategoriesController (`/categories`)
+All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = update (ID comes from path, not body).
+
+### CategoriesController (`/api/v1/categories`)
 | Method | Path | Response |
 |---|---|---|
-| GET | `/categories/all` | `List<Category>` |
-| POST | `/categories/save` | `ResponseEntity<Category>` |
-| GET | `/categories/delete/{id}` | `ResponseEntity<Map<String,String>>` |
+| GET | `/api/v1/categories` | `List<Category>` |
+| POST | `/api/v1/categories` | `ResponseEntity<Category>` |
+| PUT | `/api/v1/categories/{categoryId}` | `ResponseEntity<Category>` |
+| DELETE | `/api/v1/categories/delete/{categoryId}` | `ResponseEntity<Map<String,String>>` |
 
-### CustomersController (`/customers`)
+### CustomersController (`/api/v1/customers`)
 | Method | Path | Response |
 |---|---|---|
-| GET | `/customers` | Thymeleaf view — unused |
-| GET | `/customers/all` | `List<Customer>` |
-| GET | `/customers/paginated` | `Page<Customer>` |
-| POST | `/customers/save` | `ResponseEntity<Customer>` |
-| GET | `/customers/delete/{id}` | `ResponseEntity<Map<String,String>>` |
+| GET | `/api/v1/customers` | `List<Customer>` |
+| GET | `/api/v1/customers/paginated` | `Page<Customer>` |
+| POST | `/api/v1/customers` | `ResponseEntity<Customer>` |
+| PUT | `/api/v1/customers/{customerId}` | `ResponseEntity<Customer>` |
+| DELETE | `/api/v1/customers/delete/{customerId}` | `ResponseEntity<Map<String,String>>` |
 
-### EmployeesController (`/employees`) — same pattern as Customers
-
-### ProductsController (`/products`) — same pattern as Customers
-
-### SuppliersController (`/suppliers`) — same pattern as Customers
-
-### ShippersController (`/shippers`)
+### EmployeesController (`/api/v1/employees`) — same pattern as Customers
 | Method | Path | Response |
 |---|---|---|
-| GET | `/shippers/all` | `List<Shipper>` |
-| POST | `/shippers/save` | `ResponseEntity<Shipper>` |
-| GET | `/shippers/delete/{id}` | `ResponseEntity<Map<String,String>>` |
+| GET | `/api/v1/employees` | `List<Employee>` |
+| GET | `/api/v1/employees/paginated` | `Page<Employee>` |
+| POST | `/api/v1/employees` | `ResponseEntity<Employee>` |
+| PUT | `/api/v1/employees/{employeeId}` | `ResponseEntity<Employee>` |
+| DELETE | `/api/v1/employees/delete/{employeeId}` | `ResponseEntity<Map<String,String>>` |
 
-### OrdersController (`/api/orders`) — `@RestController`
+### ProductsController (`/api/v1/products`) — same pattern as Customers
+| Method | Path | Response |
+|---|---|---|
+| GET | `/api/v1/products` | `List<Product>` |
+| GET | `/api/v1/products/paginated` | `Page<Product>` |
+| POST | `/api/v1/products` | `ResponseEntity<Product>` |
+| PUT | `/api/v1/products/{productId}` | `ResponseEntity<Product>` |
+| DELETE | `/api/v1/products/delete/{productId}` | `ResponseEntity<Map<String,String>>` |
+
+### SuppliersController (`/api/v1/suppliers`) — same pattern as Customers
+| Method | Path | Response |
+|---|---|---|
+| GET | `/api/v1/suppliers` | `List<Supplier>` |
+| GET | `/api/v1/suppliers/paginated` | `Page<Supplier>` |
+| POST | `/api/v1/suppliers` | `ResponseEntity<Supplier>` |
+| PUT | `/api/v1/suppliers/{supplierId}` | `ResponseEntity<Supplier>` |
+| DELETE | `/api/v1/suppliers/delete/{supplierId}` | `ResponseEntity<Map<String,String>>` |
+
+### ShippersController (`/api/v1/shippers`)
+| Method | Path | Response |
+|---|---|---|
+| GET | `/api/v1/shippers` | `List<Shipper>` |
+| POST | `/api/v1/shippers` | `ResponseEntity<Shipper>` |
+| PUT | `/api/v1/shippers/{shipperId}` | `ResponseEntity<Shipper>` |
+| DELETE | `/api/v1/shippers/delete/{shipperId}` | `ResponseEntity<Map<String,String>>` |
+
+### OrdersController (`/api/v1/orders`) — `@RestController`
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/api/orders/paginated` | `Page<Order>` |
-| POST | `/api/orders/save` | Employee resolved from `Principal` |
-| DELETE | `/api/orders/delete/{id}` | |
-| GET | `/api/orders/details/{orderId}` | `List<OrderDetail>` |
-| POST | `/api/orders/details/save` | Unit price auto-set from product |
-| DELETE | `/api/orders/details/delete` | |
+| GET | `/api/v1/orders/paginated` | `Page<Order>` |
+| POST | `/api/v1/orders` | Employee resolved from `Principal` |
+| PUT | `/api/v1/orders/{orderId}` | |
+| DELETE | `/api/v1/orders/delete/{orderId}` | |
+| GET | `/api/v1/orders/details/{orderId}` | `List<OrderDetail>` |
+| POST | `/api/v1/orders/details` | Unit price auto-set from product |
+| DELETE | `/api/v1/orders/details/delete` | Body: `OrderDetail` |
 
-### DashboardController (`/api/dashboard`) — `@RestController`
+### DashboardController — `@RestController`
+> **Bug:** controller is mapped to `/api/v1/api/dashboard` (double prefix). Frontend calls `/api/v1/dashboard/stats` — dashboard is broken until fixed.
+
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/dashboard/stats` | `ResponseEntity<DashboardDTO>` |
+| GET | `/api/v1/api/dashboard/stats` | `ResponseEntity<DashboardDTO>` |
 
 ### ReportsController (`/reports`)
 | Method | Path | Response |
@@ -389,7 +417,7 @@ Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@
 ## Known Gaps & TODOs
 
 - [ ] **No global exception handler** — no `@RestControllerAdvice`; errors fall through to Spring Boot default.
-- [ ] **HTTP method semantics** — delete endpoints on most controllers use `GET` instead of `DELETE`.
+- [ ] **Dashboard controller double-prefix bug** — `DashboardController` uses `@RequestMapping("/api/v1/api/dashboard")` instead of `/api/v1/dashboard`. Dashboard endpoint is unreachable from the frontend.
 - [ ] **No input validation** — no `@Valid` or `@NotNull` constraints on controllers or entities.
 - [ ] **No API documentation** — Swagger / SpringDoc OpenAPI not configured.
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
@@ -413,6 +441,19 @@ Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@
 > ```
 
 ---
+
+### [2026-06-22] — Proper HTTP methods + create/update service split
+
+- All `delete` endpoints changed from `@GetMapping` to `@DeleteMapping`.
+- `GET /all` dropped — list endpoints now map to the base resource path (`@GetMapping` with no suffix).
+- Thymeleaf view methods (`showX()`) removed from all controllers — UI is fully Angular.
+- Services: `save(entity)` split into `create(entity)` and `update(Long id, entity)`.
+  - `update()` enforces the ID from the path, not the request body.
+  - `EmployeesService.update()` fetches the existing hashed password and only re-encodes if the incoming value differs.
+  - `EmployeesService.create()` bug fixed — was saving the unencoded `employee` instead of the encoded `employeeToSave`.
+- Controllers: POST maps to base path (create), PUT maps to `/{id}` (update); both delegate to the correct service method.
+- Tests updated: `save_Should…` renamed to `create_Should…`; `update_Should…` tests added for all services.
+- Affected files: all `controller/*.java`, all `service/*.java`, all `test/service/*Test.java`.
 
 ### [2026-06-12] — Initial status document created
 
