@@ -439,6 +439,13 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 
 ---
 
+### [2026-06-26] — Rename root package to com.github.alessiobianchi.erp
+
+- All Java source files updated: `package` and `import` declarations changed from `com.github.alessiobianchi.erp` to `com.github.alessiobianchi.erp`.
+- `pom.xml` groupId changed from `com.github.alessiobianchi` to `com.github.alessiobianchi`.
+- Source tree moved: `src/main/java/com/github/alessiobianchi/erp/` → `src/main/java/com/github/alessiobianchi/erp/`
+- Test tree moved: `src/test/java/com/github/alessiobianchi/erp/` → `src/test/java/com/github/alessiobianchi/erp/`
+
 ### [2026-06-22] — Fixed DashboardController double-prefix path
 
 - `DashboardController`: corrected `@RequestMapping` from `/api/v1/api/dashboard` to `/api/v1/dashboard`.
