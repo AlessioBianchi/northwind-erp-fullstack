@@ -26,7 +26,7 @@
 
 Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSON API consumed by an Angular frontend running on `localhost:4200`. Personal replica/learning project, not a production system.
 
-- **Root package:** `it.zerob.erp`
+- **Root package:** `com.github.alessiobianchi.erp`
 - **Main class:** `ErpSpringApplication.java`
 - **Base URL pattern:** mix of `/api/**` (REST controllers) and `/**` (MVC controllers — Thymeleaf remnants, largely dead code now that Angular handles the UI)
 - **Frontend base URL:** `http://localhost:4200` (CORS allowed origin)
@@ -62,7 +62,7 @@ spring-erp/
 │   └── maven-wrapper.properties
 └── src/
     ├── main/
-    │   ├── java/it/zerob/erp/
+    │   ├── java/com/github/alessiobianchi/erp/
     │   │   ├── ErpSpringApplication.java
     │   │   ├── config/
     │   │   │   └── AppConfig.java              # Security + CORS configuration
@@ -113,7 +113,7 @@ spring-erp/
     │   └── resources/
     │       └── application.properties
     └── test/
-        └── java/it/zerob/erp/
+        └── java/com/github/alessiobianchi/erp/
             ├── ErpSpringApplicationTests.java
             └── service/                        # One test class per service
                 └── (10 test files)
@@ -408,7 +408,7 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 
 ## Tests
 
-10 test classes under `src/test/java/it/zerob/erp/service/` — one per service — plus the application context smoke test (`ErpSpringApplicationTests.java`). Tooling: JUnit 5 + Mockito via Spring Boot test starters. No test fixtures or test data files detected.
+10 test classes under `src/test/java/com/github/alessiobianchi/erp/service/` — one per service — plus the application context smoke test (`ErpSpringApplicationTests.java`). Tooling: JUnit 5 + Mockito via Spring Boot test starters. No test fixtures or test data files detected.
 
 ---
 
@@ -438,6 +438,13 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 > ```
 
 ---
+
+### [2026-06-26] — Rename root package to com.github.alessiobianchi.erp
+
+- All Java source files updated: `package` and `import` declarations changed from `it.zerob.erp` to `com.github.alessiobianchi.erp`.
+- `pom.xml` groupId changed from `it.zerob` to `com.github.alessiobianchi`.
+- Source tree moved: `src/main/java/it/zerob/erp/` → `src/main/java/com/github/alessiobianchi/erp/`
+- Test tree moved: `src/test/java/it/zerob/erp/` → `src/test/java/com/github/alessiobianchi/erp/`
 
 ### [2026-06-22] — Fixed DashboardController double-prefix path
 
