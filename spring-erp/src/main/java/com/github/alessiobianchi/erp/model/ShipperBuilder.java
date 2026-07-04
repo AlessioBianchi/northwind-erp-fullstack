@@ -2,7 +2,7 @@ package com.github.alessiobianchi.erp.model;
 
 public class ShipperBuilder {
 
-    private Long shipperId;
+    private int shipperId;
     private String companyName;
     private String phone;
 
@@ -14,7 +14,7 @@ public class ShipperBuilder {
         this.phone = shipper.getPhone();
     }
 
-    public ShipperBuilder withShipperId(Long shipperId) {
+    public ShipperBuilder withShipperId(int shipperId) {
         this.shipperId = shipperId;
         return this;
     }

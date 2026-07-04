@@ -35,7 +35,7 @@ public class ProductsService {
         return productsDao.save(product);
     }
 
-    public Product update(Long productId, Product product) {
+    public Product update(int productId, Product product) {
         Product productToUpdate = new ProductBuilder(product)
                 .withProductId(productId)
                 .build();
@@ -43,7 +43,7 @@ public class ProductsService {
         return productsDao.save(productToUpdate);
     }
 
-    public boolean delete(Long productId) {
+    public boolean delete(int productId) {
         Product productToDelete = new ProductBuilder()
                 .withProductId(productId)
                 .build();

@@ -1,16 +1,16 @@
 package com.github.alessiobianchi.erp.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class EmployeeBuilder {
 
-    private Long employeeId;
-    private String lastname;
-    private String firstname;
+    private int employeeId;
+    private String lastName;
+    private String firstName;
     private String title;
     private String titleOfCourtesy;
-    private Date birthdate;
-    private Date hiredate;
+    private LocalDate birthDate;
+    private LocalDate hireDate;
     private String address;
     private String city;
     private String region;
@@ -18,7 +18,6 @@ public class EmployeeBuilder {
     private String country;
     private String homePhone;
     private String extension;
-    private String photo;
     private String notes;
     private Employee reportsTo;
     private String username;
@@ -29,12 +28,12 @@ public class EmployeeBuilder {
 
     public EmployeeBuilder(Employee employee) {
         this.employeeId = employee.getEmployeeId();
-        this.lastname = employee.getLastname();
-        this.firstname = employee.getFirstname();
+        this.lastName = employee.getLastName();
+        this.firstName = employee.getFirstName();
         this.title = employee.getTitle();
         this.titleOfCourtesy = employee.getTitleOfCourtesy();
-        this.birthdate = employee.getBirthdate();
-        this.hiredate = employee.getHiredate();
+        this.birthDate = employee.getBirthDate();
+        this.hireDate = employee.getHireDate();
         this.address = employee.getAddress();
         this.city = employee.getCity();
         this.region = employee.getRegion();
@@ -42,25 +41,24 @@ public class EmployeeBuilder {
         this.country = employee.getCountry();
         this.homePhone = employee.getHomePhone();
         this.extension = employee.getExtension();
-        this.photo = employee.getPhoto();
         this.notes = employee.getNotes();
         this.reportsTo = employee.getReportsTo();
         this.username = employee.getUsername();
         this.password = employee.getPassword();
     }
 
-    public EmployeeBuilder withEmployeeId(Long employeeId) {
+    public EmployeeBuilder withEmployeeId(int employeeId) {
         this.employeeId = employeeId;
         return this;
     }
 
-    public EmployeeBuilder withLastname(String lastname) {
-        this.lastname = lastname;
+    public EmployeeBuilder withLastname(String lastName) {
+        this.lastName = lastName;
         return this;
     }
 
-    public EmployeeBuilder withFirstname(String firstname) {
-        this.firstname = firstname;
+    public EmployeeBuilder withFirstname(String firstName) {
+        this.firstName = firstName;
         return this;
     }
 
@@ -74,13 +72,13 @@ public class EmployeeBuilder {
         return this;
     }
 
-    public EmployeeBuilder withBirthdate(Date birthdate) {
-        this.birthdate = birthdate;
+    public EmployeeBuilder withBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
         return this;
     }
 
-    public EmployeeBuilder withHiredate(Date hiredate) {
-        this.hiredate = hiredate;
+    public EmployeeBuilder withHireDate(LocalDate hireDate) {
+        this.hireDate = hireDate;
         return this;
     }
 
@@ -119,11 +117,6 @@ public class EmployeeBuilder {
         return this;
     }
 
-    public EmployeeBuilder withPhoto(String photo) {
-        this.photo = photo;
-        return this;
-    }
-
     public EmployeeBuilder withNotes(String notes) {
         this.notes = notes;
         return this;
@@ -147,12 +140,12 @@ public class EmployeeBuilder {
     public Employee build() {
         return new Employee(
                 employeeId,
-                lastname,
-                firstname,
+                lastName,
+                firstName,
                 title,
                 titleOfCourtesy,
-                birthdate,
-                hiredate,
+                birthDate,
+                hireDate,
                 address,
                 city,
                 region,
@@ -160,7 +153,6 @@ public class EmployeeBuilder {
                 country,
                 homePhone,
                 extension,
-                photo,
                 notes,
                 reportsTo,
                 username,

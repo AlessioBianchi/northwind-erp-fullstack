@@ -40,7 +40,7 @@ class ProductsServiceTest {
     @BeforeEach
     void setUp() {
         sampleProduct = new ProductBuilder()
-                .withProductId(10L)
+                .withProductId(10)
                 .withProductName("Chai")
                 .withUnitPrice(18.00)
                 .build();
@@ -86,14 +86,14 @@ class ProductsServiceTest {
 
         // Assert
         assertNotNull(created);
-        assertEquals(10L, created.getProductId());
+        assertEquals(10, created.getProductId());
         verify(productsDao).save(any(Product.class));
     }
 
     @Test
     void update_ShouldReturnUpdatedProduct() {
         // Arrange
-        Long productId = 1L;
+        int productId = 1;
         String productName = "Test";
         Product productUpdated = new ProductBuilder()
                 .withProductId(productId)
@@ -106,7 +106,7 @@ class ProductsServiceTest {
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1L, updated.getProductId());
+        assertEquals(1, updated.getProductId());
         assertEquals("Test", updated.getProductName());
         verify(productsDao).save(any(Product.class));
     }
@@ -114,7 +114,7 @@ class ProductsServiceTest {
     @Test
     void delete_WhenProductIsInOrders_ShouldReturnFalse() {
         // Arrange
-        Long productId = 10L;
+        int productId = 10;
         when(orderDetailsDao.findAllByProduct(any(Product.class))).thenReturn(List.of(new OrderDetail()));
 
         // Act
@@ -128,7 +128,7 @@ class ProductsServiceTest {
     @Test
     void delete_WhenProductIsNotInOrders_ShouldReturnTrue() {
         // Arrange
-        Long productId = 10L;
+        int productId = 10;
         when(orderDetailsDao.findAllByProduct(any(Product.class))).thenReturn(Collections.emptyList());
 
         // Act

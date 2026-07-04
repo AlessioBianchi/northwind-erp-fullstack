@@ -10,7 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface ProductsDAO extends CrudRepository<Product, Long> {
+public interface ProductsDAO extends CrudRepository<Product, Integer> {
 
     Page<Product> findAllByOrderByProductIdDesc(Pageable pageable);
 

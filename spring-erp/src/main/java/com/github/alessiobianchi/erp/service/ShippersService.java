@@ -27,7 +27,7 @@ public class ShippersService {
         return shippersDao.save(shipper);
     }
 
-    public Shipper update(Long shipperId, Shipper shipper) {
+    public Shipper update(int shipperId, Shipper shipper) {
         Shipper shipperToUpdate = new ShipperBuilder(shipper)
                 .withShipperId(shipperId)
                 .build();
@@ -35,7 +35,7 @@ public class ShippersService {
         return shippersDao.save(shipperToUpdate);
     }
 
-    public boolean delete(Long shipperId) {
+    public boolean delete(int shipperId) {
         Shipper shipperToDelete = new ShipperBuilder()
                 .withShipperId(shipperId)
                 .build();

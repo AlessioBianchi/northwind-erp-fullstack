@@ -28,7 +28,7 @@ public class CategoriesService {
         return categoriesDao.save(category);
     }
 
-    public Category update(Long categoryId, Category category) {
+    public Category update(int categoryId, Category category) {
         Category categoryToUpdate = new CategoryBuilder(category)
                 .withCategoryId(categoryId)
                 .build();
@@ -36,7 +36,7 @@ public class CategoriesService {
         return categoriesDao.save(categoryToUpdate);
     }
 
-    public boolean delete(Long categoryId) {
+    public boolean delete(int categoryId) {
         Category categoryToDelete = new CategoryBuilder()
                 .withCategoryId(categoryId)
                 .build();

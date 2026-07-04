@@ -35,7 +35,7 @@ public class SuppliersService {
         return suppliersDao.save(supplier);
     }
 
-    public Supplier update(Long supplierId, Supplier supplier) {
+    public Supplier update(int supplierId, Supplier supplier) {
         Supplier supplierToUpdate = new SupplierBuilder(supplier)
                 .withSupplierId(supplierId)
                 .build();
@@ -43,7 +43,7 @@ public class SuppliersService {
         return suppliersDao.save(supplierToUpdate);
     }
 
-    public boolean delete(Long supplierId) {
+    public boolean delete(int supplierId) {
         Supplier supplierToDelete = new SupplierBuilder()
                 .withSupplierId(supplierId)
                 .build();

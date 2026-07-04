@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
-public interface OrdersDAO extends CrudRepository<Order, Long> {
+public interface OrdersDAO extends CrudRepository<Order, Integer> {
 
     Page<Order> findAllByOrderByOrderIdDesc(Pageable pageable);
 

@@ -3,31 +3,26 @@ package com.github.alessiobianchi.erp.model;
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Table(name="EMPLOYEES")
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_NW_EMPLOYEES")
-    @SequenceGenerator(
-            name = "SEQ_NW_EMPLOYEES",
-            sequenceName = "SEQ_NW_EMPLOYEES",
-            allocationSize = 1
-    )
-    private Long employeeId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int employeeId;
 
-    private String lastname;
-    private String firstname;
+    private String lastName;
+    private String firstName;
     private String title;
     private String titleOfCourtesy;
 
     @DateTimeFormat(pattern = "yyy-MM-dd")
-    private Date birthdate;
+    private LocalDate birthDate;
 
     @DateTimeFormat(pattern = "yyy-MM-dd")
-    private Date hiredate;
+    private LocalDate hireDate;
 
     private String address;
     private String city;
@@ -36,7 +31,6 @@ public class Employee {
     private String country;
     private String homePhone;
     private String extension;
-    private String photo;
     private String notes;
 
 
@@ -49,13 +43,13 @@ public class Employee {
 
     public Employee() {}
 
-    public Employee(Long employeeId,
-                String lastname,
-                String firstname,
+    public Employee(int employeeId,
+                String lastName,
+                String firstName,
                 String title,
                 String titleOfCourtesy,
-                Date birthdate,
-                Date hiredate,
+                LocalDate birthDate,
+                LocalDate hireDate,
                 String address,
                 String city,
                 String region,
@@ -63,18 +57,17 @@ public class Employee {
                 String country,
                 String homePhone,
                 String extension,
-                String photo,
                 String notes,
                 Employee reportsTo,
                 String username,
                 String password) {
         this.employeeId = employeeId;
-        this.lastname = lastname;
-        this.firstname = firstname;
+        this.lastName = lastName;
+        this.firstName = firstName;
         this.title = title;
         this.titleOfCourtesy = titleOfCourtesy;
-        this.birthdate = birthdate;
-        this.hiredate = hiredate;
+        this.birthDate = birthDate;
+        this.hireDate = hireDate;
         this.address = address;
         this.city = city;
         this.region = region;
@@ -82,23 +75,22 @@ public class Employee {
         this.country = country;
         this.homePhone = homePhone;
         this.extension = extension;
-        this.photo = photo;
         this.notes = notes;
         this.reportsTo = reportsTo;
         this.username = username;
         this.password = password;
     }
 
-    public Long getEmployeeId() {
+    public int getEmployeeId() {
         return employeeId;
     }
 
-    public String getLastname() {
-        return lastname;
+    public String getLastName() {
+        return lastName;
     }
 
-    public String getFirstname() {
-        return firstname;
+    public String getFirstName() {
+        return firstName;
     }
 
     public String getTitle() {
@@ -109,12 +101,12 @@ public class Employee {
         return titleOfCourtesy;
     }
 
-    public Date getBirthdate() {
-        return birthdate;
+    public LocalDate getBirthDate() {
+        return birthDate;
     }
 
-    public Date getHiredate() {
-        return hiredate;
+    public LocalDate getHireDate() {
+        return hireDate;
     }
 
     public String getAddress() {
@@ -143,10 +135,6 @@ public class Employee {
 
     public String getExtension() {
         return extension;
-    }
-
-    public String getPhoto() {
-        return photo;
     }
 
     public String getNotes() {

@@ -40,7 +40,7 @@ class CustomersServiceTest {
     @BeforeEach
     void setUp() {
         sampleCustomer = new CustomerBuilder()
-                .withCustomerId(1L)
+                .withCustomerId(1)
                 .build();
     }
 
@@ -85,14 +85,14 @@ class CustomersServiceTest {
 
         // Assert
         assertNotNull(created);
-        assertEquals(1L, created.getCustomerId());
+        assertEquals(1, created.getCustomerId());
         verify(customersDao).save(any(Customer.class));
     }
 
     @Test
     void update_ShouldReturnSavedCustomer() {
         // Arrange
-        Long customerId = 1L;
+        int customerId = 1;
         String newCompanyName = "Test";
         Customer customerUpdated = new CustomerBuilder()
                 .withCompanyName(newCompanyName)
@@ -105,7 +105,7 @@ class CustomersServiceTest {
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1L, updated.getCustomerId());
+        assertEquals(1, updated.getCustomerId());
         assertEquals("Test", updated.getCompanyName());
         verify(customersDao).save(any(Customer.class));
     }
@@ -113,7 +113,7 @@ class CustomersServiceTest {
     @Test
     void delete_WhenCustomerHasOrders_ShouldReturnFalse() {
         // Arrange
-        Long customerId = 1L;
+        int customerId = 1;
         when(ordersDao.findAllByCustomer(any(Customer.class))).thenReturn(List.of(new Order()));
 
         // Act
@@ -127,7 +127,7 @@ class CustomersServiceTest {
     @Test
     void delete_WhenCustomerHasNoOrders_ShouldReturnTrue() {
         // Arrange
-        Long customerId = 1L;
+        int customerId = 1;
         when(ordersDao.findAllByCustomer(any(Customer.class))).thenReturn(Collections.emptyList());
 
         // Act

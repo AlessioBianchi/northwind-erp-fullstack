@@ -36,7 +36,7 @@ class CategoriesServiceTest {
     @BeforeEach
     void setUp() {
         sampleCategory = new CategoryBuilder()
-                .withCategoryId(1L)
+                .withCategoryId(1)
                 .build();
     }
 
@@ -63,14 +63,14 @@ class CategoriesServiceTest {
         Category created = categoriesService.create(new Category());
 
         // Assert
-        assertEquals(1L, created.getCategoryId());
+        assertEquals(1, created.getCategoryId());
         verify(categoriesDao, times(1)).save(any(Category.class));
     }
 
     @Test
     void update_ShouldReturnSavedCategory() {
         // Arrange
-        Long categoryId = 1L;
+        int categoryId = 1;
         String newCategoryName = "Test";
         Category categoryUpdated = new CategoryBuilder()
                 .withCategoryId(categoryId)
@@ -82,7 +82,7 @@ class CategoriesServiceTest {
         Category updated = categoriesService.update(categoryId, new Category());
 
         // Assert
-        assertEquals(1L, updated.getCategoryId());
+        assertEquals(1, updated.getCategoryId());
         assertEquals("Test", updated.getCategoryName());
         verify(categoriesDao, times(1)).save(any(Category.class));
     }
@@ -90,7 +90,7 @@ class CategoriesServiceTest {
     @Test
     void delete_WhenCategoryHasProducts_ShouldReturnFalseAndNotDelete() {
         // Arrange
-        Long categoryId = 1L;
+        int categoryId = 1;
         when(productsDao.findAllByCategory(any(Category.class))).thenReturn(List.of(new Product()));
 
         // Act
@@ -104,7 +104,7 @@ class CategoriesServiceTest {
     @Test
     void delete_WhenCategoryHasNoProducts_ShouldReturnTrueAndDelete() {
         // Arrange
-        Long categoryId = 1L;
+        int categoryId = 1;
         when(productsDao.findAllByCategory(any(Category.class))).thenReturn(Collections.emptyList());
 
         // Act

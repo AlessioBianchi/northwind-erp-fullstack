@@ -7,13 +7,8 @@ import jakarta.persistence.*;
 public class Supplier {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_NW_SUPPLIERS")
-    @SequenceGenerator(
-            name = "SEQ_NW_SUPPLIERS",
-            sequenceName = "SEQ_NW_SUPPLIERS",
-            allocationSize = 1
-    )
-    private Long supplierId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int supplierId;
 
     private String companyName;
     private String contactName;
@@ -25,11 +20,11 @@ public class Supplier {
     private String country;
     private String phone;
     private String fax;
-    private String homePage;
+    private String homepage;
 
     public Supplier() {}
 
-    public Supplier(Long supplierId,
+    public Supplier(int supplierId,
                     String companyName,
                     String contactName,
                     String contactTitle,
@@ -40,7 +35,7 @@ public class Supplier {
                     String country,
                     String phone,
                     String fax,
-                    String homePage) {
+                    String homepage) {
         this.supplierId = supplierId;
         this.companyName = companyName;
         this.contactName = contactName;
@@ -52,10 +47,10 @@ public class Supplier {
         this.country = country;
         this.phone = phone;
         this.fax = fax;
-        this.homePage = homePage;
+        this.homepage = homepage;
     }
 
-    public Long getSupplierId() {
+    public int getSupplierId() {
         return supplierId;
     }
 
@@ -99,7 +94,7 @@ public class Supplier {
         return fax;
     }
 
-    public String getHomePage() {
-        return homePage;
+    public String getHomepage() {
+        return homepage;
     }
 }

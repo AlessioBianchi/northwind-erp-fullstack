@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface ShippersDAO extends CrudRepository<Shipper, Long> {
+public interface ShippersDAO extends CrudRepository<Shipper, Integer> {
 
     List<Shipper> findAllByOrderByShipperIdDesc();
 }

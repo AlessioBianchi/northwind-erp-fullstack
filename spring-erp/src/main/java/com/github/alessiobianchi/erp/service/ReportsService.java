@@ -28,7 +28,7 @@ public class ReportsService {
         this.customersDAO = customersDAO;
     }
 
-    public byte[] getOrdersReport(Long orderId) {
+    public byte[] getOrdersReport(int orderId) {
         Order order = ordersDao.findById(orderId).orElseThrow();
         List<OrderDetail> details = orderDetailsDao.findAllByOrder(order);
         Customer customer = customersDAO.findById(order.getCustomer().getCustomerId()).orElseThrow();

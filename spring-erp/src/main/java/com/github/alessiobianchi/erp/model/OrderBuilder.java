@@ -1,15 +1,15 @@
 package com.github.alessiobianchi.erp.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class OrderBuilder {
 
-    private Long orderId;
+    private int orderId;
     private Customer customer;
     private Employee employee;
-    private Date orderDate;
-    private Date requiredDate;
-    private Date shippedDate;
+    private LocalDate orderDate;
+    private LocalDate requiredDate;
+    private LocalDate shippedDate;
     private Shipper shipper;
     private Double freight;
     private String shipName;
@@ -39,7 +39,7 @@ public class OrderBuilder {
         this.shipCountry = order.getShipCountry();
     }
 
-    public OrderBuilder withOrderId(Long orderId) {
+    public OrderBuilder withOrderId(int orderId) {
         this.orderId = orderId;
         return this;
     }
@@ -54,17 +54,17 @@ public class OrderBuilder {
         return this;
     }
 
-    public OrderBuilder withOrderDate(Date orderDate) {
+    public OrderBuilder withOrderDate(LocalDate orderDate) {
         this.orderDate = orderDate;
         return this;
     }
 
-    public OrderBuilder withRequiredDate(Date requiredDate) {
+    public OrderBuilder withRequiredDate(LocalDate requiredDate) {
         this.requiredDate = requiredDate;
         return this;
     }
 
-    public OrderBuilder withShippedDate(Date shippedDate) {
+    public OrderBuilder withShippedDate(LocalDate shippedDate) {
         this.shippedDate = shippedDate;
         return this;
     }

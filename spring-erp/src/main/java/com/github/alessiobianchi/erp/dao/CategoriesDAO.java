@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface CategoriesDAO extends CrudRepository<Category, Long> {
+public interface CategoriesDAO extends CrudRepository<Category, Integer> {
 
     List<Category> findAllByOrderByCategoryIdDesc();
 }
