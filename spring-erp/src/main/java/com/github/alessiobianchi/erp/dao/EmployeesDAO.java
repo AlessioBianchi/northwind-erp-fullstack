@@ -9,7 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface EmployeesDAO extends CrudRepository<Employee, Long> {
+public interface EmployeesDAO extends CrudRepository<Employee, Integer> {
 
     Optional<Employee> findByUsername(String username);
 

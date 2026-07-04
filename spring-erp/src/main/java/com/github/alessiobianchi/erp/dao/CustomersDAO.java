@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface CustomersDAO extends CrudRepository<Customer, Long> {
+public interface CustomersDAO extends CrudRepository<Customer, Integer> {
 
     List<Customer> findAllByOrderByCustomerIdDesc();
 

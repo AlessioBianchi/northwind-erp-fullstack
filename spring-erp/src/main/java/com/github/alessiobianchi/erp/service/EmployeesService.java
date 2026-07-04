@@ -47,7 +47,7 @@ public class EmployeesService {
         return employeesDao.save(employeeToSave);
     }
 
-    public Employee update(Long employeeId, Employee employee) {
+    public Employee update(int employeeId, Employee employee) {
         String oldPassword = employeesDao.findById(employeeId)
                 .map(Employee::getPassword)
                 .orElse(null);
@@ -62,7 +62,7 @@ public class EmployeesService {
         return employeesDao.save(employeeToUpdateBuilder.build());
     }
 
-    public boolean delete(Long employeeId) {
+    public boolean delete(int employeeId) {
         Employee employeeToDelete = new EmployeeBuilder()
                 .withEmployeeId(employeeId)
                 .build();

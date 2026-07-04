@@ -5,8 +5,8 @@ import java.util.Objects;
 
 public class OrderDetailId implements Serializable {
 
-    private Long order;
-    private Long product;
+    private int order;
+    private int product;
 
     @Override
     public int hashCode() {
@@ -24,11 +24,11 @@ public class OrderDetailId implements Serializable {
                 Objects.equals(product, that.product);
     }
 
-    public Long getOrderId() {
+    public int getOrderId() {
         return order;
     }
 
-    public Long getProductId() {
+    public int getProductId() {
         return product;
     }
 }

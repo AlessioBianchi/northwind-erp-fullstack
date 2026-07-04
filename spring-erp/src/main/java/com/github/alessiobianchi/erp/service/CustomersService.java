@@ -35,7 +35,7 @@ public class CustomersService {
         return customersDao.save(customer);
     }
 
-    public Customer update(Long customerId, Customer customer) {
+    public Customer update(int customerId, Customer customer) {
         Customer customerToUpdate = new CustomerBuilder(customer)
                 .withCustomerId(customerId)
                 .build();
@@ -43,7 +43,7 @@ public class CustomersService {
         return customersDao.save(customerToUpdate);
     }
 
-    public boolean delete(Long customerId) {
+    public boolean delete(int customerId) {
         Customer customerToDelete = new CustomerBuilder()
                 .withCustomerId(customerId)
                 .build();

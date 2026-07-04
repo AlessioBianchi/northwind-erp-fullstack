@@ -47,7 +47,7 @@ public class OrdersService {
         return ordersDao.save(orderToSave);
     }
 
-    public Order update(Long orderId, Order order) {
+    public Order update(int orderId, Order order) {
         Order orderToUpdate = new OrderBuilder(order)
                 .withOrderId(orderId)
                 .build();
@@ -55,7 +55,7 @@ public class OrdersService {
         return ordersDao.save(orderToUpdate);
     }
 
-    public boolean delete(Long orderId) {
+    public boolean delete(int orderId) {
         Order orderToDelete = new OrderBuilder()
                 .withOrderId(orderId)
                 .build();
@@ -68,7 +68,7 @@ public class OrdersService {
         return true;
     }
 
-    public List<OrderDetail> findAllOrderDetailsByOrderId(Long orderId) {
+    public List<OrderDetail> findAllOrderDetailsByOrderId(int orderId) {
         Order order = new OrderBuilder()
                 .withOrderId(orderId)
                 .build();

@@ -44,14 +44,14 @@ public class EmployeesController {
 
     @PutMapping("/{employeeId}")
     @ResponseBody
-    public ResponseEntity<Employee> update(@PathVariable Long employeeId, @RequestBody Employee employee) {
+    public ResponseEntity<Employee> update(@PathVariable int employeeId, @RequestBody Employee employee) {
         Employee employeeSaved = service.update(employeeId, employee);
         return ResponseEntity.ok(employeeSaved);
     }
 
     @DeleteMapping("/delete/{employeeId}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long employeeId) {
+    public ResponseEntity<Map<String, String>> delete(@PathVariable int employeeId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "User deleted!");
 

@@ -2,7 +2,7 @@ package com.github.alessiobianchi.erp.model;
 
 public class SupplierBuilder {
 
-    private Long supplierId;
+    private int supplierId;
     private String companyName;
     private String contactName;
     private String contactTitle;
@@ -13,7 +13,7 @@ public class SupplierBuilder {
     private String country;
     private String phone;
     private String fax;
-    private String homePage;
+    private String homepage;
 
     public SupplierBuilder() {
     }
@@ -30,10 +30,10 @@ public class SupplierBuilder {
         this.country = supplier.getCountry();
         this.phone = supplier.getPhone();
         this.fax = supplier.getFax();
-        this.homePage = supplier.getHomePage();
+        this.homepage = supplier.getHomepage();
     }
 
-    public SupplierBuilder withSupplierId(Long supplierId) {
+    public SupplierBuilder withSupplierId(int supplierId) {
         this.supplierId = supplierId;
         return this;
     }
@@ -88,8 +88,8 @@ public class SupplierBuilder {
         return this;
     }
 
-    public SupplierBuilder withHomePage(String homePage) {
-        this.homePage = homePage;
+    public SupplierBuilder withHomepage(String homepage) {
+        this.homepage = homepage;
         return this;
     }
 
@@ -106,7 +106,7 @@ public class SupplierBuilder {
                 country,
                 phone,
                 fax,
-                homePage
+                homepage
         );
     }
 }

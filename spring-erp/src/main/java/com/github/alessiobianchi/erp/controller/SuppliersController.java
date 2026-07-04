@@ -45,14 +45,14 @@ public class SuppliersController {
 
     @PutMapping("/{supplierId}")
     @ResponseBody
-    public ResponseEntity<Supplier> update(@PathVariable Long supplierId, @RequestBody Supplier supplier) {
+    public ResponseEntity<Supplier> update(@PathVariable int supplierId, @RequestBody Supplier supplier) {
         Supplier supplierSaved = service.update(supplierId, supplier);
         return ResponseEntity.ok(supplierSaved);
     }
 
     @DeleteMapping("/delete/{supplierId}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long supplierId) {
+    public ResponseEntity<Map<String, String>> delete(@PathVariable int supplierId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Supplier deleted!");
 

@@ -36,14 +36,14 @@ public class CategoriesController {
 
     @PutMapping("/{categoryId}")
     @ResponseBody
-    public ResponseEntity<Category> update(@PathVariable Long categoryId, @RequestBody Category category) {
+    public ResponseEntity<Category> update(@PathVariable int categoryId, @RequestBody Category category) {
         Category categorySaved = service.update(categoryId, category);
         return ResponseEntity.ok(categorySaved);
     }
 
     @DeleteMapping("/delete/{categoryId}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long categoryId) {
+    public ResponseEntity<Map<String, String>> delete(@PathVariable int categoryId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Category deleted!");
 

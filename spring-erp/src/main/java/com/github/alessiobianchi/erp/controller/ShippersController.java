@@ -35,14 +35,14 @@ public class ShippersController {
 
     @PutMapping("/{shipperId}")
     @ResponseBody
-    public ResponseEntity<Shipper> update(@PathVariable Long shipperId, @RequestBody Shipper shipper) {
+    public ResponseEntity<Shipper> update(@PathVariable int shipperId, @RequestBody Shipper shipper) {
         Shipper shipperSaved = service.update(shipperId, shipper);
         return ResponseEntity.ok(shipperSaved);
     }
 
     @DeleteMapping("/delete/{shipperId}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long shipperId) {
+    public ResponseEntity<Map<String, String>> delete(@PathVariable int shipperId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Shipper deleted!");
 

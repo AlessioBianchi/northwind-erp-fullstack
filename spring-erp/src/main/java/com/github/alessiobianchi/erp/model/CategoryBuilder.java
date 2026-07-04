@@ -2,10 +2,9 @@ package com.github.alessiobianchi.erp.model;
 
 public class CategoryBuilder {
 
-    private Long categoryId;
+    private int categoryId;
     private String categoryName;
     private String description;
-    private String picture;
 
     public CategoryBuilder() {
     }
@@ -14,10 +13,9 @@ public class CategoryBuilder {
         this.categoryId = category.getCategoryId();
         this.categoryName = category.getCategoryName();
         this.description = category.getDescription();
-        this.picture = category.getPicture();
     }
 
-    public CategoryBuilder withCategoryId(Long categoryId) {
+    public CategoryBuilder withCategoryId(int categoryId) {
         this.categoryId = categoryId;
         return this;
     }
@@ -32,17 +30,11 @@ public class CategoryBuilder {
         return this;
     }
 
-    public CategoryBuilder withPicture(String picture) {
-        this.picture = picture;
-        return this;
-    }
-
     public Category build() {
         return new Category(
                 categoryId,
                 categoryName,
-                description,
-                picture
+                description
         );
     }
 }

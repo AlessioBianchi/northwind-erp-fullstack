@@ -42,7 +42,7 @@ class EmployeesServiceTest {
     @BeforeEach
     void setUp() {
         sampleEmployee = new EmployeeBuilder()
-                .withEmployeeId(1L)
+                .withEmployeeId(1)
                 .withFirstname("John")
                 .withLastname("Doe")
                 .build();
@@ -90,14 +90,14 @@ class EmployeesServiceTest {
 
         // Assert
         assertNotNull(created);
-        assertEquals(1L, created.getEmployeeId());
+        assertEquals(1, created.getEmployeeId());
         verify(employeesDao).save(any(Employee.class));
     }
 
     @Test
     void update_ShouldReturnUpdatedEmployee() {
         // Arrange
-        Long employeeId = 1L;
+        int employeeId = 1;
         String newEmployeeName = "Test";
         Employee employeeUpdated = new EmployeeBuilder()
                 .withEmployeeId(employeeId)
@@ -110,15 +110,15 @@ class EmployeesServiceTest {
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1L, updated.getEmployeeId());
-        assertEquals("Test", updated.getFirstname());
+        assertEquals(1, updated.getEmployeeId());
+        assertEquals("Test", updated.getFirstName());
         verify(employeesDao).save(any(Employee.class));
     }
 
     @Test
     void delete_WhenEmployeeHasOrders_ShouldReturnFalse() {
         // Arrange
-        Long employeeId = 1L;
+        int employeeId = 1;
         when(ordersDao.findAllByEmployee(any(Employee.class))).thenReturn(List.of(new Order()));
 
         // Act
@@ -132,7 +132,7 @@ class EmployeesServiceTest {
     @Test
     void delete_WhenEmployeeHasNoOrders_ShouldReturnTrue() {
         // Arrange
-        Long employeeId = 1L;
+        int employeeId = 1;
         when(ordersDao.findAllByEmployee(any(Employee.class))).thenReturn(Collections.emptyList());
 
         // Act

@@ -36,13 +36,13 @@ public class OrdersController {
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<Order> update(@PathVariable Long orderId, @RequestBody Order order, Principal principal) {
+    public ResponseEntity<Order> update(@PathVariable int orderId, @RequestBody Order order, Principal principal) {
         Order orderSaved = service.update(orderId, order);
         return ResponseEntity.ok(orderSaved);
     }
 
     @DeleteMapping("/delete/{orderId}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long orderId) {
+    public ResponseEntity<Map<String, String>> delete(@PathVariable int orderId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Order deleted!");
 
@@ -54,7 +54,7 @@ public class OrdersController {
     }
 
     @GetMapping("/details/{orderId}")
-    public List<OrderDetail> findAllOrderDetailsByOrderId(@PathVariable Long orderId) {
+    public List<OrderDetail> findAllOrderDetailsByOrderId(@PathVariable int orderId) {
         return service.findAllOrderDetailsByOrderId(orderId);
     }
 

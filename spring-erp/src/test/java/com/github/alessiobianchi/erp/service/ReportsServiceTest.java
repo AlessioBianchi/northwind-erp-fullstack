@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -40,19 +41,19 @@ class ReportsServiceTest {
     @BeforeEach
     void setUp() {
         sampleCustomer = new CustomerBuilder()
-                .withCustomerId(1L)
+                .withCustomerId(1)
                 .withContactName("Mario Rossi")
                 .build();
 
         sampleOrder = new OrderBuilder()
-                .withOrderId(100L)
-                .withOrderDate(new Date())
+                .withOrderId(100)
+                .withOrderDate(LocalDate.now())
                 .withFreight(15.50)
                 .withCustomer(sampleCustomer)
                 .build();
 
         Product product = new ProductBuilder()
-                .withProductId(99L)
+                .withProductId(99)
                 .withProductName("Test")
                 .build();
 
@@ -67,10 +68,10 @@ class ReportsServiceTest {
     @Test
     void getOrdersReport_ShouldReturnValidPdfByteArray() {
         // Arrange
-        Long orderId = 100L;
+        int orderId = 100;
         when(ordersDao.findById(orderId)).thenReturn(Optional.of(sampleOrder));
         when(orderDetailsDao.findAllByOrder(sampleOrder)).thenReturn(List.of(sampleDetail));
-        when(customersDao.findById(1L)).thenReturn(Optional.of(sampleCustomer));
+        when(customersDao.findById(1)).thenReturn(Optional.of(sampleCustomer));
 
         // Act
         byte[] pdfContent = reportsService.getOrdersReport(orderId);
@@ -84,26 +85,26 @@ class ReportsServiceTest {
 
         verify(ordersDao).findById(orderId);
         verify(orderDetailsDao).findAllByOrder(sampleOrder);
-        verify(customersDao).findById(1L);
+        verify(customersDao).findById(1);
     }
 
     @Test
     void getOrdersReport_WhenOrderNotFound_ShouldThrowException() {
         // Arrange
-        when(ordersDao.findById(anyLong())).thenReturn(Optional.empty());
+        when(ordersDao.findById(anyInt())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> reportsService.getOrdersReport(999L));
+        assertThrows(RuntimeException.class, () -> reportsService.getOrdersReport(999));
     }
 
     @Test
     void getOrdersReport_WhenCustomerNotFound_ShouldThrowException() {
         // Arrange
-        when(ordersDao.findById(100L)).thenReturn(Optional.of(sampleOrder));
+        when(ordersDao.findById(100)).thenReturn(Optional.of(sampleOrder));
         when(orderDetailsDao.findAllByOrder(sampleOrder)).thenReturn(List.of(sampleDetail));
-        when(customersDao.findById(anyLong())).thenReturn(Optional.empty());
+        when(customersDao.findById(anyInt())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> reportsService.getOrdersReport(100L));
+        assertThrows(RuntimeException.class, () -> reportsService.getOrdersReport(100));
     }
 }

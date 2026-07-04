@@ -40,7 +40,7 @@ class SuppliersServiceTest {
     @BeforeEach
     void setUp() {
         sampleSupplier = new SupplierBuilder()
-                .withSupplierId(1L)
+                .withSupplierId(1)
                 .withCompanyName("Test")
                 .build();
     }
@@ -86,7 +86,7 @@ class SuppliersServiceTest {
 
         // Assert
         assertNotNull(created);
-        assertEquals(1L, created.getSupplierId());
+        assertEquals(1, created.getSupplierId());
         verify(suppliersDao).save(any(Supplier.class));
     }
 
@@ -94,17 +94,17 @@ class SuppliersServiceTest {
     void update_ShouldReturnUpdatedSupplier() {
         // Arrange
         Supplier supplierUpdated = new SupplierBuilder()
-                .withSupplierId(1L)
+                .withSupplierId(1)
                 .withCompanyName("Test")
                 .build();
         when(suppliersDao.save(any(Supplier.class))).thenReturn(supplierUpdated);
 
         // Act
-        Supplier updated = suppliersService.update(1L, new Supplier());
+        Supplier updated = suppliersService.update(1, new Supplier());
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1L, updated.getSupplierId());
+        assertEquals(1, updated.getSupplierId());
         assertEquals("Test", updated.getCompanyName());
         verify(suppliersDao).save(any(Supplier.class));
     }
@@ -112,7 +112,7 @@ class SuppliersServiceTest {
     @Test
     void delete_WhenSupplierHasProducts_ShouldReturnFalse() {
         // Arrange
-        Long supplierId = 1L;
+        int supplierId = 1;
         when(productsDao.findAllBySupplier(any(Supplier.class))).thenReturn(List.of(new Product()));
 
         // Act
@@ -126,7 +126,7 @@ class SuppliersServiceTest {
     @Test
     void delete_WhenSupplierHasNoProducts_ShouldReturnTrue() {
         // Arrange
-        Long supplierId = 1L;
+        int supplierId = 1;
         when(productsDao.findAllBySupplier(any(Supplier.class))).thenReturn(Collections.emptyList());
 
         // Act

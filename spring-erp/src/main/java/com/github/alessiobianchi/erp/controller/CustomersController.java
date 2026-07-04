@@ -44,14 +44,14 @@ public class CustomersController {
 
     @PutMapping("/{customerId}")
     @ResponseBody
-    public ResponseEntity<Customer> update(@PathVariable Long customerId, @RequestBody Customer customer) {
+    public ResponseEntity<Customer> update(@PathVariable int customerId, @RequestBody Customer customer) {
         Customer customerSaved = service.update(customerId, customer);
         return ResponseEntity.ok(customerSaved);
     }
 
     @DeleteMapping("/delete/{customerId}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long customerId) {
+    public ResponseEntity<Map<String, String>> delete(@PathVariable int customerId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Customer deleted!");
 

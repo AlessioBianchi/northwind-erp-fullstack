@@ -2,7 +2,7 @@ package com.github.alessiobianchi.erp.model;
 
 public class ProductBuilder {
 
-    private Long productId;
+    private int productId;
     private String productName;
     private Supplier supplier;
     private Category category;
@@ -11,7 +11,7 @@ public class ProductBuilder {
     private Integer unitsInStock;
     private Integer unitsOnOrder;
     private Integer reorderLevel;
-    private String discontinued;
+    private boolean discontinued;
 
     public ProductBuilder() {}
 
@@ -28,7 +28,7 @@ public class ProductBuilder {
         this.discontinued = product.getDiscontinued();
     }
 
-    public ProductBuilder withProductId(Long productId) {
+    public ProductBuilder withProductId(int productId) {
         this.productId = productId;
         return this;
     }
@@ -73,7 +73,7 @@ public class ProductBuilder {
         return this;
     }
 
-    public ProductBuilder withDiscontinued(String discontinued) {
+    public ProductBuilder withDiscontinued(boolean discontinued) {
         this.discontinued = discontinued;
         return this;
     }

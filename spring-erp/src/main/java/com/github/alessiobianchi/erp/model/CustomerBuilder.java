@@ -2,7 +2,7 @@ package com.github.alessiobianchi.erp.model;
 
 public class CustomerBuilder {
 
-    private Long customerId;
+    private int customerId;
     private String customerCode;
     private String companyName;
     private String contactName;
@@ -33,7 +33,7 @@ public class CustomerBuilder {
         this.fax = customer.getFax();
     }
 
-    public CustomerBuilder withCustomerId(Long customerId) {
+    public CustomerBuilder withCustomerId(int customerId) {
         this.customerId = customerId;
         return this;
     }

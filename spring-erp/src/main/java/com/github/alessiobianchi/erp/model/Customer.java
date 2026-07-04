@@ -8,13 +8,8 @@ import jakarta.persistence.*;
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_NW_CUSTOMERS")
-    @SequenceGenerator(
-            name = "SEQ_NW_CUSTOMERS",
-            sequenceName = "SEQ_NW_CUSTOMERS",
-            allocationSize = 1
-    )
-    private Long customerId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int customerId;
 
     private String customerCode;
     private String companyName;
@@ -31,7 +26,7 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(Long customerId, String customerCode, String companyName, String contactName,
+    public Customer(int customerId, String customerCode, String companyName, String contactName,
                     String contactTitle, String address, String city, String region,
                     String postalCode, String country, String phone, String fax) {
         this.customerId = customerId;
@@ -48,7 +43,7 @@ public class Customer {
         this.fax = fax;
     }
 
-    public Long getCustomerId() {
+    public int getCustomerId() {
         return customerId;
     }
 

@@ -8,13 +8,8 @@ import jakarta.persistence.*;
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_NW_PRODUCTS")
-    @SequenceGenerator(
-            name = "SEQ_NW_PRODUCTS",
-            sequenceName = "SEQ_NW_PRODUCTS",
-            allocationSize = 1
-    )
-    private Long productId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int productId;
 
     private String productName;
 
@@ -31,11 +26,11 @@ public class Product {
     private Integer unitsInStock;
     private Integer unitsOnOrder;
     private Integer reorderLevel;
-    private String discontinued;
+    private boolean discontinued;
 
     public Product() {}
 
-    public Product(Long productId,
+    public Product(int productId,
                    String productName,
                    Supplier supplier,
                    Category category,
@@ -44,7 +39,7 @@ public class Product {
                    Integer unitsInStock,
                    Integer unitsOnOrder,
                    Integer reorderLevel,
-                   String discontinued) {
+                   boolean discontinued) {
         this.productId = productId;
         this.productName = productName;
         this.supplier = supplier;
@@ -57,7 +52,7 @@ public class Product {
         this.discontinued = discontinued;
     }
 
-    public Long getProductId() { return productId; }
+    public int getProductId() { return productId; }
     public String getProductName() { return productName; }
     public Supplier getSupplier() { return supplier; }
     public Category getCategory() { return category; }
@@ -66,5 +61,5 @@ public class Product {
     public Integer getUnitsInStock() { return unitsInStock; }
     public Integer getUnitsOnOrder() { return unitsOnOrder; }
     public Integer getReorderLevel() { return reorderLevel; }
-    public String getDiscontinued() { return discontinued; }
+    public boolean getDiscontinued() { return discontinued; }
 }

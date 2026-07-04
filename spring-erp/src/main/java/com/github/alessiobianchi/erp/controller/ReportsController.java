@@ -20,7 +20,7 @@ public class ReportsController {
     }
 
     @GetMapping("/orders/{id}")
-    public ResponseEntity<byte[]> getOrdersReport(@PathVariable("id") Long orderId) {
+    public ResponseEntity<byte[]> getOrdersReport(@PathVariable("id") int orderId) {
         byte[] pdfContent = service.getOrdersReport(orderId);
 
         HttpHeaders headers = new HttpHeaders();

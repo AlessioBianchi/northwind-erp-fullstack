@@ -36,7 +36,7 @@ class ShippersServiceTest {
     @BeforeEach
     void setUp() {
         sampleShipper = new ShipperBuilder()
-                .withShipperId(1L)
+                .withShipperId(1)
                 .withCompanyName("Speedy Express")
                 .withPhone("0123456789")
                 .build();
@@ -67,7 +67,7 @@ class ShippersServiceTest {
 
         // Assert
         assertNotNull(created);
-        assertEquals(1L, created.getShipperId());
+        assertEquals(1, created.getShipperId());
         verify(shippersDao).save(any(Shipper.class));
     }
 
@@ -75,17 +75,17 @@ class ShippersServiceTest {
     void update_ShouldReturnUpdatedShipper() {
         // Arrange
         Shipper shipperUpdated = new ShipperBuilder()
-                .withShipperId(1L)
+                .withShipperId(1)
                 .withCompanyName("Test")
                 .build();
         when(shippersDao.save(any(Shipper.class))).thenReturn(shipperUpdated);
 
         // Act
-        Shipper updated = shippersService.update(1L, new Shipper());
+        Shipper updated = shippersService.update(1, new Shipper());
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1L, updated.getShipperId());
+        assertEquals(1, updated.getShipperId());
         assertEquals("Test", updated.getCompanyName());
         verify(shippersDao).save(any(Shipper.class));
     }
@@ -93,7 +93,7 @@ class ShippersServiceTest {
     @Test
     void delete_WhenShipperHasOrders_ShouldReturnFalse() {
         // Arrange
-        Long shipperId = 1L;
+        int shipperId = 1;
         when(ordersDao.findAllByShipper(any(Shipper.class))).thenReturn(List.of(new Order()));
 
         // Act
@@ -107,7 +107,7 @@ class ShippersServiceTest {
     @Test
     void delete_WhenShipperHasNoOrders_ShouldReturnTrue() {
         // Arrange
-        Long shipperId = 1L;
+        int shipperId = 1;
         when(ordersDao.findAllByShipper(any(Shipper.class))).thenReturn(Collections.emptyList());
 
         // Act

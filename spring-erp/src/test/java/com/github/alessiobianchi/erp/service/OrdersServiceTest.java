@@ -77,7 +77,7 @@ class OrdersServiceTest {
     @Test
     void updateOrder_ShouldUpdate() {
         // Arrange
-        Long orderId = 1L;
+        int orderId = 1;
         Double freight = 10.0;
         Order orderUpdated = new OrderBuilder()
                 .withOrderId(orderId)
@@ -99,7 +99,7 @@ class OrdersServiceTest {
     @Test
     void deleteOrder_WhenHasDetails_ShouldReturnFalse() {
         // Arrange
-        Long orderId = 1L;
+        int orderId = 1;
         when(orderDetailsDao.findAllByOrder(any(Order.class))).thenReturn(List.of(new OrderDetail()));
 
         // Act
@@ -114,7 +114,7 @@ class OrdersServiceTest {
     void createOrderDetail_ShouldSetUnitPriceFromProduct() {
         // Arrange
         Product mockProduct = new ProductBuilder()
-                .withProductId(50L)
+                .withProductId(50)
                 .withUnitPrice(25.50)
                 .build();
 
@@ -122,7 +122,7 @@ class OrdersServiceTest {
                 .withProduct(mockProduct)
                 .build();
 
-        when(productsDao.findById(50L)).thenReturn(Optional.of(mockProduct));
+        when(productsDao.findById(50)).thenReturn(Optional.of(mockProduct));
         when(orderDetailsDao.save(any(OrderDetail.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
@@ -137,13 +137,13 @@ class OrdersServiceTest {
     void saveOrderDetail_WhenProductNotFound_ShouldThrowException() {
         // Arrange
         Product p = new ProductBuilder()
-                .withProductId(99L)
+                .withProductId(99)
                 .build();
         OrderDetail detail = new OrderDetailBuilder()
                 .withProduct(p)
                 .build();
 
-        when(productsDao.findById(99L)).thenReturn(Optional.empty());
+        when(productsDao.findById(99)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> ordersService.create(detail));
@@ -155,7 +155,7 @@ class OrdersServiceTest {
         when(orderDetailsDao.findAllByOrder(any(Order.class))).thenReturn(List.of(new OrderDetail()));
 
         // Act
-        List<OrderDetail> details = ordersService.findAllOrderDetailsByOrderId(1L);
+        List<OrderDetail> details = ordersService.findAllOrderDetailsByOrderId(1);
 
         // Assert
         assertEquals(1, details.size());

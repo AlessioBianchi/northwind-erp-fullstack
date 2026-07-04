@@ -1,24 +1,18 @@
 package com.github.alessiobianchi.erp.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Table(name="ORDERS")
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_NW_ORDERS")
-    @SequenceGenerator(
-            name = "SEQ_NW_ORDERS",
-            sequenceName = "SEQ_NW_ORDERS",
-            allocationSize = 1
-    )
-    private Long orderId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int orderId;
 
     @ManyToOne
     @JoinColumn(name="customer_id")
@@ -30,15 +24,15 @@ public class Order {
 
     @DateTimeFormat(pattern = "yyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date orderDate;
+    private LocalDate orderDate;
 
     @DateTimeFormat(pattern = "yyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date requiredDate;
+    private LocalDate requiredDate;
 
     @DateTimeFormat(pattern = "yyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date shippedDate;
+    private LocalDate shippedDate;
 
     @ManyToOne
     @JoinColumn(name="ship_via")
@@ -54,12 +48,12 @@ public class Order {
 
     public Order() {}
 
-    public Order(Long orderId,
+    public Order(int orderId,
                  Customer customer,
                  Employee employee,
-                 Date orderDate,
-                 Date requiredDate,
-                 Date shippedDate,
+                 LocalDate orderDate,
+                 LocalDate requiredDate,
+                 LocalDate shippedDate,
                  Shipper shipper,
                  Double freight,
                  String shipName,
@@ -84,12 +78,12 @@ public class Order {
         this.shipCountry = shipCountry;
     }
 
-    public Long getOrderId() { return orderId; }
+    public int getOrderId() { return orderId; }
     public Customer getCustomer() { return customer; }
     public Employee getEmployee() { return employee; }
-    public Date getOrderDate() { return orderDate; }
-    public Date getRequiredDate() { return requiredDate; }
-    public Date getShippedDate() { return shippedDate; }
+    public LocalDate getOrderDate() { return orderDate; }
+    public LocalDate getRequiredDate() { return requiredDate; }
+    public LocalDate getShippedDate() { return shippedDate; }
     public Shipper getShipper() { return shipper; }
     public Double getFreight() { return freight; }
     public String getShipName() { return shipName; }

@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface SuppliersDAO extends CrudRepository<Supplier, Long> {
+public interface SuppliersDAO extends CrudRepository<Supplier, Integer> {
 
     List<Supplier> findAllByOrderBySupplierIdDesc();
 

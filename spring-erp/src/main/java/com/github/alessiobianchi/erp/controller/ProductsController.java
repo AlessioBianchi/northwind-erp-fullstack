@@ -44,14 +44,14 @@ public class ProductsController {
 
     @PutMapping("/{productId}")
     @ResponseBody
-    public ResponseEntity<Product> update(@PathVariable Long productId, @RequestBody Product product) {
+    public ResponseEntity<Product> update(@PathVariable int productId, @RequestBody Product product) {
         Product productSaved = service.update(productId, product);
         return ResponseEntity.ok(productSaved);
     }
 
     @DeleteMapping("/delete/{productId}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long productId) {
+    public ResponseEntity<Map<String, String>> delete(@PathVariable int productId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Product deleted!");
 

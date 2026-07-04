@@ -7,31 +7,23 @@ import jakarta.persistence.*;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_NW_CATEGORIES")
-    @SequenceGenerator(
-            name = "SEQ_NW_CATEGORIES",
-            sequenceName = "SEQ_NW_CATEGORIES",
-            allocationSize = 1
-    )
-    private Long categoryId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int categoryId;
 
     private String categoryName;
     private String description;
-    private String picture;
 
     public Category() {}
 
-    public Category(Long categoryId,
+    public Category(int categoryId,
                     String categoryName,
-                    String description,
-                    String picture) {
+                    String description) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.description = description;
-        this.picture = picture;
     }
 
-    public Long getCategoryId() {
+    public int getCategoryId() {
         return categoryId;
     }
 
@@ -41,9 +33,5 @@ public class Category {
 
     public String getDescription() {
         return description;
-    }
-
-    public String getPicture() {
-        return picture;
     }
 }
