@@ -100,8 +100,8 @@ Open `http://localhost:4200` in your browser and log in with one of the test acc
 
 | Username | Password | Role |
 |---|---|---|
-| test.manager | password123 | Manager |
-| test.employee | password123 | Employee |
+| manager2 | password123 | Manager |
+| employee1 … employee9 (excluding employee2) | password123 | Employee |
 
 # Project Status
 
