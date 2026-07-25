@@ -4,14 +4,13 @@ import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.service.EmployeesService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/api/v1/employees")
 public class EmployeesController {
 
@@ -22,13 +21,11 @@ public class EmployeesController {
     }
 
     @GetMapping
-    @ResponseBody
     public List<Employee> findAllByOrderByEmployeeIdDesc() {
         return service.findAllByOrderByEmployeeIdDesc();
     }
 
     @GetMapping("/paginated")
-    @ResponseBody
     public Page<Employee> findAllByOrderByEmployeeIdDesc(
             @RequestParam int pageNumber,
             @RequestParam int pageSize) {
@@ -36,21 +33,18 @@ public class EmployeesController {
     }
 
     @PostMapping()
-    @ResponseBody
     public ResponseEntity<Employee> create(@RequestBody Employee employee) {
         Employee employeeSaved = service.create(employee);
         return ResponseEntity.ok(employeeSaved);
     }
 
     @PutMapping("/{employeeId}")
-    @ResponseBody
     public ResponseEntity<Employee> update(@PathVariable int employeeId, @RequestBody Employee employee) {
         Employee employeeSaved = service.update(employeeId, employee);
         return ResponseEntity.ok(employeeSaved);
     }
 
     @DeleteMapping("/delete/{employeeId}")
-    @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable int employeeId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "User deleted!");
