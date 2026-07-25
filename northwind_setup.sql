@@ -4030,12 +4030,14 @@ ALTER TABLE employees
 -- BCrypt hash below = 'password123'
 -- ============================================
 
+-- Regular employees (report to someone)
 UPDATE employees
 SET username = 'employee' || employee_id,
-    password = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
+    password = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
+WHERE reports_to IS NOT NULL;
 
--- Manager account (Andrew Fuller — reports_to IS NULL)
-UPDATE employees SET username = 'test.manager' WHERE employee_id = 2;
-
--- Regular employee account
-UPDATE employees SET username = 'test.employee' WHERE employee_id = 1;
+-- Manager account (reports to nobody)
+UPDATE employees
+SET username = 'manager' || employee_id,
+    password = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
+WHERE reports_to IS NULL;
