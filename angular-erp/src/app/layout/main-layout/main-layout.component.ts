@@ -3,6 +3,7 @@ import { Router, RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../service/auth.service';
 import { HttpClient } from '@angular/common/http';
+import { API_BASE_URL } from '../../api-base-url.token';
 
 @Component({
   selector: 'app-main-layout',
@@ -13,6 +14,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class MainLayoutComponent implements OnInit{
   private authService = inject(AuthService);
+  private apiBaseUrl = inject(API_BASE_URL);
   usernameLogged: string | null = '';
   isManager = false;
 
@@ -30,7 +32,7 @@ export class MainLayoutComponent implements OnInit{
   }
 
   onLogout(): void {
-    this.http.post('http://localhost:8080/api/auth/logout', {}, { withCredentials: true }).subscribe({
+    this.http.post(`${this.apiBaseUrl}/api/auth/logout`, {}, { withCredentials: true }).subscribe({
       complete: () => {
         sessionStorage.clear();
         this.router.navigate(['/login']);

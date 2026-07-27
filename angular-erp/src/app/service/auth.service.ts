@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { API_BASE_URL } from '../api-base-url.token';
 
 interface LoginResponse {
   message: string;
@@ -12,7 +13,7 @@ interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth/login';
+  private apiUrl = `${inject(API_BASE_URL)}/api/auth/login`;
 
   private usernameLogged: string | null = null;
   private isManager: boolean = false;
