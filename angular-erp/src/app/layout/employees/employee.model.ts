@@ -1,11 +1,11 @@
 export interface Employee {
   employeeId?: number;
-  lastname: string;
-  firstname: string;
+  lastName: string;
+  firstName: string;
   title: string;
   titleOfCourtesy?: string;
-  birthdate: string;
-  hiredate: string;
+  birthDate: string;
+  hireDate: string;
   address?: string;
   city?: string;
   region?: string;
@@ -13,7 +13,6 @@ export interface Employee {
   country?: string;
   homePhone?: string;
   extension?: string;
-  photo?: string;
   notes?: string;
   reportsTo?: Employee;
   username?: string;

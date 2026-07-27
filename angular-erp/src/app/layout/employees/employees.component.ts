@@ -62,9 +62,9 @@ export class EmployeesComponent implements OnInit {
 
   get filteredEmployees() {
     if (!this.searchQuery) return this.employeesList;
-    return this.employeesList.filter(e => 
-      e.firstname.toLowerCase().includes(this.searchQuery) ||
-      e.lastname.toLowerCase().includes(this.searchQuery) ||
+    return this.employeesList.filter(e =>
+      e.firstName.toLowerCase().includes(this.searchQuery) ||
+      e.lastName.toLowerCase().includes(this.searchQuery) ||
       e.title.toLowerCase().includes(this.searchQuery)
     );
   }
@@ -91,11 +91,11 @@ export class EmployeesComponent implements OnInit {
     this.badgeClass = 'badge bg-success text-white';
 
     this.activeEmployeeForm = {
-      firstname: '',
-      lastname: '',
+      firstName: '',
+      lastName: '',
       title: '',
-      birthdate: '',
-      hiredate: new Date().toISOString().substring(0, 10),
+      birthDate: '',
+      hireDate: new Date().toISOString().substring(0, 10),
       address: '',
       city: '',
       region: '',

@@ -42,11 +42,11 @@
                                 <tr [class.table-primary]="selectedEmployeeId === e.employeeId"
                                     (click)="selectEmployee(e)"
                                     style="cursor: pointer;">
-                                    <td class="px-3 fw-bold text-secondary">{{ e.lastname }}</td>
-                                    <td>{{ e.firstname }}</td>
+                                    <td class="px-3 fw-bold text-secondary">{{ e.lastName }}</td>
+                                    <td>{{ e.firstName }}</td>
                                     <td><span class="badge bg-light text-dark border">{{ e.title }}</span></td>
                                     <td class="text-muted small">
-                                        {{ e.reportsTo ? (e.reportsTo.firstname + ' ' + e.reportsTo.lastname) : 'Executive Level' }}
+                                        {{ e.reportsTo ? (e.reportsTo.firstName + ' ' + e.reportsTo.lastName) : 'Executive Level' }}
                                     </td>
                                 </tr>
                             } @empty {
@@ -97,11 +97,11 @@
                         <form class="row g-3" (ngSubmit)="saveEmployeeHeader($event)">
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-secondary mb-1">Lastname</label>
-                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.lastname" name="lastname" required>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.lastName" name="lastName" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-secondary mb-1">Firstname</label>
-                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.firstname" name="firstname" required>
+                                <input type="text" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.firstName" name="firstName" required>
                             </div>
 
                             <div class="col-md-6">
@@ -114,7 +114,7 @@
                                     <option [ngValue]="undefined">Corporate Executive Hierarchy Level...</option>
                                     @for (mgr of allEmployeesLookupList; track mgr.employeeId) {
                                         @if (mgr.employeeId !== activeEmployeeForm.employeeId) {
-                                            <option [ngValue]="mgr">{{ mgr.lastname }}, {{ mgr.firstname }} ({{ mgr.title }})</option>
+                                            <option [ngValue]="mgr">{{ mgr.lastName }}, {{ mgr.firstName }} ({{ mgr.title }})</option>
                                         }
                                     }
                                 </select>
@@ -122,11 +122,11 @@
 
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-secondary mb-1">Birthdate</label>
-                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.birthdate" name="birthdate" required>
+                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.birthDate" name="birthDate" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-secondary mb-1">Hire Date</label>
-                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.hiredate" name="hiredate" required>
+                                <input type="date" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.hireDate" name="hireDate" required>
                             </div>
 
                             <div class="col-12">

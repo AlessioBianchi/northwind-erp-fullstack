@@ -114,7 +114,7 @@ export class ProductsComponent implements OnInit {
       unitsInStock: 0,
       unitsOnOrder: 0,
       reorderLevel: 0,
-      discontinued: 'N'
+      discontinued: false
     };
   }
 

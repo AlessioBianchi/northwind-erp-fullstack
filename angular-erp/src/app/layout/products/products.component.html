@@ -43,7 +43,7 @@
                                     style="cursor: pointer;">
                                     <td class="px-3 fw-bold text-secondary">
                                         {{ p.productName }}
-                                        @if (p.discontinued === 'Y') {
+                                        @if (p.discontinued) {
                                             <span class="badge bg-danger ms-1 small" style="font-size: 0.65rem;">Discontinued</span>
                                         }
                                     </td>
@@ -159,8 +159,8 @@
                                 <div class="col-12 mt-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="detDiscontinued"
-                                            [checked]="activeProductForm.discontinued === 'Y'"
-                                            (change)="activeProductForm.discontinued = ($event.target.checked ? 'Y' : 'N')">
+                                            [checked]="activeProductForm.discontinued"
+                                            (change)="activeProductForm.discontinued = $event.target.checked">
                                         <label class="form-check-label small fw-semibold text-danger" for="detDiscontinued">
                                             Flags Record as Discontinued
                                         </label>
