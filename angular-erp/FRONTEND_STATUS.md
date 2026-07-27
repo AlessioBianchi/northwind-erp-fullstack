@@ -302,6 +302,15 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-07-25] — Refactor frontend models to match PostgreSQL schema
+
+- `employee.model.ts`: corrected field name casing to match Jackson serialization from the backend — `lastname`→`lastName`, `firstname`→`firstName`, `birthdate`→`birthDate`, `hiredate`→`hireDate`; removed unused `photo` field (not present in backend entity).
+- `employees.component.ts`: updated `filteredEmployees` getter and `initializeNewEmployeeForm()` to use new camelCase field names.
+- `employees.component.html`: updated all template bindings (`e.lastName`, `e.firstName`, `e.reportsTo.firstName`/`lastName`, `mgr.lastName`/`mgr.firstName`) and all `[(ngModel)]`/`name` attributes to match.
+- `product.model.ts`: `discontinued` changed from `'Y' | 'N'` to `boolean`, matching the backend entity (`boolean discontinued`) after the DB column was changed from `integer` to `boolean` in the PostgreSQL migration.
+- `products.component.ts`: default value for `discontinued` in `initializeNewProductForm()` changed from `'N'` to `false`.
+- `products.component.html`: discontinued badge check `=== 'Y'` → truthy `p.discontinued`; checkbox binding updated accordingly.
+
 ### [2026-07-25] — Centralised API_BASE_URL via environment files
 
 - Added `src/environments/environment.ts` (`apiBaseUrl: 'http://localhost:8080'`) and `environment.prod.ts` (`apiBaseUrl: ''`, same-origin).
