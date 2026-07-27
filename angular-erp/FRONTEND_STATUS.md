@@ -27,7 +27,7 @@ Angular 21 frontend for a Northwind ERP replica. Connected to a Spring Boot back
 **Root component:** `src/app/app.ts`  
 **Routing:** `src/app/app.routes.ts`  
 **App config:** `src/app/app.config.ts`  
-**Backend base URL:** `http://localhost:8080` (hardcoded in services)
+**Backend base URL:** `http://localhost:8080` (from `src/environments/environment.ts`, injected via `API_BASE_URL` token)
 
 ---
 
@@ -60,7 +60,8 @@ angular-erp/
 │   └── app/
 │       ├── app.ts                       # Root component (RouterOutlet only)
 │       ├── app.routes.ts                # All route definitions
-│       ├── app.config.ts                # HttpClient, CSRF, router providers
+│       ├── app.config.ts                # HttpClient, CSRF, router, API_BASE_URL providers
+│       ├── api-base-url.token.ts        # InjectionToken<string> for the backend base URL
 │       ├── page-response.model.ts       # Generic PageResponse<T> pagination model
 │       │
 │       ├── login/
@@ -86,6 +87,9 @@ angular-erp/
 │           ├── categories.service.ts
 │           ├── shippers.service.ts
 │           └── csrf.interceptor.ts      # Functional interceptor — adds X-XSRF-TOKEN header
+├── src/environments/
+│   ├── environment.ts                   # Dev config — apiBaseUrl: http://localhost:8080
+│   └── environment.prod.ts              # Prod config — apiBaseUrl: '' (same-origin), swapped in via angular.json fileReplacements
 ├── angular.json
 ├── package.json
 ├── tsconfig.json
@@ -195,7 +199,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 
 ## API Integration
 
-**Base URL:** `http://localhost:8080` — hardcoded in each service file.  
+**Base URL:** `http://localhost:8080` (dev) — sourced from `src/environments/environment.ts` and injected into every service via the `API_BASE_URL` token (`src/app/api-base-url.token.ts`), provided in `app.config.ts`. Production build swaps in `environment.prod.ts` via `fileReplacements` in `angular.json`.  
 **HTTP client config (`app.config.ts`):**
 - `withFetch()` — uses browser Fetch API.
 - `withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' })`.
@@ -278,7 +282,6 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 ## Known Gaps & TODOs
 
 - [ ] **No route guards** — any URL is accessible without login if sessionStorage is manipulated.
-- [ ] **No environment files** — backend URL (`http://localhost:8080`) is hardcoded in services. Needs `environment.ts` / `environment.prod.ts`.
 - [ ] **No wildcard/404 route** — accessing unknown URLs produces a blank page.
 - [ ] **Subscription cleanup** — components do not unsubscribe from Observables on destroy (no `takeUntilDestroyed`, no `unsubscribe`).
 - [ ] **No loading spinners** — no visual feedback during HTTP requests.
@@ -298,6 +301,13 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-07-25] — Centralised API_BASE_URL via environment files
+
+- Added `src/environments/environment.ts` (`apiBaseUrl: 'http://localhost:8080'`) and `environment.prod.ts` (`apiBaseUrl: ''`, same-origin).
+- Added `API_BASE_URL` injection token: `src/app/api-base-url.token.ts`, provided in `src/app/app.config.ts` from `environment.apiBaseUrl`.
+- `angular.json`: added `fileReplacements` to the `production` build configuration to swap in `environment.prod.ts`.
+- Replaced hardcoded `http://localhost:8080` in every service (`auth`, `dashboard`, `orders`, `products`, `customers`, `suppliers`, `employees`, `categories`, `shippers`) and in `main-layout.component.ts` (logout call) with `inject(API_BASE_URL)`.
 
 ### [2026-06-22] — Proper HTTP methods + POST/PUT split
 

@@ -3,14 +3,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Employee } from '../layout/employees/employee.model';
 import { PageResponse } from '../page-response.model';
+import { API_BASE_URL } from '../api-base-url.token';
 
 @Injectable({
     providedIn: 'root'
 })
 export class EmployeesService {
     private http = inject(HttpClient);
-    
-    private apiBaseUrl = 'http://localhost:8080/api/v1/employees';
+
+    private apiBaseUrl = `${inject(API_BASE_URL)}/api/v1/employees`;
     private httpOptions = { withCredentials: true };
     
     getAllByOrderByEmployeeIdDesc(): Observable<Employee[]> {

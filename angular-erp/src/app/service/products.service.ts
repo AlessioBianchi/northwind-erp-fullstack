@@ -3,14 +3,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product } from '../layout/products/product.model';
 import { PageResponse } from '../page-response.model';
+import { API_BASE_URL } from '../api-base-url.token';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductsService {
   private http = inject(HttpClient);
-  
-  private apiBaseUrl = 'http://localhost:8080/api/v1/products'; 
+
+  private apiBaseUrl = `${inject(API_BASE_URL)}/api/v1/products`;
   private httpOptions = { withCredentials: true };
 
   getAllProducts(): Observable<Product[]> {

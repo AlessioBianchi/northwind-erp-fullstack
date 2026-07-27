@@ -2,14 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Shipper } from '../layout/suppliers/shipper.model';
+import { API_BASE_URL } from '../api-base-url.token';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ShippersService {
   private http = inject(HttpClient);
-  
-  private apiBaseUrl = 'http://localhost:8080/api/v1/shippers'; 
+
+  private apiBaseUrl = `${inject(API_BASE_URL)}/api/v1/shippers`;
   private httpOptions = { withCredentials: true };
   
   getAllShippers(): Observable<Shipper[]> {
