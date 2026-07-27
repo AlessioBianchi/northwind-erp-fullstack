@@ -3,13 +3,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Order, OrderDetail } from '../layout/orders/order.model';
 import { PageResponse } from '../page-response.model';
+import { API_BASE_URL } from '../api-base-url.token';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrdersService {
-  private http = inject(HttpClient); 
-  private apiBaseUrl = 'http://localhost:8080/api/v1/orders';
+  private http = inject(HttpClient);
+  private apiBaseUrl = `${inject(API_BASE_URL)}/api/v1/orders`;
   private httpOptions = { withCredentials: true };
 
   getPaginatedOrders(pageNumber: number, pageSize: number): Observable<PageResponse<Order>> {
