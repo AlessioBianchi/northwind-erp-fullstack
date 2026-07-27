@@ -4,14 +4,13 @@ import com.github.alessiobianchi.erp.model.Product;
 import com.github.alessiobianchi.erp.service.ProductsService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/api/v1/products")
 public class ProductsController {
 
@@ -22,13 +21,11 @@ public class ProductsController {
     }
 
     @GetMapping
-    @ResponseBody
     public List<Product> findAllByOrderByProductIdDesc() {
         return service.findAllByOrderByProductIdDesc();
     }
 
     @GetMapping("/paginated")
-    @ResponseBody
     public Page<Product> findAllByOrderByProductIdDesc(
             @RequestParam int pageNumber,
             @RequestParam int pageSize) {
@@ -36,21 +33,18 @@ public class ProductsController {
     }
 
     @PostMapping()
-    @ResponseBody
     public ResponseEntity<Product> create(@RequestBody Product product) {
         Product productSaved = service.create(product);
         return ResponseEntity.ok(productSaved);
     }
 
     @PutMapping("/{productId}")
-    @ResponseBody
     public ResponseEntity<Product> update(@PathVariable int productId, @RequestBody Product product) {
         Product productSaved = service.update(productId, product);
         return ResponseEntity.ok(productSaved);
     }
 
     @DeleteMapping("/delete/{productId}")
-    @ResponseBody
     public ResponseEntity<Map<String, String>> delete(@PathVariable int productId) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Product deleted!");
