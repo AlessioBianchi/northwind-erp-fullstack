@@ -1,28 +1,31 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 
 import { Supplier } from './supplier.model';
 import { SuppliersService } from '../../service/suppliers.service';
 import { ShippersService } from '../../service/shippers.service';
 import { Shipper } from './shipper.model';
+import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-suppliers',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
   templateUrl: './suppliers.component.html',
   styleUrl: './suppliers.component.css'
 })
 export class SuppliersComponent implements OnInit {
   private suppliersService = inject(SuppliersService);
   private shippersService = inject(ShippersService);
-  
+
   currentPage = 1;
   pageSize = 50;
   totalPages = 0;
   totalElements = 0;
-  
+  isLoading = false;
+
   selectedSupplierId: number | null = null;
   currentWorkspaceState: 'empty' | 'edit' | 'new' = 'empty';
   activeTab: 'supplier' | 'shipper' = 'supplier';
@@ -43,15 +46,18 @@ export class SuppliersComponent implements OnInit {
 
   loadPaginatedSuppliers(): void {
     const apiIndex = this.currentPage - 1;
-    
-    this.suppliersService.getPaginatedSuppliers(apiIndex, this.pageSize).subscribe({
-      next: (res) => {
-        this.suppliersList = res.content;
-        this.totalElements = res.page.totalElements;
-        this.totalPages = res.page.totalPages;
-      },
-      error: (err) => console.error('Error fetching paginated suppliers:', err)
-    });
+
+    this.isLoading = true;
+    this.suppliersService.getPaginatedSuppliers(apiIndex, this.pageSize)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (res) => {
+          this.suppliersList = res.content;
+          this.totalElements = res.page.totalElements;
+          this.totalPages = res.page.totalPages;
+        },
+        error: (err) => console.error('Error fetching paginated suppliers:', err)
+      });
   }
 
   preloadDropdownRelationshipDependencies(): void {

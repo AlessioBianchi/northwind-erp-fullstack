@@ -38,21 +38,27 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (e of filteredEmployees; track e.employeeId) {
-                                <tr [class.table-primary]="selectedEmployeeId === e.employeeId"
-                                    (click)="selectEmployee(e)"
-                                    style="cursor: pointer;">
-                                    <td class="px-3 fw-bold text-secondary">{{ e.lastName }}</td>
-                                    <td>{{ e.firstName }}</td>
-                                    <td><span class="badge bg-light text-dark border">{{ e.title }}</span></td>
-                                    <td class="text-muted small">
-                                        {{ e.reportsTo ? (e.reportsTo.firstName + ' ' + e.reportsTo.lastName) : 'Executive Level' }}
-                                    </td>
-                                </tr>
-                            } @empty {
+                            @if (isLoading) {
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">No active personnel files mapped in system database registries.</td>
+                                    <td colspan="4"><app-loading-spinner></app-loading-spinner></td>
                                 </tr>
+                            } @else {
+                                @for (e of filteredEmployees; track e.employeeId) {
+                                    <tr [class.table-primary]="selectedEmployeeId === e.employeeId"
+                                        (click)="selectEmployee(e)"
+                                        style="cursor: pointer;">
+                                        <td class="px-3 fw-bold text-secondary">{{ e.lastName }}</td>
+                                        <td>{{ e.firstName }}</td>
+                                        <td><span class="badge bg-light text-dark border">{{ e.title }}</span></td>
+                                        <td class="text-muted small">
+                                            {{ e.reportsTo ? (e.reportsTo.firstName + ' ' + e.reportsTo.lastName) : 'Executive Level' }}
+                                        </td>
+                                    </tr>
+                                } @empty {
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No active personnel files mapped in system database registries.</td>
+                                    </tr>
+                                }
                             }
                         </tbody>
                     </table>

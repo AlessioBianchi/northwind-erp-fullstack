@@ -284,7 +284,6 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 - [ ] **No wildcard/404 route** — accessing unknown URLs produces a blank page.
 - [ ] **Subscription cleanup** — components do not unsubscribe from Observables on destroy (no `takeUntilDestroyed`, no `unsubscribe`).
-- [ ] **No loading spinners** — no visual feedback during HTTP requests.
 - [ ] **No tests written** — Vitest is configured but no spec files exist yet.
 
 ---
@@ -299,6 +298,13 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-09-21] — Loading spinners on CRUD list panels
+
+- Added `src/app/loading-spinner/loading-spinner.component.ts` + `.html`: small standalone Bootstrap spinner, reused across modules.
+- Added `isLoading` boolean to `CustomersComponent`, `ProductsComponent`, `SuppliersComponent`, `OrdersComponent`, `EmployeesComponent` — set around each module's paginated list fetch via `finalize()`, covering initial load, pagination, and the reload triggered after save/delete.
+- Each module's list `<tbody>` now shows `<app-loading-spinner>` in place of the rows while `isLoading` is true.
+- Closes the previously known gap where there was no visual feedback during HTTP requests.
 
 ### [2026-09-21] — Global HTTP error interceptor
 

@@ -36,17 +36,23 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (c of filteredCustomers; track c.customerCode) {
-                                <tr [class.table-primary]="selectedCustomerId === c.customerId"
-                                    (click)="selectCustomer(c)"
-                                    style="cursor: pointer;">
-                                    <td class="px-3 fw-bold text-secondary">{{ c.customerCode }}</td>
-                                    <td>{{ c.companyName }}</td>
-                                </tr>
-                            } @empty {
+                            @if (isLoading) {
                                 <tr>
-                                    <td colspan="2" class="text-center text-muted py-4">No customers found.</td>
+                                    <td colspan="2"><app-loading-spinner></app-loading-spinner></td>
                                 </tr>
+                            } @else {
+                                @for (c of filteredCustomers; track c.customerCode) {
+                                    <tr [class.table-primary]="selectedCustomerId === c.customerId"
+                                        (click)="selectCustomer(c)"
+                                        style="cursor: pointer;">
+                                        <td class="px-3 fw-bold text-secondary">{{ c.customerCode }}</td>
+                                        <td>{{ c.companyName }}</td>
+                                    </tr>
+                                } @empty {
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted py-4">No customers found.</td>
+                                    </tr>
+                                }
                             }
                         </tbody>
                     </table>
