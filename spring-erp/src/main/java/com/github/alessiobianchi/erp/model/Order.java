@@ -12,7 +12,7 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int orderId;
+    private Integer orderId;
 
     @ManyToOne
     @JoinColumn(name="customer_id")
@@ -48,7 +48,7 @@ public class Order {
 
     public Order() {}
 
-    public Order(int orderId,
+    public Order(Integer orderId,
                  Customer customer,
                  Employee employee,
                  LocalDate orderDate,
@@ -78,7 +78,7 @@ public class Order {
         this.shipCountry = shipCountry;
     }
 
-    public int getOrderId() { return orderId; }
+    public Integer getOrderId() { return orderId; }
     public Customer getCustomer() { return customer; }
     public Employee getEmployee() { return employee; }
     public LocalDate getOrderDate() { return orderDate; }

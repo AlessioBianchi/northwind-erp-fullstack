@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class OrderBuilder {
 
-    private int orderId;
+    private Integer orderId;
     private Customer customer;
     private Employee employee;
     private LocalDate orderDate;
@@ -39,7 +39,7 @@ public class OrderBuilder {
         this.shipCountry = order.getShipCountry();
     }
 
-    public OrderBuilder withOrderId(int orderId) {
+    public OrderBuilder withOrderId(Integer orderId) {
         this.orderId = orderId;
         return this;
     }
