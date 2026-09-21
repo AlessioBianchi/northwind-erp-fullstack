@@ -102,10 +102,7 @@ export class OrdersComponent implements OnInit{
           this.loadPaginatedOrders();
           this.cancelWorkspaceEdit();
         },
-        error: (err) => {
-          console.error('Error saving order properties:', err);
-          alert('Failed to save order changes.');
-        }
+        error: (err) => console.error('Error saving order properties:', err)
     });
   }
 
@@ -228,10 +225,7 @@ export class OrdersComponent implements OnInit{
         this.loadPaginatedOrders();
         this.cancelWorkspaceEdit();
       },
-      error: (err) => {
-        console.error('Error saving order detail properties:', err);
-        alert('Failed to save order detail.');
-      }
+      error: (err) => console.error('Error saving order detail properties:', err)
     });
 
     this.closeDetailModal();

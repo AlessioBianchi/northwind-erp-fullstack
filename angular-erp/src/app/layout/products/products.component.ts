@@ -200,7 +200,7 @@ export class ProductsComponent implements OnInit {
           this.cancelCategoryWorkspaceEdit();
           this.loadPaginatedProducts();
         },
-        error: (err) => alert('Failed to delete category.')
+        error: (err) => console.error('Error deleting category:', err)
       });
     }
   }
