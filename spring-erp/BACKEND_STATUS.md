@@ -439,6 +439,13 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 
 ---
 
+### [2026-09-21] — Fixed primitive `orderId` breaking order creation
+
+- `Order.orderId` was a primitive `int` used directly as the `@RequestBody` type on `POST /api/v1/orders` (`OrdersController.create`). New orders don't have an `orderId` yet, so Jackson had no value to bind for the primitive constructor parameter, failing order creation from the frontend.
+- Same root-cause pattern as the earlier Date/LocalDate bug: a primitive type used somewhere it needs to tolerate "no value yet."
+- `Order.java`: `orderId` changed from `int` to `Integer` (nullable), matching how `freight` is already `Double` not `double`.
+- `OrderBuilder.java`: `orderId` field and `withOrderId()` param changed to `Integer` to match.
+
 ### [2026-09-21] — Fixed Date/LocalDate mismatch breaking dashboard stats
 
 - `DashboardService.getStats()` was building the "start of month" cutoff as a `java.util.Date` (via `Calendar`) and passing it into DAO queries filtering on `Order.orderDate`, which is `LocalDate` — Hibernate threw on the type mismatch, surfaced by the frontend as a generic error banner.
