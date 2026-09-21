@@ -307,6 +307,7 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 - Added `src/app/error-banner/error-banner.component.ts` + `.html`: Bootstrap dismissible alert bound to `ErrorNotificationService.message`, mounted in `app.html` so it's visible across every route.
 - `app.config.ts`: registered `errorInterceptor` alongside `csrfInterceptor` via `withInterceptors`.
 - Closes the previously known gap where HTTP errors were handled per-component or silently swallowed.
+- Removed the 4 now-redundant error-path `alert()` calls (`products.component.ts`, `suppliers.component.ts`, `orders.component.ts`) that would have doubled up with the new banner on the same failure. Success-path `alert()`s were left as-is — no replacement notification exists for those yet.
 
 ### [2026-09-21] — Implement AuthGuard on layout routes
 
