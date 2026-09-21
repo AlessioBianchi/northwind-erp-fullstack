@@ -7,6 +7,7 @@ import { ProductsComponent } from './layout/products/products.component';
 import { CustomersComponent } from './layout/customers/customers.component';
 import { SuppliersComponent } from './layout/suppliers/suppliers.component';
 import { EmployeesComponent } from './layout/employees/employees.component';
+import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -15,6 +16,7 @@ export const routes: Routes = [
   {
     path: 'layout',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'orders', component: OrdersComponent },

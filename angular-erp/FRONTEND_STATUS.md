@@ -255,8 +255,8 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 | Login | POST with `application/x-www-form-urlencoded` body |
 | Session storage | `sessionStorage`: keys `username` and `isManager` |
 | Role check | `isManager === 'true'` string comparison |
-| Route guards | **None implemented** — UI hides links but routes are unprotected |
-| Logout | Clears sessionStorage, navigates to `/login` (no server-side call) |
+| Route guards | `authGuard` (`src/app/auth.guard.ts`) — `CanActivateFn` on the `layout` route, redirects to `/login` if no session |
+| Logout | Calls `POST /api/auth/logout`, then clears sessionStorage and navigates to `/login` |
 | CSRF | HTTP-only cookie `XSRF-TOKEN` → `X-XSRF-TOKEN` header via interceptor |
 | withCredentials | `true` on all requests — session cookie sent automatically |
 
@@ -281,12 +281,10 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ## Known Gaps & TODOs
 
-- [ ] **No route guards** — any URL is accessible without login if sessionStorage is manipulated.
 - [ ] **No wildcard/404 route** — accessing unknown URLs produces a blank page.
 - [ ] **Subscription cleanup** — components do not unsubscribe from Observables on destroy (no `takeUntilDestroyed`, no `unsubscribe`).
 - [ ] **No loading spinners** — no visual feedback during HTTP requests.
 - [ ] **No global error handling** — HTTP errors are handled per-component (or not at all).
-- [ ] **Logout is client-side only** — server session is not invalidated.
 - [ ] **No tests written** — Vitest is configured but no spec files exist yet.
 
 ---
@@ -301,6 +299,12 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-09-21] — Implement AuthGuard on layout routes
+
+- Added `src/app/auth.guard.ts`: `authGuard` (`CanActivateFn`) checks `AuthService.getUsernameLogged()` and redirects to `/login` if no session is present.
+- `app.routes.ts`: applied `canActivate: [authGuard]` to the `layout` route so all child routes (dashboard, orders, products, customers, suppliers, employees) are protected in one place.
+- Closes the previously known gap where any `/layout/*` URL was reachable without logging in.
 
 ### [2026-07-25] — Refactor frontend models to match PostgreSQL schema
 
