@@ -40,23 +40,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (order of ordersList; track order.orderId) {
-                                <tr class="pointer-row" 
-                                    [class.table-primary]="selectedOrderId === order.orderId"
-                                    (click)="selectOrder(order)"
-                                    style="cursor: pointer;">
-                                    <td class="px-3 fw-bold text-secondary">#{{ order.orderId }}</td>
-                                    <td>{{ order.customer?.companyName ?? 'Walk-in Customer' }}</td>
-                                    <td>
-                                        <span class="badge bg-light text-dark border px-2">
-                                            {{ order.shipCountry }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            } @empty {
+                            @if (isLoading) {
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">No orders currently populated.</td>
+                                    <td colspan="3"><app-loading-spinner></app-loading-spinner></td>
                                 </tr>
+                            } @else {
+                                @for (order of ordersList; track order.orderId) {
+                                    <tr class="pointer-row"
+                                        [class.table-primary]="selectedOrderId === order.orderId"
+                                        (click)="selectOrder(order)"
+                                        style="cursor: pointer;">
+                                        <td class="px-3 fw-bold text-secondary">#{{ order.orderId }}</td>
+                                        <td>{{ order.customer?.companyName ?? 'Walk-in Customer' }}</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border px-2">
+                                                {{ order.shipCountry }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                } @empty {
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">No orders currently populated.</td>
+                                    </tr>
+                                }
                             }
                         </tbody>
                     </table>

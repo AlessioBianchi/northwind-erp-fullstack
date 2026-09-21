@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { Order, OrderDetail } from './order.model';
 import { Customer } from '../customers/customer.model';
 import { Shipper } from '../suppliers/shipper.model';
@@ -9,11 +10,12 @@ import { CustomersService } from '../../service/customers.service';
 import { ShippersService } from '../../service/shippers.service';
 import { Product } from '../products/product.model';
 import { ProductsService } from '../../service/products.service';
+import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
@@ -23,10 +25,11 @@ export class OrdersComponent implements OnInit{
   private shippersService = inject(ShippersService);
   private productsService = inject(ProductsService);
   
-  currentPage = 1; 
+  currentPage = 1;
   pageSize = 50;
   totalElements = 0;
   totalPages = 0;
+  isLoading = false;
 
   selectedOrderId: number | null = null;
   selectedDetail: OrderDetail | null = null;
@@ -59,14 +62,17 @@ export class OrdersComponent implements OnInit{
   loadPaginatedOrders(): void {
     const apiPageIdx = this.currentPage - 1;
 
-    this.ordersService.getPaginatedOrders(apiPageIdx, this.pageSize).subscribe({
-      next: (response) => {
-        this.ordersList = response.content;
-        this.totalElements = response.page.totalElements;
-        this.totalPages = response.page.totalPages;
-      },
-      error: (err) => console.error('Error fetching paginated orders:', err)
-    });
+    this.isLoading = true;
+    this.ordersService.getPaginatedOrders(apiPageIdx, this.pageSize)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (response) => {
+          this.ordersList = response.content;
+          this.totalElements = response.page.totalElements;
+          this.totalPages = response.page.totalPages;
+        },
+        error: (err) => console.error('Error fetching paginated orders:', err)
+      });
   }
 
   onPageChange(newPage: number): void {

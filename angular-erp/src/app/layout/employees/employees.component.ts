@@ -1,24 +1,27 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { Employee } from './employee.model';
 import { EmployeesService } from '../../service/employees.service';
+import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-employees',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
   templateUrl: './employees.component.html',
   styleUrl: './employees.component.css'
 })
 export class EmployeesComponent implements OnInit {
   private employeesService = inject(EmployeesService);
-  
+
   currentPage = 1;
   pageSize = 50;
   totalPages = 0;
   totalElements = 0;
-  
+  isLoading = false;
+
   selectedEmployeeId: number | null = null;
   currentWorkspaceState: 'empty' | 'edit' | 'new' = 'empty';
   
@@ -38,14 +41,18 @@ export class EmployeesComponent implements OnInit {
 
   loadPaginatedEmployees(): void {
     const apiIndex = this.currentPage - 1;
-    this.employeesService.getPaginatedEmployees(apiIndex, this.pageSize).subscribe({
-      next: (res) => {
-        this.employeesList = res.content;
-        this.totalElements = res.page.totalElements;
-        this.totalPages = res.page.totalPages;
-      },
-      error: (err) => console.error('Error fetching paginated corporate roster list:', err)
-    });
+
+    this.isLoading = true;
+    this.employeesService.getPaginatedEmployees(apiIndex, this.pageSize)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (res) => {
+          this.employeesList = res.content;
+          this.totalElements = res.page.totalElements;
+          this.totalPages = res.page.totalPages;
+        },
+        error: (err) => console.error('Error fetching paginated corporate roster list:', err)
+      });
   }
 
   preloadDropdownRelationshipDependencies(): void {
