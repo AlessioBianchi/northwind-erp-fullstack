@@ -192,7 +192,7 @@ export class SuppliersComponent implements OnInit {
           this.cancelShipperWorkspaceEdit();
           this.loadPaginatedSuppliers();
         },
-        error: (err) => alert('Failed to delete shipper.')
+        error: (err) => console.error('Error deleting shipper:', err)
       });
     }
   }
