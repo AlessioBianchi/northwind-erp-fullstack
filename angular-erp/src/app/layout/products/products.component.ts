@@ -1,17 +1,19 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 
 import { Product } from './product.model';
 import { Category } from './category.model';
-import { ProductsService } from '../../service/products.service'; 
+import { ProductsService } from '../../service/products.service';
 import { SuppliersService } from '../../service/suppliers.service';
 import { CategoriesService } from '../../service/categories.service';
+import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
   templateUrl: './products.component.html',
   styleUrl: './products.component.css'
 })
@@ -19,12 +21,13 @@ export class ProductsComponent implements OnInit {
   private productsService = inject(ProductsService);
   private suppliersService = inject(SuppliersService);
   private categoriesService = inject(CategoriesService);
-  
+
   currentPage = 1;
   pageSize = 50;
   totalPages = 0;
   totalElements = 0;
-  
+  isLoading = false;
+
   selectedProductId: number | null = null;
   currentWorkspaceState: 'empty' | 'edit' | 'new' = 'empty';
   activeTab: 'product' | 'category' = 'product';
@@ -46,15 +49,18 @@ export class ProductsComponent implements OnInit {
 
   loadPaginatedProducts(): void {
     const apiIndex = this.currentPage - 1;
-    
-    this.productsService.getPaginatedProducts(apiIndex, this.pageSize).subscribe({
-      next: (res) => {
-        this.productsList = res.content;
-        this.totalElements = res.page.totalElements;
-        this.totalPages = res.page.totalPages;
-      },
-      error: (err) => console.error('Error fetching paginated products:', err)
-    });
+
+    this.isLoading = true;
+    this.productsService.getPaginatedProducts(apiIndex, this.pageSize)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (res) => {
+          this.productsList = res.content;
+          this.totalElements = res.page.totalElements;
+          this.totalPages = res.page.totalPages;
+        },
+        error: (err) => console.error('Error fetching paginated products:', err)
+      });
   }
 
   preloadDropdownRelationshipDependencies(): void {

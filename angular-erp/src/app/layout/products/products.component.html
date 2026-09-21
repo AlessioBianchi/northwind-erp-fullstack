@@ -37,23 +37,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (p of filteredProducts; track p.productId) {
-                                <tr [class.table-primary]="selectedProductId === p.productId"
-                                    (click)="selectProduct(p)"
-                                    style="cursor: pointer;">
-                                    <td class="px-3 fw-bold text-secondary">
-                                        {{ p.productName }}
-                                        @if (p.discontinued) {
-                                            <span class="badge bg-danger ms-1 small" style="font-size: 0.65rem;">Discontinued</span>
-                                        }
-                                    </td>
-                                    <td><span class="badge bg-light text-dark border">{{ p.category?.categoryName ?? 'N/A' }}</span></td>
-                                    <td class="text-muted small">{{ p.supplier?.companyName ?? 'N/A' }}</td>
-                                </tr>
-                            } @empty {
+                            @if (isLoading) {
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">No product stock listings found.</td>
+                                    <td colspan="3"><app-loading-spinner></app-loading-spinner></td>
                                 </tr>
+                            } @else {
+                                @for (p of filteredProducts; track p.productId) {
+                                    <tr [class.table-primary]="selectedProductId === p.productId"
+                                        (click)="selectProduct(p)"
+                                        style="cursor: pointer;">
+                                        <td class="px-3 fw-bold text-secondary">
+                                            {{ p.productName }}
+                                            @if (p.discontinued) {
+                                                <span class="badge bg-danger ms-1 small" style="font-size: 0.65rem;">Discontinued</span>
+                                            }
+                                        </td>
+                                        <td><span class="badge bg-light text-dark border">{{ p.category?.categoryName ?? 'N/A' }}</span></td>
+                                        <td class="text-muted small">{{ p.supplier?.companyName ?? 'N/A' }}</td>
+                                    </tr>
+                                } @empty {
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">No product stock listings found.</td>
+                                    </tr>
+                                }
                             }
                         </tbody>
                     </table>

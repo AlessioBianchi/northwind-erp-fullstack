@@ -1,23 +1,26 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { CustomersService } from '../../service/customers.service';
 import { Customer } from './customer.model';
+import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent],
   templateUrl: './customers.component.html',
   styleUrl: './customers.component.css'
 })
 export class CustomersComponent implements OnInit {
   private customersService = inject(CustomersService);
 
-  currentPage = 1; 
+  currentPage = 1;
   pageSize = 50;
   totalElements = 0;
   totalPages = 0;
+  isLoading = false;
 
   customersList: Customer[] = [];
   selectedCustomerId: number | null = null;
@@ -33,14 +36,17 @@ export class CustomersComponent implements OnInit {
   loadPaginatedCustomers(): void {
     const apiPageIdx = this.currentPage - 1;
 
-    this.customersService.getPaginatedCustomers(apiPageIdx, this.pageSize).subscribe({
-      next: (response) => {
-        this.customersList = response.content;
-        this.totalElements = response.page.totalElements;
-        this.totalPages = response.page.totalPages;
-      },
-      error: (err) => console.error('Error fetching customers:', err)
-    });
+    this.isLoading = true;
+    this.customersService.getPaginatedCustomers(apiPageIdx, this.pageSize)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (response) => {
+          this.customersList = response.content;
+          this.totalElements = response.page.totalElements;
+          this.totalPages = response.page.totalPages;
+        },
+        error: (err) => console.error('Error fetching customers:', err)
+      });
   }
 
   onSearchInput(event: Event): void {
