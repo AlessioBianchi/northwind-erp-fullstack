@@ -12,8 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,8 +45,8 @@ class DashboardServiceTest {
 
         when(ordersDao.countAllOrders()).thenReturn(totalOrders);
         when(orderDetailsDao.calculateTotalRevenue()).thenReturn(totalRevenue);
-        when(ordersDao.countLastMonthOrders(any(Date.class))).thenReturn(lastMonthOrders);
-        when(orderDetailsDao.calculateMonthlyRevenue(any(Date.class))).thenReturn(lastMonthRevenue);
+        when(ordersDao.countLastMonthOrders(any(LocalDate.class))).thenReturn(lastMonthOrders);
+        when(orderDetailsDao.calculateMonthlyRevenue(any(LocalDate.class))).thenReturn(lastMonthRevenue);
 
         when(ordersDao.findFirst10ByOrderByOrderIdDesc()).thenReturn(List.of(new Order()));
 

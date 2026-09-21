@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface OrderDetailsDAO extends CrudRepository<OrderDetail, OrderDetailId> {
@@ -22,7 +22,7 @@ public interface OrderDetailsDAO extends CrudRepository<OrderDetail, OrderDetail
 
     @Query("SELECT SUM(d.quantity * d.unitPrice * (1 - d.discount)) FROM OrderDetail d " +
             "WHERE d.order.orderDate >= :startDate")
-    Double calculateMonthlyRevenue(@Param("startDate") Date startDate);
+    Double calculateMonthlyRevenue(@Param("startDate") LocalDate startDate);
 
     @Query("SELECT d.product.category.categoryName, COUNT(DISTINCT d.order.orderId) " +
             "FROM OrderDetail d " +

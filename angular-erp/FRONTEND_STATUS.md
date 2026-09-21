@@ -205,6 +205,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 - `withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' })`.
 - `withCredentials: true` on all requests (session cookie passed to backend).
 - `csrfInterceptor` — functional interceptor that reads the XSRF cookie and injects the header on non-GET requests.
+- `errorInterceptor` — functional interceptor that catches 4xx/5xx responses (except `/api/auth/login`, which has its own inline error handling), pushes the message to `ErrorNotificationService`, and re-throws so components can still react if needed. Displayed via `ErrorBannerComponent`, mounted at the root of `app.html`.
 
 ### Endpoint map
 
@@ -284,7 +285,6 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 - [ ] **No wildcard/404 route** — accessing unknown URLs produces a blank page.
 - [ ] **Subscription cleanup** — components do not unsubscribe from Observables on destroy (no `takeUntilDestroyed`, no `unsubscribe`).
 - [ ] **No loading spinners** — no visual feedback during HTTP requests.
-- [ ] **No global error handling** — HTTP errors are handled per-component (or not at all).
 - [ ] **No tests written** — Vitest is configured but no spec files exist yet.
 
 ---
@@ -299,6 +299,14 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-09-21] — Global HTTP error interceptor
+
+- Added `src/app/service/error-notification.service.ts`: signal-based `ErrorNotificationService` holding the current error message.
+- Added `src/app/service/error.interceptor.ts`: `errorInterceptor` catches 4xx/5xx on every request except `/api/auth/login` (which has its own inline error handling), pushes the message into `ErrorNotificationService`, then re-throws so components can still handle specific errors if needed.
+- Added `src/app/error-banner/error-banner.component.ts` + `.html`: Bootstrap dismissible alert bound to `ErrorNotificationService.message`, mounted in `app.html` so it's visible across every route.
+- `app.config.ts`: registered `errorInterceptor` alongside `csrfInterceptor` via `withInterceptors`.
+- Closes the previously known gap where HTTP errors were handled per-component or silently swallowed.
 
 ### [2026-09-21] — Implement AuthGuard on layout routes
 

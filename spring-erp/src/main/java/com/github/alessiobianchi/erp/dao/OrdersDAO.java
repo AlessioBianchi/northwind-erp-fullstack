@@ -9,7 +9,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 public interface OrdersDAO extends CrudRepository<Order, Integer> {
@@ -26,7 +25,7 @@ public interface OrdersDAO extends CrudRepository<Order, Integer> {
     Long countAllOrders();
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate >= :startDate")
-    Long countLastMonthOrders(@Param("startDate") Date startDate);
+    Long countLastMonthOrders(@Param("startDate") LocalDate startDate);
 
     List<Order> findFirst10ByOrderByOrderIdDesc();
 }

@@ -7,8 +7,7 @@ import com.github.alessiobianchi.erp.dto.DashboardDTO;
 import com.github.alessiobianchi.erp.dto.DashboardDTOBuilder;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,13 +24,7 @@ public class DashboardService {
     }
 
     public DashboardDTO getStats() {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        Date startOfMonth = cal.getTime();
+        LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
 
         return new DashboardDTOBuilder()
                 .withTotalOrdersCount(ordersDao.countAllOrders())

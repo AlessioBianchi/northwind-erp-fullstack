@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withFetch, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { csrfInterceptor } from './service/csrf.interceptor';
+import { errorInterceptor } from './service/error.interceptor';
 import { API_BASE_URL } from './api-base-url.token';
 import { environment } from '../environments/environment';
 
@@ -15,7 +16,7 @@ export const appConfig: ApplicationConfig = {
         cookieName: 'XSRF-TOKEN',
         headerName: 'X-XSRF-TOKEN',
       }),
-      withInterceptors([csrfInterceptor])
+      withInterceptors([csrfInterceptor, errorInterceptor])
     ),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
