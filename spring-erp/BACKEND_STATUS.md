@@ -439,6 +439,14 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 
 ---
 
+### [2026-09-21] — Fixed Date/LocalDate mismatch breaking dashboard stats
+
+- `DashboardService.getStats()` was building the "start of month" cutoff as a `java.util.Date` (via `Calendar`) and passing it into DAO queries filtering on `Order.orderDate`, which is `LocalDate` — Hibernate threw on the type mismatch, surfaced by the frontend as a generic error banner.
+- `DashboardService.getStats()`: replaced `Calendar`/`Date` construction with `LocalDate.now().withDayOfMonth(1)`.
+- `OrdersDAO.countLastMonthOrders()`: param type changed from `Date` to `LocalDate`.
+- `OrderDetailsDAO.calculateMonthlyRevenue()`: param type changed from `Date` to `LocalDate`.
+- `DashboardServiceTest`: mocks updated to match `LocalDate` param type.
+
 ### [2026-06-26] — Rename root package to com.github.alessiobianchi.erp
 
 - All Java source files updated: `package` and `import` declarations changed from `it.zerob.erp` to `com.github.alessiobianchi.erp`.
