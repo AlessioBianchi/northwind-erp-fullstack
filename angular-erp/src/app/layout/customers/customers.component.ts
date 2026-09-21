@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -15,6 +16,7 @@ import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.c
 })
 export class CustomersComponent implements OnInit {
   private customersService = inject(CustomersService);
+  private destroyRef = inject(DestroyRef);
 
   currentPage = 1;
   pageSize = 50;
@@ -38,7 +40,7 @@ export class CustomersComponent implements OnInit {
 
     this.isLoading = true;
     this.customersService.getPaginatedCustomers(apiPageIdx, this.pageSize)
-      .pipe(finalize(() => this.isLoading = false))
+      .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           this.customersList = response.content;
@@ -104,7 +106,7 @@ export class CustomersComponent implements OnInit {
       ? this.customersService.updateCustomer(customer)
       : this.customersService.createCustomer(customer);
     
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
           alert('Customer saved successfully.');
           this.loadPaginatedCustomers();
@@ -117,7 +119,7 @@ export class CustomersComponent implements OnInit {
   deleteCustomer(): void {
     if (!this.selectedCustomerId) return;
     if (confirm('Are you sure you want to delete this customer?')) {
-      this.customersService.deleteCustomer(this.selectedCustomerId).subscribe({
+      this.customersService.deleteCustomer(this.selectedCustomerId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           alert('Customer deleted.');
           this.loadPaginatedCustomers();

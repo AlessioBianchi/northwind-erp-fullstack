@@ -283,7 +283,6 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 ## Known Gaps & TODOs
 
 - [ ] **No wildcard/404 route** — accessing unknown URLs produces a blank page.
-- [ ] **Subscription cleanup** — components do not unsubscribe from Observables on destroy (no `takeUntilDestroyed`, no `unsubscribe`).
 - [ ] **No tests written** — Vitest is configured but no spec files exist yet.
 
 ---
@@ -298,6 +297,12 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-09-21] — takeUntilDestroyed() on all subscriptions
+
+- Added `private destroyRef = inject(DestroyRef);` and piped `takeUntilDestroyed(this.destroyRef)` into every `.subscribe()` call across the app (32 sites): `CustomersComponent`, `ProductsComponent`, `SuppliersComponent`, `OrdersComponent`, `EmployeesComponent`, `DashboardComponent`, `MainLayoutComponent`, `LoginComponent`.
+- Where a call already piped through `finalize()` (the loading-spinner work), `takeUntilDestroyed` was added as an additional pipe operator rather than a separate `.pipe()`.
+- Closes the previously known gap where components never unsubscribed from in-flight HTTP calls on destroy.
 
 ### [2026-09-21] — Loading spinners on CRUD list panels
 
