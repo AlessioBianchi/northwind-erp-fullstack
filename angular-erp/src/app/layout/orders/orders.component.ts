@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -24,6 +25,7 @@ export class OrdersComponent implements OnInit{
   private customersService = inject(CustomersService);
   private shippersService = inject(ShippersService);
   private productsService = inject(ProductsService);
+  private destroyRef = inject(DestroyRef);
   
   currentPage = 1;
   pageSize = 50;
@@ -64,7 +66,7 @@ export class OrdersComponent implements OnInit{
 
     this.isLoading = true;
     this.ordersService.getPaginatedOrders(apiPageIdx, this.pageSize)
-      .pipe(finalize(() => this.isLoading = false))
+      .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           this.ordersList = response.content;
@@ -102,7 +104,7 @@ export class OrdersComponent implements OnInit{
       ? this.ordersService.updateOrder(order)
       : this.ordersService.createOrder(order);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedOrder) => {
           alert('Order saved successfully!');
           this.loadPaginatedOrders();
@@ -116,7 +118,7 @@ export class OrdersComponent implements OnInit{
     if (!this.selectedOrderId) return;
     
     if (confirm('Are you sure you want to drop this order record?')) {
-      this.ordersService.deleteOrder(this.selectedOrderId).subscribe({
+      this.ordersService.deleteOrder(this.selectedOrderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message);
           this.loadPaginatedOrders();
@@ -200,7 +202,7 @@ export class OrdersComponent implements OnInit{
       shipCountry: ''
     };
 
-    this.productsService.getAllProducts().subscribe({
+    this.productsService.getAllProducts().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (products) => this.productsList = products,
       error: (err) => console.log('Error fetching products list', err)
     });
@@ -225,7 +227,7 @@ export class OrdersComponent implements OnInit{
   submitDetailForm(): void {
     if (!this.modalDetailForm.product || !this.modalDetailForm.quantity) return;
     
-    this.ordersService.createOrderDetail(this.modalDetailForm as OrderDetail).subscribe({
+    this.ordersService.createOrderDetail(this.modalDetailForm as OrderDetail).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedDetail) => {
         alert('Order detail saved successfully!');
         this.loadPaginatedOrders();
@@ -241,7 +243,7 @@ export class OrdersComponent implements OnInit{
     if (!this.selectedDetail) return;
 
     if (confirm('Are you sure you want to drop this order detail record?')) {
-      this.ordersService.deleteOrderDetail(this.selectedDetail).subscribe({
+      this.ordersService.deleteOrderDetail(this.selectedDetail).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message);
           this.loadPaginatedOrders();
@@ -253,21 +255,21 @@ export class OrdersComponent implements OnInit{
   }
 
   loadCustomersList() {
-    this.customersService.getAllCustomers().subscribe({
+    this.customersService.getAllCustomers().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (customers) => this.customersList = customers,
       error: (err) => console.log('Error fetching customers list', err)
     });
   }
 
   loadShippersList() {
-    this.shippersService.getAllShippers().subscribe({
+    this.shippersService.getAllShippers().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (shippers) => this.shippersList = shippers,
       error: (err) => console.log('Error fetching shippers list', err)
     });
   }
 
   loadOrderDetailsList(orderId: number) {
-    this.ordersService.getOrderDetails(orderId).subscribe({
+    this.ordersService.getOrderDetails(orderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (details) => this.orderDetailsList = details,
       error: (err) => console.error('Error fetching order details:', err)
     });

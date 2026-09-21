@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -21,6 +22,7 @@ export class ProductsComponent implements OnInit {
   private productsService = inject(ProductsService);
   private suppliersService = inject(SuppliersService);
   private categoriesService = inject(CategoriesService);
+  private destroyRef = inject(DestroyRef);
 
   currentPage = 1;
   pageSize = 50;
@@ -52,7 +54,7 @@ export class ProductsComponent implements OnInit {
 
     this.isLoading = true;
     this.productsService.getPaginatedProducts(apiIndex, this.pageSize)
-      .pipe(finalize(() => this.isLoading = false))
+      .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
           this.productsList = res.content;
@@ -64,12 +66,12 @@ export class ProductsComponent implements OnInit {
   }
 
   preloadDropdownRelationshipDependencies(): void {
-    this.categoriesService.getAllCategories().subscribe({
+    this.categoriesService.getAllCategories().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (categories) => this.referenceCategoriesList = categories,
       error: (err) => console.error('Failed to load category dependencies:', err)
     });
 
-    this.suppliersService.getAllSuppliers().subscribe({
+    this.suppliersService.getAllSuppliers().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (suppliers) => this.referenceSuppliersList = suppliers,
       error: (err) => console.error('Failed to load supplier dependencies:', err)
     });
@@ -137,7 +139,7 @@ export class ProductsComponent implements OnInit {
       ? this.productsService.updateProduct(product)
       : this.productsService.createProduct(product);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedResult) => {
           alert('Product saved successfully.');
           this.loadPaginatedProducts();
@@ -151,7 +153,7 @@ export class ProductsComponent implements OnInit {
     if (!this.selectedProductId) return;
 
     if (confirm('Are you sure you want to delete this product?')) {
-      this.productsService.deleteProduct(this.selectedProductId).subscribe({
+      this.productsService.deleteProduct(this.selectedProductId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
           alert(response.message || 'Product deleted.');
           this.loadPaginatedProducts();
@@ -183,7 +185,7 @@ export class ProductsComponent implements OnInit {
       ? this.categoriesService.updateCategory(category)
       : this.categoriesService.createCategory(category);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         alert('Category saved successfully.');
         this.preloadDropdownRelationshipDependencies();
@@ -199,7 +201,7 @@ export class ProductsComponent implements OnInit {
     if (!targetId) return;
 
     if (confirm('Are you sure you want to delete this category?')) {
-      this.categoriesService.deleteCategory(targetId).subscribe({
+      this.categoriesService.deleteCategory(targetId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message || 'Category deleted.');
           this.preloadDropdownRelationshipDependencies();

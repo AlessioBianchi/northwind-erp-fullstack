@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../service/auth.service';
@@ -15,6 +16,7 @@ import { API_BASE_URL } from '../../api-base-url.token';
 export class MainLayoutComponent implements OnInit{
   private authService = inject(AuthService);
   private apiBaseUrl = inject(API_BASE_URL);
+  private destroyRef = inject(DestroyRef);
   usernameLogged: string | null = '';
   isManager = false;
 
@@ -32,7 +34,7 @@ export class MainLayoutComponent implements OnInit{
   }
 
   onLogout(): void {
-    this.http.post(`${this.apiBaseUrl}/api/auth/logout`, {}, { withCredentials: true }).subscribe({
+    this.http.post(`${this.apiBaseUrl}/api/auth/logout`, {}, { withCredentials: true }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       complete: () => {
         sessionStorage.clear();
         this.router.navigate(['/login']);

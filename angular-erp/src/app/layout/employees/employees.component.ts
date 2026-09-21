@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -15,6 +16,7 @@ import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.c
 })
 export class EmployeesComponent implements OnInit {
   private employeesService = inject(EmployeesService);
+  private destroyRef = inject(DestroyRef);
 
   currentPage = 1;
   pageSize = 50;
@@ -44,7 +46,7 @@ export class EmployeesComponent implements OnInit {
 
     this.isLoading = true;
     this.employeesService.getPaginatedEmployees(apiIndex, this.pageSize)
-      .pipe(finalize(() => this.isLoading = false))
+      .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
           this.employeesList = res.content;
@@ -57,7 +59,7 @@ export class EmployeesComponent implements OnInit {
 
   preloadDropdownRelationshipDependencies(): void {
     // Fetches everyone so any employee can be assigned as a manager
-    this.employeesService.getAllByOrderByEmployeeIdDesc().subscribe({
+    this.employeesService.getAllByOrderByEmployeeIdDesc().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => this.allEmployeesLookupList = data,
       error: (err) => console.error('Error syncing management roster dictionary listings:', err)
     });
@@ -131,7 +133,7 @@ export class EmployeesComponent implements OnInit {
       ? this.employeesService.update(employee)
       : this.employeesService.create(employee);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedResult) => {
           alert('Employee profile record saved successfully.');
           this.loadPaginatedEmployees();
@@ -146,7 +148,7 @@ export class EmployeesComponent implements OnInit {
     if (!this.selectedEmployeeId) return;
 
     if (confirm('Are you sure you want to drop this worker profile history record?')) {
-      this.employeesService.delete(this.selectedEmployeeId).subscribe({
+      this.employeesService.delete(this.selectedEmployeeId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message || 'Profile removed securely.');
           this.loadPaginatedEmployees();

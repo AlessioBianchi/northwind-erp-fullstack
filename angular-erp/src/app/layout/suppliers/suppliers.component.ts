@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -19,6 +20,7 @@ import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.c
 export class SuppliersComponent implements OnInit {
   private suppliersService = inject(SuppliersService);
   private shippersService = inject(ShippersService);
+  private destroyRef = inject(DestroyRef);
 
   currentPage = 1;
   pageSize = 50;
@@ -49,7 +51,7 @@ export class SuppliersComponent implements OnInit {
 
     this.isLoading = true;
     this.suppliersService.getPaginatedSuppliers(apiIndex, this.pageSize)
-      .pipe(finalize(() => this.isLoading = false))
+      .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
           this.suppliersList = res.content;
@@ -61,7 +63,7 @@ export class SuppliersComponent implements OnInit {
   }
 
   preloadDropdownRelationshipDependencies(): void {
-    this.shippersService.getAllShippers().subscribe({
+    this.shippersService.getAllShippers().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (shippers) => this.referenceShippersList = shippers,
       error: (err) => console.error('Failed to load shipper dependencies:', err)
     });
@@ -129,7 +131,7 @@ export class SuppliersComponent implements OnInit {
       ? this.suppliersService.updateSupplier(supplier)
       : this.suppliersService.createSupplier(supplier);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedResult) => {
           alert('Supplier saved successfully.');
           this.loadPaginatedSuppliers();
@@ -143,7 +145,7 @@ export class SuppliersComponent implements OnInit {
     if (!this.selectedSupplierId) return;
 
     if (confirm('Are you sure you want to delete this supplier?')) {
-      this.suppliersService.deleteSupplier(this.selectedSupplierId).subscribe({
+      this.suppliersService.deleteSupplier(this.selectedSupplierId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
           alert(response.message || 'Supplier deleted.');
           this.loadPaginatedSuppliers();
@@ -175,7 +177,7 @@ export class SuppliersComponent implements OnInit {
       ? this.shippersService.updateShipper(shipper)
       : this.shippersService.createShipper(shipper);
     
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedShip) => {
           alert('Shipper saved successfully.');
           this.preloadDropdownRelationshipDependencies(); 
@@ -191,7 +193,7 @@ export class SuppliersComponent implements OnInit {
     if (!targetId) return;
 
     if (confirm('Are you sure you want to delete this shipper?')) {
-      this.shippersService.deleteShipper(targetId).subscribe({
+      this.shippersService.deleteShipper(targetId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message || 'Shipper deleted.');
           this.preloadDropdownRelationshipDependencies();

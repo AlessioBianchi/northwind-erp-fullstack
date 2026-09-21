@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Chart, registerables } from 'chart.js';
 import { type DashboardData } from './dashboard.model';
 import { DashboardService } from '../../service/dashboard.service';
@@ -13,11 +14,12 @@ Chart.register(...registerables);
 })
 export class DashboardComponent implements OnInit{
   private dashboardService = inject(DashboardService);
+  private destroyRef = inject(DestroyRef);
   private chartInstance?: Chart;
   stats?: DashboardData;
 
   ngOnInit(): void {
-    this.dashboardService.getDashboardStats().subscribe({
+    this.dashboardService.getDashboardStats().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.stats = data;
         this.updateChartWithData();
