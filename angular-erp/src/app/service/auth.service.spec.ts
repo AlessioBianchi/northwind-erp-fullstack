@@ -49,4 +49,20 @@ describe('AuthService', () => {
     sessionStorage.setItem('isManager', 'true');
     expect(service.isUserManager()).toBe(true);
   });
+
+  it('logout clears both sessionStorage and the in-memory cache', () => {
+    service.login('alessio', 'secret').subscribe();
+    httpMock.expectOne('http://localhost:8080/api/auth/login')
+      .flush({ message: 'ok', username: 'alessio', isManager: true });
+
+    service.logout();
+
+    expect(sessionStorage.getItem('username')).toBeNull();
+    expect(sessionStorage.getItem('isManager')).toBeNull();
+    // Asserted via the public getters (not the private fields) so this test
+    // catches a logout() that clears sessionStorage but forgets to reset the
+    // in-memory cache, which would otherwise keep returning the stale, truthy value.
+    expect(service.getUsernameLogged()).toBeNull();
+    expect(service.isUserManager()).toBe(false);
+  });
 });

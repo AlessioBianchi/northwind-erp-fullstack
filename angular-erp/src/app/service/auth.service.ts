@@ -59,4 +59,10 @@ export class AuthService {
     }
     return this.isManager;
   }
+
+  logout(): void {
+    sessionStorage.clear();
+    this.usernameLogged = null;
+    this.isManager = false;
+  }
 }
