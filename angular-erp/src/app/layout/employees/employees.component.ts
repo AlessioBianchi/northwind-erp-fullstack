@@ -71,11 +71,14 @@ export class EmployeesComponent implements OnInit {
 
   get filteredEmployees() {
     if (!this.searchQuery) return this.employeesList;
-    return this.employeesList.filter(e =>
-      e.firstName.toLowerCase().includes(this.searchQuery) ||
-      e.lastName.toLowerCase().includes(this.searchQuery) ||
-      e.title.toLowerCase().includes(this.searchQuery)
-    );
+
+    return this.employeesList.filter(e => {
+      const matchesFirstName = e.firstName?.toLowerCase().includes(this.searchQuery) ?? false;
+      const matchesLastName = e.lastName?.toLowerCase().includes(this.searchQuery) ?? false;
+      const matchesTitle = e.title?.toLowerCase().includes(this.searchQuery) ?? false;
+
+      return matchesFirstName || matchesLastName || matchesTitle;
+    });
   }
 
   onPageChange(newPage: number): void {
