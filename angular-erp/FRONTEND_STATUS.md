@@ -282,7 +282,6 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ## Known Gaps & TODOs
 
-- [ ] **No wildcard/404 route** — accessing unknown URLs produces a blank page.
 - [ ] **No tests written** — Vitest is configured but no spec files exist yet.
 
 ---
@@ -297,6 +296,12 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-09-24] — Wildcard route + 404 page
+
+- Added `src/app/not-found/not-found.component.ts` + `.html`: standalone `NotFoundComponent`, simple Bootstrap 404 message with a link back to `/login`.
+- `app.routes.ts`: replaced the commented-out `{ path: '**', redirectTo: 'login' }` with an active `{ path: '**', component: NotFoundComponent }` as the last route.
+- Closes the previously known gap where unknown URLs produced a blank page.
 
 ### [2026-09-21] — takeUntilDestroyed() on all subscriptions
 
