@@ -257,7 +257,7 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 | Session storage | `sessionStorage`: keys `username` and `isManager` |
 | Role check | `isManager === 'true'` string comparison |
 | Route guards | `authGuard` (`src/app/auth.guard.ts`) — `CanActivateFn` on the `layout` route, redirects to `/login` if no session. `managerGuard` (`src/app/manager.guard.ts`) — `CanActivateFn` on the `employees` child route, redirects non-managers to `/404` |
-| Logout | Calls `POST /api/auth/logout`, then clears sessionStorage and navigates to `/login` |
+| Logout | Calls `POST /api/auth/logout`, then `AuthService.logout()` clears sessionStorage and the in-memory session cache, and navigates to `/login` |
 | CSRF | HTTP-only cookie `XSRF-TOKEN` → `X-XSRF-TOKEN` header via interceptor |
 | withCredentials | `true` on all requests — session cookie sent automatically |
 
@@ -296,6 +296,12 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-09-24] — Clear AuthService in-memory state on logout
+
+- `auth.service.ts`: added `logout()`, which clears `sessionStorage` and resets the in-memory `usernameLogged`/`isManager` fields. Previously `getUsernameLogged()`/`isUserManager()` only re-read `sessionStorage` when the cached in-memory field was falsy, so after a `sessionStorage.clear()` alone, a still-truthy in-memory value kept satisfying `authGuard` — e.g. hitting the browser Back button into a guarded route right after logout let the user back in.
+- `main-layout.component.ts`: `onLogout()` now calls `this.authService.logout()` instead of `sessionStorage.clear()` directly, on both the `complete` and `error` branches.
+- `auth.service.spec.ts`: added a test asserting `logout()` clears both storage and the in-memory cache, verified through the public getters (so a future regression that clears storage but forgets the in-memory fields would fail it).
 
 ### [2026-09-24] — Manager-only guard on the Employees route
 
