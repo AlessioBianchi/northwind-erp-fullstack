@@ -7,12 +7,12 @@ import { ProductsComponent } from './layout/products/products.component';
 import { CustomersComponent } from './layout/customers/customers.component';
 import { SuppliersComponent } from './layout/suppliers/suppliers.component';
 import { EmployeesComponent } from './layout/employees/employees.component';
+import { NotFoundComponent } from './not-found/not-found.component';
 import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  //{ path: '**', redirectTo: 'login' },
   {
     path: 'layout',
     component: MainLayoutComponent,
@@ -26,4 +26,5 @@ export const routes: Routes = [
       { path: 'employees', component: EmployeesComponent }
     ]
   },
+  { path: '**', component: NotFoundComponent },
 ];
