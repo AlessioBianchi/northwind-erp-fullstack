@@ -297,6 +297,10 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-09-24] — Reset add-order-detail modal form after save
+
+- `orders.component.ts`: extracted the `modalDetailForm` default shape into a private `createEmptyDetailForm()` method (used both for the initial field value and for resetting). `submitDetailForm()` now resets `modalDetailForm` to that default on a successful save, so reopening the "add line item" modal no longer shows the previous entry's stale product/quantity/unitPrice/discount values.
+
 ### [2026-09-24] — Fix order line-item selection toggle
 
 - `orders.component.ts`: `selectDetail(detail)` compared `selectedDetail === null` instead of `selectedDetail === detail`, so clicking a different line item while one was already selected cleared the selection instead of switching to the newly clicked row. Changed to `this.selectedDetail = this.selectedDetail === detail ? null : detail;` — clicking a row selects it, re-clicking the selected row deselects it, and clicking a different row switches to it directly.

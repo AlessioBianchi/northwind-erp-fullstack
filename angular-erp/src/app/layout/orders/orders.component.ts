@@ -49,13 +49,7 @@ export class OrdersComponent implements OnInit{
   productsList: Product[] = [];
 
   activeForm: Partial<Order> = {};
-  modalDetailForm: OrderDetail = {
-    product: undefined,
-    order: undefined,
-    unitPrice: 0.00,
-    quantity: 1,
-    discount: 0.00
-  };
+  modalDetailForm: OrderDetail = this.createEmptyDetailForm();
 
   ngOnInit(): void {
     this.loadPaginatedOrders();
@@ -226,10 +220,11 @@ export class OrdersComponent implements OnInit{
 
   submitDetailForm(): void {
     if (!this.modalDetailForm.product || !this.modalDetailForm.quantity) return;
-    
+
     this.ordersService.createOrderDetail(this.modalDetailForm as OrderDetail).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedDetail) => {
         alert('Order detail saved successfully!');
+        this.modalDetailForm = this.createEmptyDetailForm();
         this.loadPaginatedOrders();
         this.cancelWorkspaceEdit();
       },
@@ -237,6 +232,16 @@ export class OrdersComponent implements OnInit{
     });
 
     this.closeDetailModal();
+  }
+
+  private createEmptyDetailForm(): OrderDetail {
+    return {
+      product: undefined,
+      order: undefined,
+      unitPrice: 0.00,
+      quantity: 1,
+      discount: 0.00
+    };
   }
 
   deleteActiveDetail() {
