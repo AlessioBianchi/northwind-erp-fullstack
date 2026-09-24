@@ -297,6 +297,10 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-09-24] — Fix order line-item selection toggle
+
+- `orders.component.ts`: `selectDetail(detail)` compared `selectedDetail === null` instead of `selectedDetail === detail`, so clicking a different line item while one was already selected cleared the selection instead of switching to the newly clicked row. Changed to `this.selectedDetail = this.selectedDetail === detail ? null : detail;` — clicking a row selects it, re-clicking the selected row deselects it, and clicking a different row switches to it directly.
+
 ### [2026-09-24] — Clear AuthService in-memory state on logout
 
 - `auth.service.ts`: added `logout()`, which clears `sessionStorage` and resets the in-memory `usernameLogged`/`isManager` fields. Previously `getUsernameLogged()`/`isUserManager()` only re-read `sessionStorage` when the cached in-memory field was falsy, so after a `sessionStorage.clear()` alone, a still-truthy in-memory value kept satisfying `authGuard` — e.g. hitting the browser Back button into a guarded route right after logout let the user back in.
