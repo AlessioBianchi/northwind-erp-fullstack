@@ -256,7 +256,7 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 | Login | POST with `application/x-www-form-urlencoded` body |
 | Session storage | `sessionStorage`: keys `username` and `isManager` |
 | Role check | `isManager === 'true'` string comparison |
-| Route guards | `authGuard` (`src/app/auth.guard.ts`) — `CanActivateFn` on the `layout` route, redirects to `/login` if no session |
+| Route guards | `authGuard` (`src/app/auth.guard.ts`) — `CanActivateFn` on the `layout` route, redirects to `/login` if no session. `managerGuard` (`src/app/manager.guard.ts`) — `CanActivateFn` on the `employees` child route, redirects non-managers to `/404` |
 | Logout | Calls `POST /api/auth/logout`, then clears sessionStorage and navigates to `/login` |
 | CSRF | HTTP-only cookie `XSRF-TOKEN` → `X-XSRF-TOKEN` header via interceptor |
 | withCredentials | `true` on all requests — session cookie sent automatically |
@@ -296,6 +296,14 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-09-24] — Manager-only guard on the Employees route
+
+- Added `src/app/manager.guard.ts`: `managerGuard` (`CanActivateFn`) checks `authService.isUserManager()` and redirects to `/404` if false.
+- `app.routes.ts`: applied `canActivate: [managerGuard]` to the `employees` child route (alongside the existing `authGuard` on the parent `layout` route). Added a dedicated `{ path: '404', component: NotFoundComponent }` route so the guard can navigate to a clean URL rather than relying on the wildcard catch-all.
+- Added `src/app/manager.guard.spec.ts`: 2 tests — allows activation for managers, redirects to `/404` and blocks activation for non-managers.
+- Closes the previously known gap where the Employees module (full CRUD on other employees' usernames/passwords) was gated only by hiding the sidebar link — any authenticated non-manager could reach it by URL.
+- Returns 404 rather than redirecting to the dashboard, so an unauthorized user isn't shown a "you can't do this" signal that confirms the route exists.
 
 ### [2026-09-24] — Unit tests for AuthService, authGuard, ProductsService
 
