@@ -179,7 +179,7 @@ export class OrdersComponent implements OnInit{
   }
 
   selectDetail(detail: OrderDetail) {
-    this.selectedDetail = this.selectedDetail === null ? detail : null;
+    this.selectedDetail = this.selectedDetail === detail ? null : detail;
   }
 
   addDetail() {
