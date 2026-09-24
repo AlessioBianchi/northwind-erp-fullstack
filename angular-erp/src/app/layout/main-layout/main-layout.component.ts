@@ -37,11 +37,11 @@ export class MainLayoutComponent implements OnInit{
     this.http.post(`${this.apiBaseUrl}/api/auth/logout`, {}, { withCredentials: true }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       complete: () => {
         sessionStorage.clear();
-        this.router.navigate(['/login']);
+        this.router.navigate(['/login'], { queryParams: { loggedOut: 'true' } });
       },
       error: () => {
         sessionStorage.clear();
-        this.router.navigate(['/login']);
+        this.router.navigate(['/login'], { queryParams: { loggedOut: 'true' } });
       }
     });
   }

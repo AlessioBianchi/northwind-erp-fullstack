@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../service/auth.service';
@@ -23,7 +23,9 @@ export class LoginComponent {
   hasError: boolean = false;
   hasLoggedOut: boolean = false;
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService) {
+    this.hasLoggedOut = this.route.snapshot.queryParamMap.get('loggedOut') === 'true';
+  }
 
   onLogin(form: any): void {
     if (form.invalid) {
