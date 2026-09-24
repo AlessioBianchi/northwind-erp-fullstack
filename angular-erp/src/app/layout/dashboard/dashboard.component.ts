@@ -82,9 +82,10 @@ export class DashboardComponent implements OnInit{
 
   getFormatDate(dateStr: string): string {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const pad = (s: number) => s < 10 ? "0" + s : s;
-    return [pad(d.getFullYear()), pad(d.getMonth() + 1), pad(d.getDate())].join("-");
+    // The backend sends a date-only ISO string ("yyyy-MM-dd"). Take the date
+    // part as-is instead of parsing it into a Date, which would interpret it
+    // as UTC midnight and shift the displayed day in negative-UTC timezones.
+    return dateStr.split('T')[0];
   }
 
   ngOnDestroy(): void {
