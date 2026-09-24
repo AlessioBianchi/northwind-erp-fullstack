@@ -282,7 +282,7 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ## Known Gaps & TODOs
 
-- [ ] **No tests written** — Vitest is configured but no spec files exist yet.
+- [ ] `app.spec.ts`'s `should render title` test fails (pre-existing, unrelated to services/guard testing work — stale title assertion).
 
 ---
 
@@ -296,6 +296,14 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-09-24] — Unit tests for AuthService, authGuard, ProductsService
+
+- Added `src/app/service/auth.service.spec.ts`: 3 tests — `login()` stores `username`/`isManager` in `sessionStorage` on success, `getUsernameLogged()` falls back to `sessionStorage`, `isUserManager()` falls back to `sessionStorage`.
+- Added `src/app/auth.guard.spec.ts`: 2 tests — allows activation when a user is logged in, redirects to `/login` and blocks activation when not.
+- Added `src/app/service/products.service.spec.ts`: 2 tests — `getAllProducts()` GETs the products endpoint, `updateProduct()` PUTs to the product-specific endpoint. Used as the representative case for the other CRUD services, which share the same `inject(HttpClient)` / `inject(API_BASE_URL)` shape.
+- All use `provideHttpClient()` + `provideHttpClientTesting()` with `API_BASE_URL` stubbed via `TestBed`.
+- Closes the previously known gap where no spec files existed.
 
 ### [2026-09-24] — Fix logout success message
 
