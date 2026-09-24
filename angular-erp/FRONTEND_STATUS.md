@@ -297,6 +297,10 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-09-24] — Fix dashboard date off-by-one-day bug for negative UTC offsets
+
+- `dashboard.component.ts`: `getFormatDate()` used to parse the backend's date-only ISO string with `new Date(dateStr)` (interpreted as UTC midnight) and format it with local-time getters (`getFullYear`/`getMonth`/`getDate`), shifting the displayed date back one day for users in timezones west of UTC. Now returns the date portion of the string directly (`dateStr.split('T')[0]`) instead of round-tripping through a `Date` object, removing the timezone dependency entirely.
+
 ### [2026-09-24] — Reset add-order-detail modal form after save
 
 - `orders.component.ts`: extracted the `modalDetailForm` default shape into a private `createEmptyDetailForm()` method (used both for the initial field value and for resetting). `submitDetailForm()` now resets `modalDetailForm` to that default on a successful save, so reopening the "add line item" modal no longer shows the previous entry's stale product/quantity/unitPrice/discount values.
