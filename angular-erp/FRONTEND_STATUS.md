@@ -297,6 +297,11 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-09-24] — Fix logout success message
+
+- `main-layout.component.ts`: `onLogout()` now navigates to `/login` with `queryParams: { loggedOut: 'true' }` (both on the `complete` and `error` branches), so the login route knows a logout just happened.
+- `login.component.ts`: constructor now injects `ActivatedRoute` and sets `hasLoggedOut` from `route.snapshot.queryParamMap.get('loggedOut') === 'true'`. The `@if (hasLoggedOut)` alert in `login.component.html` already existed but the flag was never being set — it's now wired up.
+
 ### [2026-09-24] — Wildcard route + 404 page
 
 - Added `src/app/not-found/not-found.component.ts` + `.html`: standalone `NotFoundComponent`, simple Bootstrap 404 message with a link back to `/login`.
