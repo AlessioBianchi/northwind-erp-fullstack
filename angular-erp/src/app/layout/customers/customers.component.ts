@@ -67,8 +67,8 @@ export class CustomersComponent implements OnInit {
     });
   }
 
-  onPageChange(direction: number): void {
-    this.currentPage += direction;
+  onPageChange(newPage: number): void {
+    this.currentPage = newPage;
     this.loadPaginatedCustomers();
   }
 
