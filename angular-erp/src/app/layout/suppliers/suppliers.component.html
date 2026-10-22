@@ -16,7 +16,7 @@
                         <button class="btn btn-sm btn-success" title="New supplier" (click)="initializeNewSupplierForm()">
                             <i class="bi bi-file-earmark-plus"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" title="Delete supplier" [disabled]="!selectedSupplierId" (click)="deleteActiveSupplier()">
+                        <button class="btn btn-sm btn-danger" title="Delete supplier" [disabled]="!selectedSupplierId || isDeleting" (click)="deleteActiveSupplier()">
                             <i class="bi bi-trash3"></i>
                         </button>
                     </div>
@@ -181,7 +181,7 @@
                             </div>
 
                             <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-3">
-                                <button type="button" class="btn btn-sm btn-danger" [disabled]="!activeShipperForm.shipperId" (click)="deleteActiveShipper()">
+                                <button type="button" class="btn btn-sm btn-danger" [disabled]="!activeShipperForm.shipperId || isDeleting" (click)="deleteActiveShipper()">
                                     <i class="bi bi-trash3 me-1"></i>Delete
                                 </button>
                                 <button type="button" class="btn btn-sm btn-secondary" (click)="cancelShipperWorkspaceEdit()">Clear / Reset</button>
