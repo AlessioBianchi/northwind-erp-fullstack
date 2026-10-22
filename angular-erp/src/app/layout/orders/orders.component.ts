@@ -94,6 +94,11 @@ export class OrdersComponent implements OnInit{
     if (event) event.preventDefault();
 
     const order = this.activeForm as Order;
+    if (order.freight != null && order.freight < 0) {
+      alert('Freight cannot be negative.');
+      return;
+    }
+
     const request$ = order.orderId
       ? this.ordersService.updateOrder(order)
       : this.ordersService.createOrder(order);
