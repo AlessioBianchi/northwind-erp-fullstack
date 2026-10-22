@@ -297,6 +297,11 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-10-22] — Align CustomersComponent.onPageChange with the other CRUD modules
+
+- `customers.component.ts`: `onPageChange(direction)` took a relative delta (`currentPage += direction`), while orders/products/suppliers/employees take an absolute page number. Now `onPageChange(newPage)` sets `currentPage = newPage`, matching the others.
+- `customers.component.html`: Prev/Next buttons now call `onPageChange(currentPage - 1)` / `onPageChange(currentPage + 1)` instead of `-1` / `1`. No behavior change.
+
 ### [2026-10-22] — Prevent duplicate DELETE requests while one is in flight
 
 - Added an `isDeleting` flag (alongside `isLoading`) to `CustomersComponent`, `ProductsComponent`, `SuppliersComponent`, `OrdersComponent`, `EmployeesComponent`.
