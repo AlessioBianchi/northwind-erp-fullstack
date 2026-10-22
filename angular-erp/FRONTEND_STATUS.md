@@ -297,6 +297,12 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-10-22] — Prevent duplicate DELETE requests while one is in flight
+
+- Added an `isDeleting` flag (alongside `isLoading`) to `CustomersComponent`, `ProductsComponent`, `SuppliersComponent`, `OrdersComponent`, `EmployeesComponent`.
+- All 8 delete handlers (`deleteCustomer`, `deleteActiveProduct`, `deleteActiveCategory`, `deleteActiveSupplier`, `deleteActiveShipper`, `deleteActiveOrder`, `deleteActiveDetail`, `deleteActiveEmployee`) now return early if `isDeleting`, set it after the `confirm()`, and reset it via `finalize()` — covering success and error.
+- Each corresponding delete button's `[disabled]` now also checks `isDeleting`, so a fast second click can no longer fire another DELETE before the first completes.
+
 ### [2026-10-22] — Reject negative Freight on orders
 
 - `orders.component.html`: added `min="0"` to the Freight input, matching the `unitPrice`/`discount` inputs in the add-detail modal.

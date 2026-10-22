@@ -32,6 +32,7 @@ export class OrdersComponent implements OnInit{
   totalElements = 0;
   totalPages = 0;
   isLoading = false;
+  isDeleting = false;
 
   selectedOrderId: number | null = null;
   selectedDetail: OrderDetail | null = null;
@@ -114,10 +115,11 @@ export class OrdersComponent implements OnInit{
   }
 
   deleteActiveOrder(): void {
-    if (!this.selectedOrderId) return;
+    if (!this.selectedOrderId || this.isDeleting) return;
     
     if (confirm('Are you sure you want to drop this order record?')) {
-      this.ordersService.deleteOrder(this.selectedOrderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.isDeleting = true;
+      this.ordersService.deleteOrder(this.selectedOrderId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message);
           this.loadPaginatedOrders();
@@ -250,10 +252,11 @@ export class OrdersComponent implements OnInit{
   }
 
   deleteActiveDetail() {
-    if (!this.selectedDetail) return;
+    if (!this.selectedDetail || this.isDeleting) return;
 
     if (confirm('Are you sure you want to drop this order detail record?')) {
-      this.ordersService.deleteOrderDetail(this.selectedDetail).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.isDeleting = true;
+      this.ordersService.deleteOrderDetail(this.selectedDetail).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message);
           this.loadPaginatedOrders();
