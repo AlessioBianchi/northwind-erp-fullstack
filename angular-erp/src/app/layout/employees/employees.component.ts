@@ -23,6 +23,7 @@ export class EmployeesComponent implements OnInit {
   totalPages = 0;
   totalElements = 0;
   isLoading = false;
+  isDeleting = false;
 
   selectedEmployeeId: number | null = null;
   currentWorkspaceState: 'empty' | 'edit' | 'new' = 'empty';
@@ -149,10 +150,11 @@ export class EmployeesComponent implements OnInit {
   }
 
   deleteActiveEmployee(): void {
-    if (!this.selectedEmployeeId) return;
+    if (!this.selectedEmployeeId || this.isDeleting) return;
 
     if (confirm('Are you sure you want to drop this worker profile history record?')) {
-      this.employeesService.delete(this.selectedEmployeeId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.isDeleting = true;
+      this.employeesService.delete(this.selectedEmployeeId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message || 'Profile removed securely.');
           this.loadPaginatedEmployees();

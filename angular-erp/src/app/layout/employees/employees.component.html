@@ -16,7 +16,7 @@
                         <button class="btn btn-sm btn-success" title="New employee" (click)="initializeNewEmployeeForm()">
                             <i class="bi bi-file-earmark-plus"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" title="Delete employee" [disabled]="!selectedEmployeeId" (click)="deleteActiveEmployee()">
+                        <button class="btn btn-sm btn-danger" title="Delete employee" [disabled]="!selectedEmployeeId || isDeleting" (click)="deleteActiveEmployee()">
                             <i class="bi bi-trash3"></i>
                         </button>
                         <!--<button class="btn btn-sm btn-success" title="Export Excel" (click)="exportEmployeesToExcel()">

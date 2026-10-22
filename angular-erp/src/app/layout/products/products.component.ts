@@ -29,6 +29,7 @@ export class ProductsComponent implements OnInit {
   totalPages = 0;
   totalElements = 0;
   isLoading = false;
+  isDeleting = false;
 
   selectedProductId: number | null = null;
   currentWorkspaceState: 'empty' | 'edit' | 'new' = 'empty';
@@ -150,10 +151,11 @@ export class ProductsComponent implements OnInit {
   }
 
   deleteActiveProduct(): void {
-    if (!this.selectedProductId) return;
+    if (!this.selectedProductId || this.isDeleting) return;
 
     if (confirm('Are you sure you want to delete this product?')) {
-      this.productsService.deleteProduct(this.selectedProductId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.isDeleting = true;
+      this.productsService.deleteProduct(this.selectedProductId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
           alert(response.message || 'Product deleted.');
           this.loadPaginatedProducts();
@@ -198,10 +200,11 @@ export class ProductsComponent implements OnInit {
 
   deleteActiveCategory(): void {
     const targetId = this.activeCategoryForm.categoryId;
-    if (!targetId) return;
+    if (!targetId || this.isDeleting) return;
 
     if (confirm('Are you sure you want to delete this category?')) {
-      this.categoriesService.deleteCategory(targetId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.isDeleting = true;
+      this.categoriesService.deleteCategory(targetId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message || 'Category deleted.');
           this.preloadDropdownRelationshipDependencies();

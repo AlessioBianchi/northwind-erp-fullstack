@@ -23,6 +23,7 @@ export class CustomersComponent implements OnInit {
   totalElements = 0;
   totalPages = 0;
   isLoading = false;
+  isDeleting = false;
 
   customersList: Customer[] = [];
   selectedCustomerId: number | null = null;
@@ -117,9 +118,10 @@ export class CustomersComponent implements OnInit {
   }
 
   deleteCustomer(): void {
-    if (!this.selectedCustomerId) return;
+    if (!this.selectedCustomerId || this.isDeleting) return;
     if (confirm('Are you sure you want to delete this customer?')) {
-      this.customersService.deleteCustomer(this.selectedCustomerId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.isDeleting = true;
+      this.customersService.deleteCustomer(this.selectedCustomerId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           alert('Customer deleted.');
           this.loadPaginatedCustomers();

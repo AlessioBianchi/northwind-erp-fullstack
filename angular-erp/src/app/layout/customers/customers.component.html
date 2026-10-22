@@ -16,7 +16,7 @@
                         <button class="btn btn-sm btn-success" title="New customer" (click)="initializeNewCustomerForm()">
                             <i class="bi bi-file-earmark-plus"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" title="Delete customer" [disabled]="!selectedCustomerId" (click)="deleteCustomer()">
+                        <button class="btn btn-sm btn-danger" title="Delete customer" [disabled]="!selectedCustomerId || isDeleting" (click)="deleteCustomer()">
                             <i class="bi bi-trash3"></i>
                         </button>
                         <!--<button class="btn btn-sm btn-success" title="Export Excel" (click)="exportCustomer()">

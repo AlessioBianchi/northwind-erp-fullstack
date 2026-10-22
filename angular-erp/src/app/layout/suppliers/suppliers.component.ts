@@ -27,6 +27,7 @@ export class SuppliersComponent implements OnInit {
   totalPages = 0;
   totalElements = 0;
   isLoading = false;
+  isDeleting = false;
 
   selectedSupplierId: number | null = null;
   currentWorkspaceState: 'empty' | 'edit' | 'new' = 'empty';
@@ -142,10 +143,11 @@ export class SuppliersComponent implements OnInit {
   }
 
   deleteActiveSupplier(): void {
-    if (!this.selectedSupplierId) return;
+    if (!this.selectedSupplierId || this.isDeleting) return;
 
     if (confirm('Are you sure you want to delete this supplier?')) {
-      this.suppliersService.deleteSupplier(this.selectedSupplierId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.isDeleting = true;
+      this.suppliersService.deleteSupplier(this.selectedSupplierId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
           alert(response.message || 'Supplier deleted.');
           this.loadPaginatedSuppliers();
@@ -190,10 +192,11 @@ export class SuppliersComponent implements OnInit {
 
   deleteActiveShipper(): void {
     const targetId = this.activeShipperForm.shipperId;
-    if (!targetId) return;
+    if (!targetId || this.isDeleting) return;
 
     if (confirm('Are you sure you want to delete this shipper?')) {
-      this.shippersService.deleteShipper(targetId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      this.isDeleting = true;
+      this.shippersService.deleteShipper(targetId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           alert(res.message || 'Shipper deleted.');
           this.preloadDropdownRelationshipDependencies();

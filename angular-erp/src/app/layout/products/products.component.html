@@ -16,7 +16,7 @@
                         <button class="btn btn-sm btn-success" title="New product" (click)="initializeNewProductForm()">
                             <i class="bi bi-file-earmark-plus"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" title="Delete product" [disabled]="!selectedProductId" (click)="deleteActiveProduct()">
+                        <button class="btn btn-sm btn-danger" title="Delete product" [disabled]="!selectedProductId || isDeleting" (click)="deleteActiveProduct()">
                             <i class="bi bi-trash3"></i>
                         </button>
                         <!--<button class="btn btn-sm btn-success" title="Export Excel" (click)="exportProductsToExcel()">
@@ -204,7 +204,7 @@
                             </div>
 
                             <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-3">
-                                <button type="button" class="btn btn-sm btn-danger" [disabled]="!activeCategoryForm.categoryId" (click)="deleteActiveCategory()">
+                                <button type="button" class="btn btn-sm btn-danger" [disabled]="!activeCategoryForm.categoryId || isDeleting" (click)="deleteActiveCategory()">
                                     <i class="bi bi-trash3 me-1"></i>Delete
                                 </button>
                                 <button type="button" class="btn btn-sm btn-secondary" (click)="cancelCategoryWorkspaceEdit()">Clear / Reset</button>
