@@ -89,9 +89,10 @@ export class EmployeesComponent implements OnInit {
   selectEmployee(employee: Employee): void {
     this.selectedEmployeeId = employee.employeeId ?? null;
     this.currentWorkspaceState = 'edit';
-    
+
+    this.badgeText = `Employee #${employee.employeeId}`;
     this.badgeClass = 'badge bg-primary text-white';
-    
+
     this.activeEmployeeForm = JSON.parse(JSON.stringify(employee));
   }
 
