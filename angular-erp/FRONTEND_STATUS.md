@@ -297,6 +297,11 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-10-22] — Reject negative Freight on orders
+
+- `orders.component.html`: added `min="0"` to the Freight input, matching the `unitPrice`/`discount` inputs in the add-detail modal.
+- `orders.component.ts`: `saveActiveOrder()` now alerts and aborts when `freight < 0`. The `min` attribute alone doesn't block submission — FormsModule marks forms `novalidate` and `(ngSubmit)` fires regardless — so a typed `-50` would otherwise still be saved.
+
 ### [2026-10-22] — Fix stale employee edit badge label
 
 - `employees.component.ts`: `selectEmployee()` set `badgeClass` but never `badgeText`, so after clicking "New employee" and then selecting an existing employee the edit-styled badge still read "New Profile Template" (and was empty if no "new" click came first). Now sets `badgeText` to `` `Employee #${employee.employeeId}` ``, mirroring `selectOrder()`'s `Order #id` label.
