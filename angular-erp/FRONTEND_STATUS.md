@@ -297,6 +297,10 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 
 ---
 
+### [2026-10-22] — Fix stale employee edit badge label
+
+- `employees.component.ts`: `selectEmployee()` set `badgeClass` but never `badgeText`, so after clicking "New employee" and then selecting an existing employee the edit-styled badge still read "New Profile Template" (and was empty if no "new" click came first). Now sets `badgeText` to `` `Employee #${employee.employeeId}` ``, mirroring `selectOrder()`'s `Order #id` label.
+
 ### [2026-09-24] — Add null-safety to the employee search filter
 
 - `employees.component.ts`: `filteredEmployees` called `.toLowerCase()` directly on `e.firstName`/`e.lastName`/`e.title` with no null-guard, unlike the equivalent filtered getters in customers/products/suppliers, which all use `?.` + `?? false`. A null field from the backend would throw and break the employee list. Now mirrors the same pattern: `e.firstName?.toLowerCase().includes(this.searchQuery) ?? false`, applied to all three fields.
