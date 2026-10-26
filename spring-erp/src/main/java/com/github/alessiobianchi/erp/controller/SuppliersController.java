@@ -2,6 +2,7 @@ package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.model.Supplier;
 import com.github.alessiobianchi.erp.service.SuppliersService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,13 +34,13 @@ public class SuppliersController {
     }
 
     @PostMapping()
-    public ResponseEntity<Supplier> create(@RequestBody Supplier supplier) {
+    public ResponseEntity<Supplier> create(@Valid @RequestBody Supplier supplier) {
         Supplier supplierSaved = service.create(supplier);
         return ResponseEntity.ok(supplierSaved);
     }
 
     @PutMapping("/{supplierId}")
-    public ResponseEntity<Supplier> update(@PathVariable int supplierId, @RequestBody Supplier supplier) {
+    public ResponseEntity<Supplier> update(@PathVariable int supplierId, @Valid @RequestBody Supplier supplier) {
         Supplier supplierSaved = service.update(supplierId, supplier);
         return ResponseEntity.ok(supplierSaved);
     }

@@ -1,6 +1,8 @@
 package com.github.alessiobianchi.erp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="CATEGORIES")
@@ -10,7 +12,10 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int categoryId;
 
+    @NotBlank
+    @Size(max = 15)
     private String categoryName;
+
     private String description;
 
     public Category() {}

@@ -2,6 +2,7 @@ package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.model.Customer;
 import com.github.alessiobianchi.erp.service.CustomersService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,13 +34,13 @@ public class CustomersController {
     }
 
     @PostMapping()
-    public ResponseEntity<Customer> create(@RequestBody Customer customer) {
+    public ResponseEntity<Customer> create(@Valid @RequestBody Customer customer) {
         Customer customerSaved = service.create(customer);
         return ResponseEntity.ok(customerSaved);
     }
 
     @PutMapping("/{customerId}")
-    public ResponseEntity<Customer> update(@PathVariable int customerId, @RequestBody Customer customer) {
+    public ResponseEntity<Customer> update(@PathVariable int customerId, @Valid @RequestBody Customer customer) {
         Customer customerSaved = service.update(customerId, customer);
         return ResponseEntity.ok(customerSaved);
     }

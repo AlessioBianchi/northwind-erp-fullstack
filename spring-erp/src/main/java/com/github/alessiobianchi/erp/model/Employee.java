@@ -1,6 +1,8 @@
 package com.github.alessiobianchi.erp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -13,9 +15,18 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int employeeId;
 
+    @NotBlank
+    @Size(max = 20)
     private String lastName;
+
+    @NotBlank
+    @Size(max = 10)
     private String firstName;
+
+    @Size(max = 30)
     private String title;
+
+    @Size(max = 25)
     private String titleOfCourtesy;
 
     @DateTimeFormat(pattern = "yyy-MM-dd")
@@ -24,13 +35,27 @@ public class Employee {
     @DateTimeFormat(pattern = "yyy-MM-dd")
     private LocalDate hireDate;
 
+    @Size(max = 60)
     private String address;
+
+    @Size(max = 15)
     private String city;
+
+    @Size(max = 15)
     private String region;
+
+    @Size(max = 10)
     private String postalCode;
+
+    @Size(max = 15)
     private String country;
+
+    @Size(max = 24)
     private String homePhone;
+
+    @Size(max = 4)
     private String extension;
+
     private String notes;
 
 
@@ -38,7 +63,11 @@ public class Employee {
     @JoinColumn(name = "reports_to")
     private Employee reportsTo;
 
+    @Size(max = 50)
     private String username;
+
+    // BCrypt only uses the first 72 bytes of the raw password; the stored hash is 60 chars.
+    @Size(max = 72)
     private String password;
 
     public Employee() {}
