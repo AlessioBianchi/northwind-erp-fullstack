@@ -1,8 +1,11 @@
 package com.github.alessiobianchi.erp.service;
 
-import com.github.alessiobianchi.erp.config.PasswordConfig;
+import com.github.alessiobianchi.erp.converter.EmployeeBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
+import com.github.alessiobianchi.erp.dto.EmployeeDTO;
+import com.github.alessiobianchi.erp.exception.BadRequestException;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.model.EmployeeBuilder;
 import org.springframework.data.domain.Page;
@@ -12,8 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class EmployeesService {
@@ -28,38 +29,48 @@ public class EmployeesService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Optional<Employee> findByUsername(String username) { return employeesDao.findByUsername(username); }
-
-    public List<Employee> findAllByOrderByEmployeeIdDesc() {
-        return employeesDao.findAllByOrderByEmployeeIdDesc();
+    public EmployeeDTO findByUsername(String username) {
+        Employee employee = employeesDao.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+        return EmployeeBeanToDtoConverter.convert(employee);
     }
 
-    public Page<Employee> findAllByOrderByEmployeeIdDesc(int pageNumber, int pageSize) {
+    public List<EmployeeDTO> findAllByOrderByEmployeeIdDesc() {
+        return employeesDao.findAllByOrderByEmployeeIdDesc().stream()
+                .map(EmployeeBeanToDtoConverter::convert)
+                .toList();
+    }
+
+    public Page<EmployeeDTO> findAllByOrderByEmployeeIdDesc(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return employeesDao.findAllByOrderByEmployeeIdDesc(pageable);
+        return employeesDao.findAllByOrderByEmployeeIdDesc(pageable)
+                .map(EmployeeBeanToDtoConverter::convert);
     }
 
-    public Employee create(Employee employee) {
+    public EmployeeDTO create(Employee employee) {
+        if (employee.getPassword() == null || employee.getPassword().isBlank()) {
+            throw new BadRequestException("Password is required.");
+        }
+
         Employee employeeToSave = new EmployeeBuilder(employee)
                 .withPassword(passwordEncoder.encode(employee.getPassword()))
                 .build();
 
-        return employeesDao.save(employeeToSave);
+        return EmployeeBeanToDtoConverter.convert(employeesDao.save(employeeToSave));
     }
 
-    public Employee update(int employeeId, Employee employee) {
+    public EmployeeDTO update(int employeeId, Employee employee) {
         String oldPassword = employeesDao.findById(employeeId)
-                .map(Employee::getPassword)
-                .orElse(null);
-        String newPassword = passwordEncoder.encode(employee.getPassword());
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"))
+                .getPassword();
+        String newPassword = employee.getPassword();
 
-        EmployeeBuilder employeeToUpdateBuilder = new EmployeeBuilder(employee)
-                .withEmployeeId(employeeId);
-        if (!Objects.equals(newPassword, oldPassword)) {
-            employeeToUpdateBuilder.withPassword(newPassword);
-        }
+        Employee employeeToUpdate = new EmployeeBuilder(employee)
+                .withEmployeeId(employeeId)
+                .withPassword(newPassword == null || newPassword.isBlank() ? oldPassword : passwordEncoder.encode(newPassword))
+                .build();
 
-        return employeesDao.save(employeeToUpdateBuilder.build());
+        return EmployeeBeanToDtoConverter.convert(employeesDao.save(employeeToUpdate));
     }
 
     public boolean delete(int employeeId) {

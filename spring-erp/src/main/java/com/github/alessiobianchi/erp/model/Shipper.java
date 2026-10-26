@@ -1,6 +1,8 @@
 package com.github.alessiobianchi.erp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="SHIPPERS")
@@ -10,7 +12,11 @@ public class Shipper {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int shipperId;
 
+    @NotBlank
+    @Size(max = 40)
     private String companyName;
+
+    @Size(max = 24)
     private String phone;
 
     public Shipper() {}

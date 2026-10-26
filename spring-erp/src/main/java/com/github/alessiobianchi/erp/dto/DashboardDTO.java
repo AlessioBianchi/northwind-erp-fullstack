@@ -1,6 +1,5 @@
 package com.github.alessiobianchi.erp.dto;
 
-import com.github.alessiobianchi.erp.model.Order;
 import com.github.alessiobianchi.erp.model.Product;
 
 import java.util.List;
@@ -12,7 +11,7 @@ public class DashboardDTO {
     private Double totalRevenue;
     private Long lastMonthOrdersCount;
     private Double lastMonthRevenue;
-    private List<Order> lastTenOrders;
+    private List<OrderDTO> lastTenOrders;
     private Map<String, Integer> ordersByCategory;
     private List<Product> productStock;
 
@@ -22,7 +21,7 @@ public class DashboardDTO {
                         Double totalRevenue,
                         Long lastMonthOrdersCount,
                         Double lastMonthRevenue,
-                        List<Order> lastTenOrders,
+                        List<OrderDTO> lastTenOrders,
                         Map<String, Integer> ordersByCategory,
                         List<Product> productStock) {
         this.totalOrdersCount = totalOrdersCount;
@@ -50,7 +49,7 @@ public class DashboardDTO {
         return lastMonthRevenue;
     }
 
-    public List<Order> getLastTenOrders() {
+    public List<OrderDTO> getLastTenOrders() {
         return lastTenOrders;
     }
 

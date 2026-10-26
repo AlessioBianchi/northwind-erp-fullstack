@@ -2,6 +2,7 @@ package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.model.Shipper;
 import com.github.alessiobianchi.erp.service.ShippersService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +26,13 @@ public class ShippersController {
     }
 
     @PostMapping()
-    public ResponseEntity<Shipper> create(@RequestBody Shipper shipper) {
+    public ResponseEntity<Shipper> create(@Valid @RequestBody Shipper shipper) {
         Shipper shipperSaved = service.create(shipper);
         return ResponseEntity.ok(shipperSaved);
     }
 
     @PutMapping("/{shipperId}")
-    public ResponseEntity<Shipper> update(@PathVariable int shipperId, @RequestBody Shipper shipper) {
+    public ResponseEntity<Shipper> update(@PathVariable int shipperId, @Valid @RequestBody Shipper shipper) {
         Shipper shipperSaved = service.update(shipperId, shipper);
         return ResponseEntity.ok(shipperSaved);
     }

@@ -2,6 +2,7 @@ package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.model.Category;
 import com.github.alessiobianchi.erp.service.CategoriesService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +26,13 @@ public class CategoriesController {
     }
 
     @PostMapping()
-    public ResponseEntity<Category> create(@RequestBody Category category) {
+    public ResponseEntity<Category> create(@Valid @RequestBody Category category) {
         Category categorySaved = service.create(category);
         return ResponseEntity.ok(categorySaved);
     }
 
     @PutMapping("/{categoryId}")
-    public ResponseEntity<Category> update(@PathVariable int categoryId, @RequestBody Category category) {
+    public ResponseEntity<Category> update(@PathVariable int categoryId, @Valid @RequestBody Category category) {
         Category categorySaved = service.update(categoryId, category);
         return ResponseEntity.ok(categorySaved);
     }

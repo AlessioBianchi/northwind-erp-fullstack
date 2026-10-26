@@ -1,5 +1,6 @@
 package com.github.alessiobianchi.erp.service;
 
+import com.github.alessiobianchi.erp.converter.OrderBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
@@ -31,7 +32,9 @@ public class DashboardService {
                 .withTotalRevenue(orderDetailsDao.calculateTotalRevenue())
                 .withLastMonthOrdersCount(ordersDao.countLastMonthOrders(startOfMonth))
                 .withLastMonthRevenue(orderDetailsDao.calculateMonthlyRevenue(startOfMonth))
-                .withLastTenOrders(ordersDao.findFirst10ByOrderByOrderIdDesc())
+                .withLastTenOrders(ordersDao.findFirst10ByOrderByOrderIdDesc().stream()
+                        .map(OrderBeanToDtoConverter::convert)
+                        .toList())
                 .withOrdersByCategory(
                         orderDetailsDao
                                 .findOrdersCountByCategory()

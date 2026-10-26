@@ -66,9 +66,7 @@ public class AppConfig {
                             response.setContentType("application/json");
 
                             String username = authentication.getName();
-                            boolean isManager = employeesService.findByUsername(username)
-                                    .map(employee -> employee.getReportsTo() == null)
-                                    .orElse(false);
+                            boolean isManager = employeesService.findByUsername(username).getReportsTo() == null;
 
                             String jsonPayload = String.format(
                                     "{\"message\":\"Login successful\",\"username\":\"%s\",\"isManager\":%b}",

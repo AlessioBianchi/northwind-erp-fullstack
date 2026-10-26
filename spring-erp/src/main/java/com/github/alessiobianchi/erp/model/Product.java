@@ -2,6 +2,9 @@ package com.github.alessiobianchi.erp.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="PRODUCTS")
@@ -11,6 +14,8 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int productId;
 
+    @NotBlank
+    @Size(max = 40)
     private String productName;
 
     @ManyToOne
@@ -21,11 +26,21 @@ public class Product {
     @JoinColumn(name="category_id")
     private Category category;
 
+    @Size(max = 20)
     private String quantityPerUnit;
+
+    @PositiveOrZero
     private Double unitPrice;
+
+    @PositiveOrZero
     private Integer unitsInStock;
+
+    @PositiveOrZero
     private Integer unitsOnOrder;
+
+    @PositiveOrZero
     private Integer reorderLevel;
+
     private boolean discontinued;
 
     public Product() {}

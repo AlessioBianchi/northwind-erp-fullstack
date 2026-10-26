@@ -3,6 +3,9 @@ package com.github.alessiobianchi.erp.service;
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.dto.OrderDTO;
+import com.github.alessiobianchi.erp.dto.OrderDetailsDTO;
+import com.github.alessiobianchi.erp.dto.OrderDetailsDTOBuilder;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.model.*;
@@ -46,7 +49,7 @@ class OrdersServiceTest {
         when(ordersDao.findAllByOrderByOrderIdDesc(any(PageRequest.class))).thenReturn(orderPage);
 
         // Act
-        Page<Order> result = ordersService.findAllByOrderByOrderIdDesc(pageNum, pageSize);
+        Page<OrderDTO> result = ordersService.findAllByOrderByOrderIdDesc(pageNum, pageSize);
 
         // Assert
         assertEquals(1, result.getContent().size());
@@ -58,19 +61,23 @@ class OrdersServiceTest {
         // Arrange
         String username = "admin";
         Employee mockEmployee = new EmployeeBuilder()
+                .withEmployeeId(7)
+                .withFirstname("John")
+                .withLastname("Doe")
                 .withUsername(username)
                 .build();
-        Order inputOrder = new Order();
+        OrderDTO inputOrder = new OrderDTO();
 
         when(employeesDao.findByUsername(username)).thenReturn(Optional.of(mockEmployee));
         when(ordersDao.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
-        Order createdOrder = ordersService.create(inputOrder, username);
+        OrderDTO createdOrder = ordersService.create(inputOrder, username);
 
         // Assert
         assertNotNull(createdOrder);
-        assertEquals(mockEmployee, createdOrder.getEmployee());
+        assertEquals(7, createdOrder.getEmployeeId());
+        assertEquals("John Doe", createdOrder.getEmployeeName());
         verify(employeesDao).findByUsername(username);
         verify(ordersDao).save(any(Order.class));
     }
@@ -88,7 +95,7 @@ class OrdersServiceTest {
         when(ordersDao.save(any(Order.class))).thenReturn(orderUpdated);
 
         // Act
-        Order createdOrder = ordersService.update(orderId, new Order());
+        OrderDTO createdOrder = ordersService.update(orderId, new OrderDTO());
 
         // Assert
         assertNotNull(createdOrder);
@@ -116,32 +123,31 @@ class OrdersServiceTest {
         // Arrange
         Product mockProduct = new ProductBuilder()
                 .withProductId(50)
+                .withProductName("Chai")
                 .withUnitPrice(25.50)
                 .build();
 
-        OrderDetail inputDetail = new OrderDetailBuilder()
-                .withProduct(mockProduct)
+        OrderDetailsDTO inputDetail = new OrderDetailsDTOBuilder()
+                .withProductId(50)
                 .build();
 
         when(productsDao.findById(50)).thenReturn(Optional.of(mockProduct));
         when(orderDetailsDao.save(any(OrderDetail.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
-        OrderDetail createdDetail = ordersService.create(inputDetail);
+        OrderDetailsDTO createdDetail = ordersService.create(inputDetail);
 
         // Assert
         assertEquals(25.50, createdDetail.getUnitPrice());
+        assertEquals("Chai", createdDetail.getProductName());
         verify(orderDetailsDao).save(any(OrderDetail.class));
     }
 
     @Test
     void saveOrderDetail_WhenProductNotFound_ShouldThrowException() {
         // Arrange
-        Product p = new ProductBuilder()
+        OrderDetailsDTO detail = new OrderDetailsDTOBuilder()
                 .withProductId(99)
-                .build();
-        OrderDetail detail = new OrderDetailBuilder()
-                .withProduct(p)
                 .build();
 
         when(productsDao.findById(99)).thenReturn(Optional.empty());
@@ -156,7 +162,7 @@ class OrdersServiceTest {
         when(orderDetailsDao.findAllByOrder(any(Order.class))).thenReturn(List.of(new OrderDetail()));
 
         // Act
-        List<OrderDetail> details = ordersService.findAllOrderDetailsByOrderId(1);
+        List<OrderDetailsDTO> details = ordersService.findAllOrderDetailsByOrderId(1);
 
         // Assert
         assertEquals(1, details.size());

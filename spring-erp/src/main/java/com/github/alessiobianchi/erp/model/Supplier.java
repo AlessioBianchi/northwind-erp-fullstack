@@ -1,6 +1,8 @@
 package com.github.alessiobianchi.erp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="SUPPLIERS")
@@ -10,16 +12,37 @@ public class Supplier {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int supplierId;
 
+    @NotBlank
+    @Size(max = 40)
     private String companyName;
+
+    @Size(max = 30)
     private String contactName;
+
+    @Size(max = 30)
     private String contactTitle;
+
+    @Size(max = 60)
     private String address;
+
+    @Size(max = 15)
     private String city;
+
+    @Size(max = 15)
     private String region;
+
+    @Size(max = 10)
     private String postalCode;
+
+    @Size(max = 15)
     private String country;
+
+    @Size(max = 24)
     private String phone;
+
+    @Size(max = 24)
     private String fax;
+
     private String homepage;
 
     public Supplier() {}
