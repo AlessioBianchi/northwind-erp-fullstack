@@ -2,6 +2,7 @@ package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.model.Product;
 import com.github.alessiobianchi.erp.service.ProductsService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,13 +34,13 @@ public class ProductsController {
     }
 
     @PostMapping()
-    public ResponseEntity<Product> create(@RequestBody Product product) {
+    public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
         Product productSaved = service.create(product);
         return ResponseEntity.ok(productSaved);
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<Product> update(@PathVariable int productId, @RequestBody Product product) {
+    public ResponseEntity<Product> update(@PathVariable int productId, @Valid @RequestBody Product product) {
         Product productSaved = service.update(productId, product);
         return ResponseEntity.ok(productSaved);
     }

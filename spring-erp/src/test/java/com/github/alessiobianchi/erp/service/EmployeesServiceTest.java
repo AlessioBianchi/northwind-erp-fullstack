@@ -3,6 +3,7 @@ package com.github.alessiobianchi.erp.service;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
+import com.github.alessiobianchi.erp.exception.BadRequestException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,12 +91,24 @@ class EmployeesServiceTest {
         when(employeesDao.save(any(Employee.class))).thenReturn(sampleEmployee);
 
         // Act
-        EmployeeDTO created = employeesService.create(new Employee());
+        EmployeeDTO created = employeesService.create(new EmployeeBuilder().withPassword("secret").build());
 
         // Assert
         assertNotNull(created);
         assertEquals(1, created.getEmployeeId());
         verify(employeesDao).save(any(Employee.class));
+    }
+
+    @Test
+    void create_WhenPasswordIsBlank_ShouldThrow() {
+        // Arrange
+        Employee incoming = new EmployeeBuilder(sampleEmployee)
+                .withPassword(" ")
+                .build();
+
+        // Act & Assert
+        assertThrows(BadRequestException.class, () -> employeesService.create(incoming));
+        verify(employeesDao, never()).save(any(Employee.class));
     }
 
     @Test

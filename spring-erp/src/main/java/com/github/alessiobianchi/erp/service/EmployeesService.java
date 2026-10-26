@@ -4,6 +4,7 @@ import com.github.alessiobianchi.erp.converter.EmployeeBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
+import com.github.alessiobianchi.erp.exception.BadRequestException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.model.EmployeeBuilder;
@@ -47,6 +48,10 @@ public class EmployeesService {
     }
 
     public EmployeeDTO create(Employee employee) {
+        if (employee.getPassword() == null || employee.getPassword().isBlank()) {
+            throw new BadRequestException("Password is required.");
+        }
+
         Employee employeeToSave = new EmployeeBuilder(employee)
                 .withPassword(passwordEncoder.encode(employee.getPassword()))
                 .build();

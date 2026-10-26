@@ -44,6 +44,7 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 | Database | Oracle Database XE | XEPDB1 @ localhost:1521 |
 | JDBC Driver | ojdbc11 | runtime |
 | Security | Spring Security 6 | (inherited) |
+| Validation | Bean Validation (Hibernate Validator via `spring-boot-starter-validation`) | (inherited) |
 | Templating | Thymeleaf (+ security extras) | (inherited) — mostly unused |
 | PDF Generation | OpenPDF | 1.3.30 |
 | PDF Formatting | Apache FOP | 2.9 |
@@ -96,8 +97,9 @@ spring-erp/
     │   │   │   ├── OrderDetailsDTO.java + OrderDetailsDTOBuilder.java
     │   │   │   └── ErrorMessage.java           # Error envelope { status, message, timestamp }
     │   │   ├── exception/
+    │   │   │   ├── BadRequestException.java    # → 400
     │   │   │   ├── GlobalExceptionHandler.java # @RestControllerAdvice
-    │   │   │   └── ResourceNotFoundException.java
+    │   │   │   └── ResourceNotFoundException.java # → 404
     │   │   ├── model/
     │   │   │   ├── Category.java + CategoryBuilder.java
     │   │   │   ├── Customer.java + CustomerBuilder.java
@@ -435,7 +437,6 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 ## Known Gaps & TODOs
 
 - [ ] **Blocked deletes return 200** — delete guards return `false` and the controller responds 200 with a message; could throw a conflict exception mapped to 409 (requires frontend change).
-- [ ] **No input validation** — no `@Valid` or `@NotNull` constraints on controllers or entities.
 - [ ] **No API documentation** — Swagger / SpringDoc OpenAPI not configured.
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
 - [ ] **No Actuator endpoints** — no health check or metrics.
@@ -458,6 +459,20 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 > ```
 
 ---
+
+### [2026-10-26] — Bean Validation on request bodies
+
+- `pom.xml`: added `spring-boot-starter-validation`.
+- `@Valid` on every create/update `@RequestBody` in all 7 resource controllers. Not on `DELETE /orders/details/delete`, which only needs the two ids.
+- Constraints mirror the live PostgreSQL columns: `NOT NULL` varchar → `@NotBlank` + `@Size(max)`, nullable varchar → `@Size(max)`.
+  - Entities: `Category`, `Customer`, `Supplier`, `Shipper`, `Product` (also `@PositiveOrZero` on price/stock fields), `Employee` (`password` `@Size(max = 72)`, BCrypt's input limit).
+  - `OrderDTO`: `@PositiveOrZero` freight, `@Size` on `ship*`. `customerId`/`shipperId` stay optional (nullable columns, "Walk-in Customer" in the UI).
+  - `OrderDetailsDTO`: `@NotNull` `orderId`/`productId`, `@Positive` quantity, discount in `[0, 1]`.
+  - No entity has an email column, so no `@Email`.
+- Hibernate also runs these constraints on insert/update, since a validator is now on the classpath.
+- `GlobalExceptionHandler`: `MethodArgumentNotValidException` → 400 with `"field: message; …"` in the existing `{ status, message, timestamp }` envelope; new `BadRequestException` → 400.
+- `EmployeesService.create()`: throws `BadRequestException` when the password is null/blank. Done in the service rather than with `@NotBlank` because update allows a blank password (keeps the stored hash).
+- Tests: new `controller/OrdersControllerValidationTest` (standalone MockMvc: invalid body → 400 listing the fields, service not called; valid body → 200). `EmployeesServiceTest`: create sends a password, plus a blank-password case.
 
 ### [2026-10-26] — DTOs for Employees, Orders, Order Details and Dashboard
 

@@ -1,6 +1,8 @@
 package com.github.alessiobianchi.erp.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
@@ -23,12 +25,26 @@ public class OrderDTO {
 
     private Integer shipperId;
     private String shipperName;
+
+    @PositiveOrZero
     private Double freight;
+
+    @Size(max = 40)
     private String shipName;
+
+    @Size(max = 60)
     private String shipAddress;
+
+    @Size(max = 15)
     private String shipCity;
+
+    @Size(max = 15)
     private String shipRegion;
+
+    @Size(max = 10)
     private String shipPostalCode;
+
+    @Size(max = 15)
     private String shipCountry;
 
     public OrderDTO() {}

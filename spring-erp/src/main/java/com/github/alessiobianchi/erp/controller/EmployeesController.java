@@ -3,6 +3,7 @@ package com.github.alessiobianchi.erp.controller;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
 import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.service.EmployeesService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,13 +35,13 @@ public class EmployeesController {
     }
 
     @PostMapping()
-    public ResponseEntity<EmployeeDTO> create(@RequestBody Employee employee) {
+    public ResponseEntity<EmployeeDTO> create(@Valid @RequestBody Employee employee) {
         EmployeeDTO employeeSaved = service.create(employee);
         return ResponseEntity.ok(employeeSaved);
     }
 
     @PutMapping("/{employeeId}")
-    public ResponseEntity<EmployeeDTO> update(@PathVariable int employeeId, @RequestBody Employee employee) {
+    public ResponseEntity<EmployeeDTO> update(@PathVariable int employeeId, @Valid @RequestBody Employee employee) {
         EmployeeDTO employeeSaved = service.update(employeeId, employee);
         return ResponseEntity.ok(employeeSaved);
     }
