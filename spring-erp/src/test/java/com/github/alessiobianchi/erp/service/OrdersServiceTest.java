@@ -3,6 +3,7 @@ package com.github.alessiobianchi.erp.service;
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.model.*;
 import org.junit.jupiter.api.Test;
@@ -146,7 +147,7 @@ class OrdersServiceTest {
         when(productsDao.findById(99)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> ordersService.create(detail));
+        assertThrows(ResourceNotFoundException.class, () -> ordersService.create(detail));
     }
 
     @Test

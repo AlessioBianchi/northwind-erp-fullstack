@@ -4,6 +4,7 @@ import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -77,7 +78,7 @@ public class OrdersService {
 
     public OrderDetail create(OrderDetail orderDetail) {
         Product product = productsDao.findById(orderDetail.getProduct().getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         OrderDetail orderDetailToSave = new OrderDetailBuilder(orderDetail)
                 .withUnitPrice(product.getUnitPrice())
