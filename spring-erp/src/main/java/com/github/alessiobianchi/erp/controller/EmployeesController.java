@@ -1,5 +1,6 @@
 package com.github.alessiobianchi.erp.controller;
 
+import com.github.alessiobianchi.erp.dto.EmployeeDTO;
 import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.service.EmployeesService;
 import org.springframework.data.domain.Page;
@@ -21,26 +22,26 @@ public class EmployeesController {
     }
 
     @GetMapping
-    public List<Employee> findAllByOrderByEmployeeIdDesc() {
+    public List<EmployeeDTO> findAllByOrderByEmployeeIdDesc() {
         return service.findAllByOrderByEmployeeIdDesc();
     }
 
     @GetMapping("/paginated")
-    public Page<Employee> findAllByOrderByEmployeeIdDesc(
+    public Page<EmployeeDTO> findAllByOrderByEmployeeIdDesc(
             @RequestParam int pageNumber,
             @RequestParam int pageSize) {
         return service.findAllByOrderByEmployeeIdDesc(pageNumber, pageSize);
     }
 
     @PostMapping()
-    public ResponseEntity<Employee> create(@RequestBody Employee employee) {
-        Employee employeeSaved = service.create(employee);
+    public ResponseEntity<EmployeeDTO> create(@RequestBody Employee employee) {
+        EmployeeDTO employeeSaved = service.create(employee);
         return ResponseEntity.ok(employeeSaved);
     }
 
     @PutMapping("/{employeeId}")
-    public ResponseEntity<Employee> update(@PathVariable int employeeId, @RequestBody Employee employee) {
-        Employee employeeSaved = service.update(employeeId, employee);
+    public ResponseEntity<EmployeeDTO> update(@PathVariable int employeeId, @RequestBody Employee employee) {
+        EmployeeDTO employeeSaved = service.update(employeeId, employee);
         return ResponseEntity.ok(employeeSaved);
     }
 

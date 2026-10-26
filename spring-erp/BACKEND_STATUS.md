@@ -85,9 +85,15 @@ spring-erp/
     │   │   │   ├── ProductsDAO.java
     │   │   │   ├── ShippersDAO.java
     │   │   │   └── SuppliersDAO.java
+    │   │   ├── converter/                      # Static bean ↔ DTO converters
+    │   │   │   ├── EmployeeBeanToDtoConverter.java / EmployeeDtoToBeanConverter.java
+    │   │   │   ├── OrderBeanToDtoConverter.java / OrderDtoToBeanConverter.java
+    │   │   │   └── OrderDetailsBeanToDtoConverter.java / OrderDetailsDtoToBeanConverter.java
     │   │   ├── dto/
-    │   │   │   ├── DashboardDTO.java
-    │   │   │   ├── DashboardDTOBuilder.java
+    │   │   │   ├── DashboardDTO.java + DashboardDTOBuilder.java
+    │   │   │   ├── EmployeeDTO.java + EmployeeDTOBuilder.java
+    │   │   │   ├── OrderDTO.java + OrderDTOBuilder.java
+    │   │   │   ├── OrderDetailsDTO.java + OrderDetailsDTOBuilder.java
     │   │   │   └── ErrorMessage.java           # Error envelope { status, message, timestamp }
     │   │   ├── exception/
     │   │   │   ├── GlobalExceptionHandler.java # @RestControllerAdvice
@@ -175,12 +181,16 @@ controller/   @Controller / @RestController — HTTP only, no logic
 service/      Business rules, delete guards, aggregations
 dao/          Spring Data JPA interfaces (CrudRepository + @Query)
 model/        JPA entities + Builder companions
-dto/          DashboardDTO + builder
+dto/          API DTOs + builders (Dashboard, Employee, Order, OrderDetails)
+converter/    Static bean ↔ DTO converters, called from services
 config/       Security and CORS (AppConfig.java)
 ```
 
 ### Builder pattern
 Every entity has a hand-written `*Builder` companion (fluent API). Used in service layer for partial updates — the service loads the existing entity, applies changes via the builder, then saves.
+
+### DTOs & converters
+Employees, Orders, Order Details and the Dashboard's `lastTenOrders` go through DTOs; Categories, Customers, Products, Suppliers and Shippers still expose entities directly. Conversion happens in the **service** layer via static `converter/*Converter.convert(...)` methods (no Spring beans). Controllers only see DTOs for these modules. Order/OrderDetail DTOs are flat: associations become `xxxId` + `xxxName`, and DTO → bean builds id-only association stubs for JPA.
 
 ### Data access
 Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@Query` for aggregations (revenue sums, category counts). Pagination uses Spring Data `Page` + `Pageable`; serialization mode: `VIA_DTO` (Spring 6.1+).
@@ -272,10 +282,10 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 ### EmployeesController (`/api/v1/employees`) — same pattern as Customers
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/v1/employees` | `List<Employee>` |
-| GET | `/api/v1/employees/paginated` | `Page<Employee>` |
-| POST | `/api/v1/employees` | `ResponseEntity<Employee>` |
-| PUT | `/api/v1/employees/{employeeId}` | `ResponseEntity<Employee>` |
+| GET | `/api/v1/employees` | `List<EmployeeDTO>` |
+| GET | `/api/v1/employees/paginated` | `Page<EmployeeDTO>` |
+| POST | `/api/v1/employees` | `ResponseEntity<EmployeeDTO>` (body: `Employee`) |
+| PUT | `/api/v1/employees/{employeeId}` | `ResponseEntity<EmployeeDTO>` (body: `Employee`; blank password keeps the stored hash) |
 | DELETE | `/api/v1/employees/delete/{employeeId}` | `ResponseEntity<Map<String,String>>` |
 
 ### ProductsController (`/api/v1/products`) — same pattern as Customers
@@ -307,13 +317,13 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 ### OrdersController (`/api/v1/orders`) — `@RestController`
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/api/v1/orders/paginated` | `Page<Order>` |
-| POST | `/api/v1/orders` | Employee resolved from `Principal` |
-| PUT | `/api/v1/orders/{orderId}` | |
+| GET | `/api/v1/orders/paginated` | `Page<OrderDTO>` |
+| POST | `/api/v1/orders` | Body/response `OrderDTO`; employee resolved from `Principal` |
+| PUT | `/api/v1/orders/{orderId}` | Body/response `OrderDTO` |
 | DELETE | `/api/v1/orders/delete/{orderId}` | |
-| GET | `/api/v1/orders/details/{orderId}` | `List<OrderDetail>` |
-| POST | `/api/v1/orders/details` | Unit price auto-set from product |
-| DELETE | `/api/v1/orders/details/delete` | Body: `OrderDetail` |
+| GET | `/api/v1/orders/details/{orderId}` | `List<OrderDetailsDTO>` |
+| POST | `/api/v1/orders/details` | Body/response `OrderDetailsDTO`; unit price auto-set from product |
+| DELETE | `/api/v1/orders/details/delete` | Body: `OrderDetailsDTO` (`orderId` + `productId`) |
 
 ### DashboardController (`/api/v1/dashboard`) — `@RestController`
 | Method | Path | Response |
@@ -404,9 +414,15 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 | totalRevenue | Double |
 | lastMonthOrdersCount | Long |
 | lastMonthRevenue | Double |
-| lastTenOrders | List\<Order\> |
+| lastTenOrders | List\<OrderDTO\> |
 | ordersByCategory | Map\<String, Integer\> |
 | productStock | List\<Product\> (low-stock items) |
+
+**`EmployeeDTO`**: every `Employee` field; `reportsTo` is a nested `EmployeeDTO`. `password` is `@JsonProperty(WRITE_ONLY)` — accepted in requests, never serialized.
+
+**`OrderDTO`**: `Order` scalar fields + `customerId`/`customerName` (company name), `employeeId`/`employeeName` (first + last), `shipperId`/`shipperName`. Names are ignored on input.
+
+**`OrderDetailsDTO`**: `orderId`, `productId`, `productName`, `unitPrice`, `quantity`, `discount`.
 
 ---
 
@@ -442,6 +458,17 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 > ```
 
 ---
+
+### [2026-10-26] — DTOs for Employees, Orders, Order Details and Dashboard
+
+- Fixes the BCrypt password hash leaking through `/employees`, `/orders/paginated`, `/orders/details/*` and `/dashboard/stats` (all serialized the `Employee` entity directly or nested in `Order`).
+- New `dto/EmployeeDTO`, `OrderDTO`, `OrderDetailsDTO` + builders (same pattern as the entity builders). Renamed the misspelled `OrderDitailsDTO.java` → `OrderDetailsDTO.java`.
+- New `converter/` package with static bean ↔ DTO converters for the three types.
+- `EmployeesService`: all reads/writes return `EmployeeDTO`; `findByUsername` throws `ResourceNotFoundException`. `update()` now keeps the stored hash when the incoming password is null/blank and encodes it otherwise (the old `Objects.equals` on two BCrypt hashes never matched) and throws `ResourceNotFoundException` if the employee doesn't exist.
+- `OrdersService` / `OrdersController`: take and return `OrderDTO` / `OrderDetailsDTO`. `create(OrderDetailsDTO)` puts the loaded `Product` on the saved detail so `productName` is populated in the response.
+- `DashboardDTO.lastTenOrders`: `List<Order>` → `List<OrderDTO>`.
+- `config/AppConfig.java`: login success handler adapted to `findByUsername` returning `EmployeeDTO`.
+- Tests: `EmployeesServiceTest` (+3 update cases: blank password, new password, not found), `OrdersServiceTest` updated for DTOs.
 
 ### [2026-10-26] — Global exception handler
 

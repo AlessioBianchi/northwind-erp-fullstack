@@ -2,10 +2,13 @@ package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
+import com.github.alessiobianchi.erp.dto.EmployeeDTO;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,7 +58,7 @@ class EmployeesServiceTest {
         when(employeesDao.findAllByOrderByEmployeeIdDesc()).thenReturn(List.of(sampleEmployee));
 
         // Act
-        List<Employee> result = employeesService.findAllByOrderByEmployeeIdDesc();
+        List<EmployeeDTO> result = employeesService.findAllByOrderByEmployeeIdDesc();
 
         // Assert
         assertNotNull(result);
@@ -71,7 +75,7 @@ class EmployeesServiceTest {
         when(employeesDao.findAllByOrderByEmployeeIdDesc(any(Pageable.class))).thenReturn(employeePage);
 
         // Act
-        Page<Employee> result = employeesService.findAllByOrderByEmployeeIdDesc(pageNum, pageSize);
+        Page<EmployeeDTO> result = employeesService.findAllByOrderByEmployeeIdDesc(pageNum, pageSize);
 
         // Assert
         assertNotNull(result);
@@ -86,7 +90,7 @@ class EmployeesServiceTest {
         when(employeesDao.save(any(Employee.class))).thenReturn(sampleEmployee);
 
         // Act
-        Employee created = employeesService.create(new Employee());
+        EmployeeDTO created = employeesService.create(new Employee());
 
         // Assert
         assertNotNull(created);
@@ -103,16 +107,74 @@ class EmployeesServiceTest {
                 .withEmployeeId(employeeId)
                 .withFirstname(newEmployeeName)
                 .build();
+        when(employeesDao.findById(employeeId)).thenReturn(Optional.of(sampleEmployee));
         when(employeesDao.save(any(Employee.class))).thenReturn(employeeUpdated);
 
         // Act
-        Employee updated = employeesService.update(employeeId, new Employee());
+        EmployeeDTO updated = employeesService.update(employeeId, new Employee());
 
         // Assert
         assertNotNull(updated);
         assertEquals(1, updated.getEmployeeId());
         assertEquals("Test", updated.getFirstName());
         verify(employeesDao).save(any(Employee.class));
+    }
+
+    @Test
+    void update_WhenPasswordIsBlank_ShouldKeepOldPassword() {
+        // Arrange
+        int employeeId = 1;
+        Employee existing = new EmployeeBuilder(sampleEmployee)
+                .withPassword("old_hash")
+                .build();
+        Employee incoming = new EmployeeBuilder(sampleEmployee)
+                .withPassword("")
+                .build();
+        when(employeesDao.findById(employeeId)).thenReturn(Optional.of(existing));
+        when(employeesDao.save(any(Employee.class))).thenReturn(existing);
+
+        // Act
+        employeesService.update(employeeId, incoming);
+
+        // Assert
+        ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
+        verify(employeesDao).save(captor.capture());
+        assertEquals("old_hash", captor.getValue().getPassword());
+        verify(passwordEncoder, never()).encode(any());
+    }
+
+    @Test
+    void update_WhenPasswordIsProvided_ShouldEncodeNewPassword() {
+        // Arrange
+        int employeeId = 1;
+        Employee existing = new EmployeeBuilder(sampleEmployee)
+                .withPassword("old_hash")
+                .build();
+        Employee incoming = new EmployeeBuilder(sampleEmployee)
+                .withPassword("new_password")
+                .build();
+        when(employeesDao.findById(employeeId)).thenReturn(Optional.of(existing));
+        when(passwordEncoder.encode("new_password")).thenReturn("new_hash");
+        when(employeesDao.save(any(Employee.class))).thenReturn(existing);
+
+        // Act
+        employeesService.update(employeeId, incoming);
+
+        // Assert
+        ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
+        verify(employeesDao).save(captor.capture());
+        assertEquals("new_hash", captor.getValue().getPassword());
+    }
+
+    @Test
+    void update_WhenEmployeeNotFound_ShouldThrow() {
+        // Arrange
+        int employeeId = 99;
+        when(employeesDao.findById(employeeId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> employeesService.update(employeeId, new Employee()));
+        verify(employeesDao, never()).save(any(Employee.class));
     }
 
     @Test
