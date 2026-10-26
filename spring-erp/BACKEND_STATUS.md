@@ -87,7 +87,11 @@ spring-erp/
     │   │   │   └── SuppliersDAO.java
     │   │   ├── dto/
     │   │   │   ├── DashboardDTO.java
-    │   │   │   └── DashboardDTOBuilder.java
+    │   │   │   ├── DashboardDTOBuilder.java
+    │   │   │   └── ErrorMessage.java           # Error envelope { status, message, timestamp }
+    │   │   ├── exception/
+    │   │   │   ├── GlobalExceptionHandler.java # @RestControllerAdvice
+    │   │   │   └── ResourceNotFoundException.java
     │   │   ├── model/
     │   │   │   ├── Category.java + CategoryBuilder.java
     │   │   │   ├── Customer.java + CustomerBuilder.java
@@ -414,7 +418,7 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 
 ## Known Gaps & TODOs
 
-- [ ] **No global exception handler** — no `@RestControllerAdvice`; errors fall through to Spring Boot default.
+- [ ] **Blocked deletes return 200** — delete guards return `false` and the controller responds 200 with a message; could throw a conflict exception mapped to 409 (requires frontend change).
 - [ ] **No input validation** — no `@Valid` or `@NotNull` constraints on controllers or entities.
 - [ ] **No API documentation** — Swagger / SpringDoc OpenAPI not configured.
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
@@ -438,6 +442,14 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 > ```
 
 ---
+
+### [2026-10-26] — Global exception handler
+
+- `exception/GlobalExceptionHandler.java`: `@RestControllerAdvice` returning a standard `{ status, message, timestamp }` envelope.
+  - `ResourceNotFoundException` → 404; `HttpMessageNotReadableException`, `MethodArgumentTypeMismatchException`, `MissingServletRequestParameterException` → 400; any other `Exception` → 500 with a generic message (real error logged).
+- `dto/ErrorMessage.java`: error envelope.
+- `exception/ResourceNotFoundException.java`: new unchecked exception.
+- `OrdersService.create(OrderDetail)`: throws `ResourceNotFoundException` instead of `RuntimeException` when the product is missing; `OrdersServiceTest` updated.
 
 ### [2026-09-21] — Fixed primitive `orderId` breaking order creation
 

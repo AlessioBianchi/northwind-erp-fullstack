@@ -1,0 +1,28 @@
+package com.github.alessiobianchi.erp.dto;
+
+import java.time.LocalDateTime;
+
+public class ErrorMessage {
+
+    private final int status;
+    private final String message;
+    private final LocalDateTime timestamp;
+
+    public ErrorMessage(int status, String message) {
+        this.status = status;
+        this.message = message;
+        this.timestamp = LocalDateTime.now();
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+}
