@@ -5,13 +5,14 @@ import com.github.alessiobianchi.erp.dto.OrderDetailsDTO;
 import com.github.alessiobianchi.erp.service.OrdersService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -23,7 +24,12 @@ public class OrdersController {
         this.service = service;
     }
 
-    @GetMapping("/paginated")
+    @GetMapping
+    public List<OrderDTO> findAllByOrderByOrderIdDesc() {
+        return service.findAllByOrderByOrderIdDesc();
+    }
+
+    @GetMapping(params = {"pageNumber", "pageSize"})
     public Page<OrderDTO> findAllByOrderByOrderIdDesc(
             @RequestParam int pageNumber,
             @RequestParam int pageSize) {
@@ -33,44 +39,50 @@ public class OrdersController {
     @PostMapping()
     public ResponseEntity<OrderDTO> create(@Valid @RequestBody OrderDTO order, Principal principal) {
         OrderDTO orderSaved = service.create(order, principal.getName());
-        return ResponseEntity.ok(orderSaved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderSaved);
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<OrderDTO> update(@PathVariable int orderId, @Valid @RequestBody OrderDTO order, Principal principal) {
+    public ResponseEntity<OrderDTO> update(@PathVariable int orderId, @Valid @RequestBody OrderDTO order) {
         OrderDTO orderSaved = service.update(orderId, order);
         return ResponseEntity.ok(orderSaved);
     }
 
-    @DeleteMapping("/delete/{orderId}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable int orderId) {
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Order deleted!");
-
-        if(!service.delete(orderId)) {
-            response.put("message", "There are details on this order. It can't be deleted.");
-        }
-
-        return ResponseEntity.ok(response);
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<Void> delete(@PathVariable int orderId) {
+        service.delete(orderId);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/details/{orderId}")
+    @GetMapping("/{orderId}/details")
     public List<OrderDetailsDTO> findAllOrderDetailsByOrderId(@PathVariable int orderId) {
         return service.findAllOrderDetailsByOrderId(orderId);
     }
 
-    @PostMapping("/details")
-    public ResponseEntity<OrderDetailsDTO> create(@Valid @RequestBody OrderDetailsDTO orderDetail) {
-        OrderDetailsDTO orderDetailSaved = service.create(orderDetail);
-        return ResponseEntity.ok(orderDetailSaved);
+    @PostMapping("/{orderId}/details")
+    public ResponseEntity<OrderDetailsDTO> create(@PathVariable int orderId, @Valid @RequestBody OrderDetailsDTO orderDetail) {
+        OrderDetailsDTO orderDetailSaved = service.create(orderId, orderDetail);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderDetailSaved);
     }
 
-    @DeleteMapping("/details/delete")
-    public ResponseEntity<Map<String, String>> delete(@RequestBody OrderDetailsDTO orderDetail) {
-        service.delete(orderDetail);
+    @DeleteMapping("/{orderId}/details/{productId}")
+    public ResponseEntity<Void> delete(@PathVariable int orderId, @PathVariable int productId) {
+        service.delete(orderId, productId);
+        return ResponseEntity.noContent().build();
+    }
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Detail deleted!");
-        return ResponseEntity.ok(response);
+    @GetMapping("/{id}/report")
+    public ResponseEntity<byte[]> getOrdersReport(@PathVariable("id") int orderId) {
+        byte[] pdfContent = service.getOrdersReport(orderId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+
+        headers.setContentDispositionFormData("attachment", "order_report.pdf");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .body(pdfContent);
     }
 }

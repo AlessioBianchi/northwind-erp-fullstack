@@ -17,6 +17,8 @@ public interface OrderDetailsDAO extends CrudRepository<OrderDetail, OrderDetail
 
     List<OrderDetail> findAllByProduct(Product product);
 
+    boolean existsByOrderOrderIdAndProductProductId(int orderId, int productId);
+
     @Query("SELECT SUM(d.quantity * d.unitPrice * (1 - d.discount)) FROM OrderDetail d")
     Double calculateTotalRevenue();
 

@@ -4,12 +4,11 @@ import com.github.alessiobianchi.erp.model.Customer;
 import com.github.alessiobianchi.erp.service.CustomersService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/customers")
@@ -26,7 +25,7 @@ public class CustomersController {
         return service.findAllByOrderByCustomerIdDesc();
     }
 
-    @GetMapping("/paginated")
+    @GetMapping(params = {"pageNumber", "pageSize"})
     public Page<Customer> findAllByOrderByCustomerIdDesc(
             @RequestParam int pageNumber,
             @RequestParam int pageSize) {
@@ -36,7 +35,7 @@ public class CustomersController {
     @PostMapping()
     public ResponseEntity<Customer> create(@Valid @RequestBody Customer customer) {
         Customer customerSaved = service.create(customer);
-        return ResponseEntity.ok(customerSaved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(customerSaved);
     }
 
     @PutMapping("/{customerId}")
@@ -45,15 +44,9 @@ public class CustomersController {
         return ResponseEntity.ok(customerSaved);
     }
 
-    @DeleteMapping("/delete/{customerId}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable int customerId) {
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Customer deleted!");
-
-        if(!service.delete(customerId)) {
-            response.put("message", "This customer is connected to an order. It can't be deleted.");
-        }
-
-        return ResponseEntity.ok(response);
+    @DeleteMapping("/{customerId}")
+    public ResponseEntity<Void> delete(@PathVariable int customerId) {
+        service.delete(customerId);
+        return ResponseEntity.noContent().build();
     }
 }

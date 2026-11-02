@@ -2,6 +2,8 @@ package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dao.SuppliersDAO;
+import com.github.alessiobianchi.erp.exception.ConflictException;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Supplier;
 import com.github.alessiobianchi.erp.model.SupplierBuilder;
 import org.springframework.data.domain.Page;
@@ -36,6 +38,10 @@ public class SuppliersService {
     }
 
     public Supplier update(int supplierId, Supplier supplier) {
+        if (!suppliersDao.existsById(supplierId)) {
+            throw new ResourceNotFoundException("Supplier not found");
+        }
+
         Supplier supplierToUpdate = new SupplierBuilder(supplier)
                 .withSupplierId(supplierId)
                 .build();
@@ -43,16 +49,14 @@ public class SuppliersService {
         return suppliersDao.save(supplierToUpdate);
     }
 
-    public boolean delete(int supplierId) {
-        Supplier supplierToDelete = new SupplierBuilder()
-                .withSupplierId(supplierId)
-                .build();
+    public void delete(int supplierId) {
+        Supplier supplierToDelete = suppliersDao.findById(supplierId)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found"));
 
         if (!productsDao.findAllBySupplier(supplierToDelete).isEmpty()) {
-            return false;
+            throw new ConflictException("There are products connected to this supplier. It can't be deleted.");
         }
 
         suppliersDao.delete(supplierToDelete);
-        return true;
     }
 }

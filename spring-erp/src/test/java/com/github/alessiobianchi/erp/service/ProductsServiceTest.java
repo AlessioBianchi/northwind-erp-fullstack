@@ -2,6 +2,8 @@ package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.exception.ConflictException;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.OrderDetail;
 import com.github.alessiobianchi.erp.model.Product;
 import com.github.alessiobianchi.erp.model.ProductBuilder;
@@ -16,8 +18,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -99,6 +101,7 @@ class ProductsServiceTest {
                 .withProductId(productId)
                 .withProductName(productName)
                 .build();
+        when(productsDao.existsById(productId)).thenReturn(true);
         when(productsDao.save(any(Product.class))).thenReturn(productUpdated);
 
         // Act
@@ -112,30 +115,48 @@ class ProductsServiceTest {
     }
 
     @Test
-    void delete_WhenProductIsInOrders_ShouldReturnFalse() {
+    void update_WhenProductNotFound_ShouldThrowNotFound() {
         // Arrange
-        int productId = 10;
-        when(orderDetailsDao.findAllByProduct(any(Product.class))).thenReturn(List.of(new OrderDetail()));
+        when(productsDao.existsById(1)).thenReturn(false);
 
-        // Act
-        boolean result = productsService.delete(productId);
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> productsService.update(1, new Product()));
+        verify(productsDao, never()).save(any(Product.class));
+    }
 
-        // Assert
-        assertFalse(result);
+    @Test
+    void delete_WhenProductNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(productsDao.findById(1)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> productsService.delete(1));
         verify(productsDao, never()).delete(any(Product.class));
     }
 
     @Test
-    void delete_WhenProductIsNotInOrders_ShouldReturnTrue() {
+    void delete_WhenProductIsInOrders_ShouldThrowConflict() {
         // Arrange
-        int productId = 10;
-        when(orderDetailsDao.findAllByProduct(any(Product.class))).thenReturn(Collections.emptyList());
+        Product product = new ProductBuilder().withProductId(1).build();
+        when(productsDao.findById(1)).thenReturn(Optional.of(product));
+        when(orderDetailsDao.findAllByProduct(product)).thenReturn(List.of(new OrderDetail()));
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> productsService.delete(1));
+        verify(productsDao, never()).delete(any(Product.class));
+    }
+
+    @Test
+    void delete_WhenProductIsNotInOrders_ShouldDelete() {
+        // Arrange
+        Product product = new ProductBuilder().withProductId(1).build();
+        when(productsDao.findById(1)).thenReturn(Optional.of(product));
+        when(orderDetailsDao.findAllByProduct(product)).thenReturn(List.of());
 
         // Act
-        boolean result = productsService.delete(productId);
+        productsService.delete(1);
 
         // Assert
-        assertTrue(result);
-        verify(productsDao, times(1)).delete(any(Product.class));
+        verify(productsDao).delete(product);
     }
 }

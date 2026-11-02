@@ -5,6 +5,7 @@ import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
 import com.github.alessiobianchi.erp.exception.BadRequestException;
+import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.model.EmployeeBuilder;
@@ -73,16 +74,14 @@ public class EmployeesService {
         return EmployeeBeanToDtoConverter.convert(employeesDao.save(employeeToUpdate));
     }
 
-    public boolean delete(int employeeId) {
-        Employee employeeToDelete = new EmployeeBuilder()
-                .withEmployeeId(employeeId)
-                .build();
+    public void delete(int employeeId) {
+        Employee employeeToDelete = employeesDao.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         if (!ordersDao.findAllByEmployee(employeeToDelete).isEmpty()) {
-            return false;
+            throw new ConflictException("There are orders connected to this employee. It can't be deleted.");
         }
 
         employeesDao.delete(employeeToDelete);
-        return true;
     }
 }

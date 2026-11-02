@@ -4,12 +4,11 @@ import com.github.alessiobianchi.erp.model.Supplier;
 import com.github.alessiobianchi.erp.service.SuppliersService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/suppliers")
@@ -26,7 +25,7 @@ public class SuppliersController {
         return service.findAllByOrderBySupplierIdDesc();
     }
 
-    @GetMapping("/paginated")
+    @GetMapping(params = {"pageNumber", "pageSize"})
     public Page<Supplier> findAllByOrderBySupplierIdDesc(
             @RequestParam int pageNumber,
             @RequestParam int pageSize) {
@@ -36,7 +35,7 @@ public class SuppliersController {
     @PostMapping()
     public ResponseEntity<Supplier> create(@Valid @RequestBody Supplier supplier) {
         Supplier supplierSaved = service.create(supplier);
-        return ResponseEntity.ok(supplierSaved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(supplierSaved);
     }
 
     @PutMapping("/{supplierId}")
@@ -45,15 +44,9 @@ public class SuppliersController {
         return ResponseEntity.ok(supplierSaved);
     }
 
-    @DeleteMapping("/delete/{supplierId}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable int supplierId) {
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Supplier deleted!");
-
-        if(!service.delete(supplierId)) {
-            response.put("message", "There are products connected to this supplier. It can't be deleted.");
-        }
-
-        return ResponseEntity.ok(response);
+    @DeleteMapping("/{supplierId}")
+    public ResponseEntity<Void> delete(@PathVariable int supplierId) {
+        service.delete(supplierId);
+        return ResponseEntity.noContent().build();
     }
 }

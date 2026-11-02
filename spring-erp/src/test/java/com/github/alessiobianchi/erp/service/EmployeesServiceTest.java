@@ -1,9 +1,10 @@
 package com.github.alessiobianchi.erp.service;
 
-import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
+import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
 import com.github.alessiobianchi.erp.exception.BadRequestException;
+import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -191,30 +191,38 @@ class EmployeesServiceTest {
     }
 
     @Test
-    void delete_WhenEmployeeHasOrders_ShouldReturnFalse() {
+    void delete_WhenEmployeeNotFound_ShouldThrowNotFound() {
         // Arrange
-        int employeeId = 1;
-        when(ordersDao.findAllByEmployee(any(Employee.class))).thenReturn(List.of(new Order()));
+        when(employeesDao.findById(1)).thenReturn(Optional.empty());
 
-        // Act
-        boolean result = employeesService.delete(employeeId);
-
-        // Assert
-        assertFalse(result);
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> employeesService.delete(1));
         verify(employeesDao, never()).delete(any(Employee.class));
     }
 
     @Test
-    void delete_WhenEmployeeHasNoOrders_ShouldReturnTrue() {
+    void delete_WhenEmployeeHasOrders_ShouldThrowConflict() {
         // Arrange
-        int employeeId = 1;
-        when(ordersDao.findAllByEmployee(any(Employee.class))).thenReturn(Collections.emptyList());
+        Employee employee = new EmployeeBuilder().withEmployeeId(1).build();
+        when(employeesDao.findById(1)).thenReturn(Optional.of(employee));
+        when(ordersDao.findAllByEmployee(employee)).thenReturn(List.of(new Order()));
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> employeesService.delete(1));
+        verify(employeesDao, never()).delete(any(Employee.class));
+    }
+
+    @Test
+    void delete_WhenEmployeeHasNoOrders_ShouldDelete() {
+        // Arrange
+        Employee employee = new EmployeeBuilder().withEmployeeId(1).build();
+        when(employeesDao.findById(1)).thenReturn(Optional.of(employee));
+        when(ordersDao.findAllByEmployee(employee)).thenReturn(List.of());
 
         // Act
-        boolean result = employeesService.delete(employeeId);
+        employeesService.delete(1);
 
         // Assert
-        assertTrue(result);
-        verify(employeesDao, times(1)).delete(any(Employee.class));
+        verify(employeesDao).delete(employee);
     }
 }

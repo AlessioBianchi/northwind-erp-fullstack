@@ -2,6 +2,8 @@ package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dao.CategoriesDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.exception.ConflictException;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Category;
 import com.github.alessiobianchi.erp.model.CategoryBuilder;
 import com.github.alessiobianchi.erp.model.Product;
@@ -12,8 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,6 +78,7 @@ class CategoriesServiceTest {
                 .withCategoryId(categoryId)
                 .withCategoryName(newCategoryName)
                 .build();
+        when(categoriesDao.existsById(categoryId)).thenReturn(true);
         when(categoriesDao.save(any(Category.class))).thenReturn(categoryUpdated);
 
         // Act
@@ -88,30 +91,48 @@ class CategoriesServiceTest {
     }
 
     @Test
-    void delete_WhenCategoryHasProducts_ShouldReturnFalseAndNotDelete() {
+    void update_WhenCategoryNotFound_ShouldThrowNotFound() {
         // Arrange
-        int categoryId = 1;
-        when(productsDao.findAllByCategory(any(Category.class))).thenReturn(List.of(new Product()));
+        when(categoriesDao.existsById(1)).thenReturn(false);
 
-        // Act
-        boolean result = categoriesService.delete(categoryId);
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> categoriesService.update(1, new Category()));
+        verify(categoriesDao, never()).save(any(Category.class));
+    }
 
-        // Assert
-        assertFalse(result);
+    @Test
+    void delete_WhenCategoryNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(categoriesDao.findById(1)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> categoriesService.delete(1));
         verify(categoriesDao, never()).delete(any(Category.class));
     }
 
     @Test
-    void delete_WhenCategoryHasNoProducts_ShouldReturnTrueAndDelete() {
+    void delete_WhenCategoryHasProducts_ShouldThrowConflict() {
         // Arrange
-        int categoryId = 1;
-        when(productsDao.findAllByCategory(any(Category.class))).thenReturn(Collections.emptyList());
+        Category category = new CategoryBuilder().withCategoryId(1).build();
+        when(categoriesDao.findById(1)).thenReturn(Optional.of(category));
+        when(productsDao.findAllByCategory(category)).thenReturn(List.of(new Product()));
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> categoriesService.delete(1));
+        verify(categoriesDao, never()).delete(any(Category.class));
+    }
+
+    @Test
+    void delete_WhenCategoryHasNoProducts_ShouldDelete() {
+        // Arrange
+        Category category = new CategoryBuilder().withCategoryId(1).build();
+        when(categoriesDao.findById(1)).thenReturn(Optional.of(category));
+        when(productsDao.findAllByCategory(category)).thenReturn(List.of());
 
         // Act
-        boolean result = categoriesService.delete(categoryId);
+        categoriesService.delete(1);
 
         // Assert
-        assertTrue(result);
-        verify(categoriesDao, times(1)).delete(any(Category.class));
+        verify(categoriesDao).delete(category);
     }
 }
