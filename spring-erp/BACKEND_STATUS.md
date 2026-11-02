@@ -74,7 +74,6 @@ spring-erp/
     │   │   │   ├── EmployeesController.java
     │   │   │   ├── OrdersController.java
     │   │   │   ├── ProductsController.java
-    │   │   │   ├── ReportsController.java
     │   │   │   ├── ShippersController.java
     │   │   │   └── SuppliersController.java
     │   │   ├── dao/
@@ -118,7 +117,6 @@ spring-erp/
     │   │       ├── EmployeesService.java
     │   │       ├── OrdersService.java
     │   │       ├── ProductsService.java
-    │   │       ├── ReportsService.java
     │   │       ├── ShippersService.java
     │   │       ├── SuppliersService.java
     │   │       └── UsersDetailsService.java
@@ -244,12 +242,12 @@ Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@
 - **Status: complete.**
 
 ### Dashboard — `controller/`, `service/`, `dto/`
-- Single `GET /api/dashboard/stats` endpoint returning `DashboardDTO`.
+- Single `GET /api/v1/dashboard` endpoint returning `DashboardDTO`.
 - Aggregates: total/monthly order count and revenue, last 10 orders, orders-by-category map, low-stock products (< 10 units).
 - **Status: complete.**
 
-### Reports (PDF) — `controller/`, `service/`
-- `GET /reports/orders/{id}` streams a PDF for a given order.
+### Reports (PDF) — `OrdersController`, `OrdersService`
+- `GET /api/v1/orders/{id}/report` streams a PDF for a given order.
 - Generated with OpenPDF; currency formatted in EUR (€).
 - **Status: complete.**
 
@@ -262,80 +260,77 @@ Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@
 
 ## API Endpoints
 
-All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = update (ID comes from path, not body).
+All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200, `POST` → 201 (no `Location`: there is no `GET /{id}`), `DELETE` → 204; `PUT`/`DELETE` on a missing id → 404; `DELETE` blocked by referencing rows → 409 (`ConflictException`); validation/bad input → 400. Errors use the `{ status, message, timestamp }` envelope. `POST` = create, `PUT /{id}` = update, `DELETE /{id}` = delete (ID comes from path, not body). Paginated lists are the same collection path selected by `pageNumber` + `pageSize` query params (`@GetMapping(params = ...)`).
 
 ### CategoriesController (`/api/v1/categories`)
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/categories` | `List<Category>` |
-| POST | `/api/v1/categories` | `ResponseEntity<Category>` |
+| POST | `/api/v1/categories` | `201` + `Category` |
 | PUT | `/api/v1/categories/{categoryId}` | `ResponseEntity<Category>` |
-| DELETE | `/api/v1/categories/delete/{categoryId}` | `ResponseEntity<Map<String,String>>` |
+| DELETE | `/api/v1/categories/{categoryId}` | `204`; `404` if missing, `409` if referenced |
 
 ### CustomersController (`/api/v1/customers`)
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/customers` | `List<Customer>` |
-| GET | `/api/v1/customers/paginated` | `Page<Customer>` |
-| POST | `/api/v1/customers` | `ResponseEntity<Customer>` |
+| GET | `/api/v1/customers?pageNumber=&pageSize=` | `Page<Customer>` |
+| POST | `/api/v1/customers` | `201` + `Customer` |
 | PUT | `/api/v1/customers/{customerId}` | `ResponseEntity<Customer>` |
-| DELETE | `/api/v1/customers/delete/{customerId}` | `ResponseEntity<Map<String,String>>` |
+| DELETE | `/api/v1/customers/{customerId}` | `204`; `404` if missing, `409` if referenced |
 
 ### EmployeesController (`/api/v1/employees`) — same pattern as Customers
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/employees` | `List<EmployeeDTO>` |
-| GET | `/api/v1/employees/paginated` | `Page<EmployeeDTO>` |
-| POST | `/api/v1/employees` | `ResponseEntity<EmployeeDTO>` (body: `Employee`) |
+| GET | `/api/v1/employees?pageNumber=&pageSize=` | `Page<EmployeeDTO>` |
+| POST | `/api/v1/employees` | `201` + `EmployeeDTO` (body: `Employee`) |
 | PUT | `/api/v1/employees/{employeeId}` | `ResponseEntity<EmployeeDTO>` (body: `Employee`; blank password keeps the stored hash) |
-| DELETE | `/api/v1/employees/delete/{employeeId}` | `ResponseEntity<Map<String,String>>` |
+| DELETE | `/api/v1/employees/{employeeId}` | `204`; `404` if missing, `409` if referenced |
 
 ### ProductsController (`/api/v1/products`) — same pattern as Customers
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/products` | `List<Product>` |
-| GET | `/api/v1/products/paginated` | `Page<Product>` |
-| POST | `/api/v1/products` | `ResponseEntity<Product>` |
+| GET | `/api/v1/products?pageNumber=&pageSize=` | `Page<Product>` |
+| POST | `/api/v1/products` | `201` + `Product` |
 | PUT | `/api/v1/products/{productId}` | `ResponseEntity<Product>` |
-| DELETE | `/api/v1/products/delete/{productId}` | `ResponseEntity<Map<String,String>>` |
+| DELETE | `/api/v1/products/{productId}` | `204`; `404` if missing, `409` if referenced |
 
 ### SuppliersController (`/api/v1/suppliers`) — same pattern as Customers
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/suppliers` | `List<Supplier>` |
-| GET | `/api/v1/suppliers/paginated` | `Page<Supplier>` |
-| POST | `/api/v1/suppliers` | `ResponseEntity<Supplier>` |
+| GET | `/api/v1/suppliers?pageNumber=&pageSize=` | `Page<Supplier>` |
+| POST | `/api/v1/suppliers` | `201` + `Supplier` |
 | PUT | `/api/v1/suppliers/{supplierId}` | `ResponseEntity<Supplier>` |
-| DELETE | `/api/v1/suppliers/delete/{supplierId}` | `ResponseEntity<Map<String,String>>` |
+| DELETE | `/api/v1/suppliers/{supplierId}` | `204`; `404` if missing, `409` if referenced |
 
 ### ShippersController (`/api/v1/shippers`)
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/shippers` | `List<Shipper>` |
-| POST | `/api/v1/shippers` | `ResponseEntity<Shipper>` |
+| POST | `/api/v1/shippers` | `201` + `Shipper` |
 | PUT | `/api/v1/shippers/{shipperId}` | `ResponseEntity<Shipper>` |
-| DELETE | `/api/v1/shippers/delete/{shipperId}` | `ResponseEntity<Map<String,String>>` |
+| DELETE | `/api/v1/shippers/{shipperId}` | `204`; `404` if missing, `409` if referenced |
 
 ### OrdersController (`/api/v1/orders`) — `@RestController`
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/api/v1/orders/paginated` | `Page<OrderDTO>` |
-| POST | `/api/v1/orders` | Body/response `OrderDTO`; employee resolved from `Principal` |
+| GET | `/api/v1/orders` | `List<OrderDTO>` |
+| GET | `/api/v1/orders?pageNumber=&pageSize=` | `Page<OrderDTO>` |
+| POST | `/api/v1/orders` | `201`; body/response `OrderDTO`; employee resolved from `Principal` |
 | PUT | `/api/v1/orders/{orderId}` | Body/response `OrderDTO` |
-| DELETE | `/api/v1/orders/delete/{orderId}` | |
-| GET | `/api/v1/orders/details/{orderId}` | `List<OrderDetailsDTO>` |
-| POST | `/api/v1/orders/details` | Body/response `OrderDetailsDTO`; unit price auto-set from product |
-| DELETE | `/api/v1/orders/details/delete` | Body: `OrderDetailsDTO` (`orderId` + `productId`) |
+| DELETE | `/api/v1/orders/{orderId}` | `204`; `404` if missing, `409` if it has details |
+| GET | `/api/v1/orders/{orderId}/details` | `List<OrderDetailsDTO>` |
+| POST | `/api/v1/orders/{orderId}/details` | `201`; body/response `OrderDetailsDTO`; body `orderId` must match path (400); unit price auto-set from product |
+| DELETE | `/api/v1/orders/{orderId}/details/{productId}` | `204`; `404` if missing |
+| GET | `/api/v1/orders/{id}/report` | `application/pdf` byte stream; `404` if order missing |
 
 ### DashboardController (`/api/v1/dashboard`) — `@RestController`
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/v1/dashboard/stats` | `ResponseEntity<DashboardDTO>` |
-
-### ReportsController (`/reports`)
-| Method | Path | Response |
-|---|---|---|
-| GET | `/reports/orders/{id}` | `application/pdf` byte stream |
+| GET | `/api/v1/dashboard` | `ResponseEntity<DashboardDTO>` |
 
 ### Auth (Spring Security managed)
 | Method | Path | Notes |
@@ -401,9 +396,8 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 | `ProductsService` | CRUD + pagination; delete blocked if product appears in order details |
 | `SuppliersService` | CRUD + pagination; delete blocked if supplier has products |
 | `ShippersService` | CRUD; delete blocked if shipper has orders |
-| `OrdersService` | CRUD + pagination; `save(order, username)` auto-sets employee from auth principal; detail save auto-sets unitPrice from product |
+| `OrdersService` | CRUD + pagination; `save(order, username)` auto-sets employee from auth principal; detail create checks path `orderId` matches body (400 otherwise) and auto-sets unitPrice from product; PDF report via OpenPDF (EUR) |
 | `DashboardService` | Aggregates: total/monthly orders & revenue, last 10 orders, orders-by-category map, low-stock products |
-| `ReportsService` | Generates PDF for a given order using OpenPDF; EUR currency |
 | `UsersDetailsService` | Implements `UserDetailsService`; loads `Employee` by username, wraps in `User` |
 
 ### DTO
@@ -422,7 +416,7 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 
 **`EmployeeDTO`**: every `Employee` field; `reportsTo` is a nested `EmployeeDTO`. `password` is `@JsonProperty(WRITE_ONLY)` — accepted in requests, never serialized.
 
-**`OrderDTO`**: `Order` scalar fields + `customerId`/`customerName` (company name), `employeeId`/`employeeName` (first + last), `shipperId`/`shipperName`. Names are ignored on input.
+**`OrderDTO`**: `Order` scalar fields + `customerId`/`customerName` (company name), `employeeId`/`employeeName` (first + last), `shipperId`/`shipperName`. Names are ignored on input. `customerId` is `@NotNull` (every order must have a customer).
 
 **`OrderDetailsDTO`**: `orderId`, `productId`, `productName`, `unitPrice`, `quantity`, `discount`.
 
@@ -436,7 +430,6 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 
 ## Known Gaps & TODOs
 
-- [ ] **Blocked deletes return 200** — delete guards return `false` and the controller responds 200 with a message; could throw a conflict exception mapped to 409 (requires frontend change).
 - [ ] **No API documentation** — Swagger / SpringDoc OpenAPI not configured.
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
 - [ ] **No Actuator endpoints** — no health check or metrics.
@@ -460,10 +453,39 @@ All resource controllers are under `/api/v1/`. `POST` = create, `PUT /{id}` = up
 
 ---
 
+### [2026-11-02] — Order customer is mandatory
+- `dto/OrderDTO.customerId`: `@NotNull` → create/update without a customer returns 400 (was saved with `customer_id = NULL`, and the PDF report then failed with an NPE → 500).
+- `model/Order.customer`: `@JoinColumn(name="customer_id", nullable = false)`.
+- `OrdersService.getOrdersReport`: uses the eagerly loaded `order.getCustomer()`; removed the redundant `CustomersDAO` lookup and the `CustomersDAO` dependency.
+- Tests: `OrdersControllerValidationTest` missing `customerId` → 400; dropped the customer-not-found report test.
+- Frontend still allows an empty customer select and shows a "Walk-in Customer" fallback — to align.
+
+---
+
+### [2026-11-02] — REST status codes
+- New `exception/ConflictException` → 409 in `GlobalExceptionHandler`.
+- All 7 resource services: `delete` is now `void`; loads the entity with `findById` (404 `ResourceNotFoundException` if missing), throws `ConflictException` when referenced (previous messages kept). `update` checks `existsById` → 404 (Employees already did).
+- `OrdersService`: `delete(orderId, productId)` → 404 via new `OrderDetailsDAO.existsByOrderOrderIdAndProductProductId`; `getOrdersReport` → 404 instead of `NoSuchElementException` (500).
+- Controllers: `POST` → `201 Created`; `DELETE` → `204 No Content` (`ResponseEntity<Void>`, no more `{message}` body). Removed unused `Principal` from `OrdersController.update`.
+- Tests: service delete tests rewritten (404 / 409 / success) + update-not-found cases; `OrdersControllerValidationTest` covers 201, 204, 404, 409.
+- **Frontend impact:** deletes have no body; blocked-delete message now arrives in the HTTP error (`error.error.message`).
+
+---
+
+### [2026-11-02] — RESTful API paths
+- All resource controllers: `DELETE /{resource}/delete/{id}` → `DELETE /{resource}/{id}`; `GET /{resource}/paginated` → `GET /{resource}?pageNumber=&pageSize=` (`@GetMapping(params = {"pageNumber", "pageSize"})` next to the plain list `@GetMapping`).
+- `OrdersController`: added plain `GET /orders`; details moved under the order — `GET|POST /orders/{orderId}/details`, `DELETE /orders/{orderId}/details/{productId}` (no request body); report moved to `GET /orders/{id}/report`.
+- `DashboardController`: `GET /dashboard/stats` → `GET /dashboard`.
+- `OrdersService.create(int orderId, OrderDetailsDTO)`: throws `BadRequestException` (400) when body `orderId` ≠ path; `delete(orderId, productId)`; `getOrdersReport` moved here. Removed unused web imports.
+- Removed `controller/ReportsController.java`, `service/ReportsService.java`, `service/ReportsServiceTest.java`; report tests moved into `OrdersServiceTest`.
+- Tests: `OrdersControllerValidationTest` uses `/orders/{orderId}/details` + mismatch → 400 case; `OrdersServiceTest` mismatch case.
+
+---
+
 ### [2026-10-26] — Bean Validation on request bodies
 
 - `pom.xml`: added `spring-boot-starter-validation`.
-- `@Valid` on every create/update `@RequestBody` in all 7 resource controllers. Not on `DELETE /orders/details/delete`, which only needs the two ids.
+- `@Valid` on every create/update `@RequestBody` in all 7 resource controllers. Not on `DELETE /orders/details/delete` (now `DELETE /orders/{orderId}/details/{productId}`), which only needs the two ids.
 - Constraints mirror the live PostgreSQL columns: `NOT NULL` varchar → `@NotBlank` + `@Size(max)`, nullable varchar → `@Size(max)`.
   - Entities: `Category`, `Customer`, `Supplier`, `Shipper`, `Product` (also `@PositiveOrZero` on price/stock fields), `Employee` (`password` `@Size(max = 72)`, BCrypt's input limit).
   - `OrderDTO`: `@PositiveOrZero` freight, `@Size` on `ship*`. `customerId`/`shipperId` stay optional (nullable columns, "Walk-in Customer" in the UI).

@@ -1,13 +1,15 @@
 package com.github.alessiobianchi.erp.service;
 
+import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dto.OrderDTO;
 import com.github.alessiobianchi.erp.dto.OrderDetailsDTO;
 import com.github.alessiobianchi.erp.dto.OrderDetailsDTOBuilder;
+import com.github.alessiobianchi.erp.exception.BadRequestException;
+import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
-import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,11 +20,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -92,6 +96,7 @@ class OrdersServiceTest {
                 .withFreight(freight)
                 .build();
 
+        when(ordersDao.existsById(orderId)).thenReturn(true);
         when(ordersDao.save(any(Order.class))).thenReturn(orderUpdated);
 
         // Act
@@ -105,20 +110,6 @@ class OrdersServiceTest {
     }
 
     @Test
-    void deleteOrder_WhenHasDetails_ShouldReturnFalse() {
-        // Arrange
-        int orderId = 1;
-        when(orderDetailsDao.findAllByOrder(any(Order.class))).thenReturn(List.of(new OrderDetail()));
-
-        // Act
-        boolean result = ordersService.delete(orderId);
-
-        // Assert
-        assertFalse(result);
-        verify(ordersDao, never()).delete(any(Order.class));
-    }
-
-    @Test
     void createOrderDetail_ShouldSetUnitPriceFromProduct() {
         // Arrange
         Product mockProduct = new ProductBuilder()
@@ -128,6 +119,7 @@ class OrdersServiceTest {
                 .build();
 
         OrderDetailsDTO inputDetail = new OrderDetailsDTOBuilder()
+                .withOrderId(1)
                 .withProductId(50)
                 .build();
 
@@ -135,7 +127,7 @@ class OrdersServiceTest {
         when(orderDetailsDao.save(any(OrderDetail.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
-        OrderDetailsDTO createdDetail = ordersService.create(inputDetail);
+        OrderDetailsDTO createdDetail = ordersService.create(1, inputDetail);
 
         // Assert
         assertEquals(25.50, createdDetail.getUnitPrice());
@@ -147,13 +139,27 @@ class OrdersServiceTest {
     void saveOrderDetail_WhenProductNotFound_ShouldThrowException() {
         // Arrange
         OrderDetailsDTO detail = new OrderDetailsDTOBuilder()
+                .withOrderId(1)
                 .withProductId(99)
                 .build();
 
         when(productsDao.findById(99)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> ordersService.create(detail));
+        assertThrows(ResourceNotFoundException.class, () -> ordersService.create(1, detail));
+    }
+
+    @Test
+    void createOrderDetail_WhenOrderIdMismatch_ShouldThrowBadRequest() {
+        // Arrange
+        OrderDetailsDTO detail = new OrderDetailsDTOBuilder()
+                .withOrderId(7)
+                .withProductId(50)
+                .build();
+
+        // Act & Assert
+        assertThrows(BadRequestException.class, () -> ordersService.create(5, detail));
+        verifyNoInteractions(productsDao, orderDetailsDao);
     }
 
     @Test
@@ -167,5 +173,118 @@ class OrdersServiceTest {
         // Assert
         assertEquals(1, details.size());
         verify(orderDetailsDao).findAllByOrder(any(Order.class));
+    }
+
+    @Test
+    void getOrdersReport_ShouldReturnValidPdfByteArray() {
+        // Arrange
+        Customer customer = new CustomerBuilder()
+                .withCustomerId(1)
+                .withContactName("Mario Rossi")
+                .build();
+        Order order = new OrderBuilder()
+                .withOrderId(100)
+                .withOrderDate(LocalDate.now())
+                .withFreight(15.50)
+                .withCustomer(customer)
+                .build();
+        OrderDetail detail = new OrderDetailBuilder()
+                .withProduct(new ProductBuilder()
+                        .withProductId(99)
+                        .withProductName("Test")
+                        .build())
+                .withUnitPrice(100.0)
+                .withQuantity(2)
+                .withDiscount(0.01)
+                .build();
+
+        when(ordersDao.findById(100)).thenReturn(Optional.of(order));
+        when(orderDetailsDao.findAllByOrder(order)).thenReturn(List.of(detail));
+
+        // Act
+        byte[] pdfContent = ordersService.getOrdersReport(100);
+
+        // Assert
+        assertNotNull(pdfContent);
+        assertEquals("%PDF", new String(pdfContent, 0, 4));
+        verify(ordersDao).findById(100);
+        verify(orderDetailsDao).findAllByOrder(order);
+    }
+
+    @Test
+    void getOrdersReport_WhenOrderNotFound_ShouldThrowException() {
+        // Arrange
+        when(ordersDao.findById(anyInt())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> ordersService.getOrdersReport(999));
+    }
+
+    @Test
+    void update_WhenOrderNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(ordersDao.existsById(1)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> ordersService.update(1, new OrderDTO()));
+        verify(ordersDao, never()).save(any(Order.class));
+    }
+
+    @Test
+    void delete_WhenOrderNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(ordersDao.findById(1)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> ordersService.delete(1));
+        verify(ordersDao, never()).delete(any(Order.class));
+    }
+
+    @Test
+    void delete_WhenOrderHasDetails_ShouldThrowConflict() {
+        // Arrange
+        Order order = new OrderBuilder().withOrderId(1).build();
+        when(ordersDao.findById(1)).thenReturn(Optional.of(order));
+        when(orderDetailsDao.findAllByOrder(order)).thenReturn(List.of(new OrderDetail()));
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> ordersService.delete(1));
+        verify(ordersDao, never()).delete(any(Order.class));
+    }
+
+    @Test
+    void delete_WhenOrderHasNoDetails_ShouldDelete() {
+        // Arrange
+        Order order = new OrderBuilder().withOrderId(1).build();
+        when(ordersDao.findById(1)).thenReturn(Optional.of(order));
+        when(orderDetailsDao.findAllByOrder(order)).thenReturn(List.of());
+
+        // Act
+        ordersService.delete(1);
+
+        // Assert
+        verify(ordersDao).delete(order);
+    }
+
+    @Test
+    void deleteOrderDetail_WhenExists_ShouldDelete() {
+        // Arrange
+        when(orderDetailsDao.existsByOrderOrderIdAndProductProductId(1, 50)).thenReturn(true);
+
+        // Act
+        ordersService.delete(1, 50);
+
+        // Assert
+        verify(orderDetailsDao).delete(any(OrderDetail.class));
+    }
+
+    @Test
+    void deleteOrderDetail_WhenNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(orderDetailsDao.existsByOrderOrderIdAndProductProductId(1, 50)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> ordersService.delete(1, 50));
+        verify(orderDetailsDao, never()).delete(any(OrderDetail.class));
     }
 }

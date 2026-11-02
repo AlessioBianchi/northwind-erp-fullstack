@@ -13,6 +13,8 @@ import java.util.List;
 
 public interface OrdersDAO extends CrudRepository<Order, Integer> {
 
+    List<Order> findAllByOrderByOrderIdDesc();
+
     Page<Order> findAllByOrderByOrderIdDesc(Pageable pageable);
 
     List<Order> findAllByCustomer(Customer customer);

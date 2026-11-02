@@ -2,6 +2,8 @@ package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dao.SuppliersDAO;
+import com.github.alessiobianchi.erp.exception.ConflictException;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Product;
 import com.github.alessiobianchi.erp.model.Supplier;
 import com.github.alessiobianchi.erp.model.SupplierBuilder;
@@ -16,8 +18,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -97,6 +99,7 @@ class SuppliersServiceTest {
                 .withSupplierId(1)
                 .withCompanyName("Test")
                 .build();
+        when(suppliersDao.existsById(1)).thenReturn(true);
         when(suppliersDao.save(any(Supplier.class))).thenReturn(supplierUpdated);
 
         // Act
@@ -110,30 +113,48 @@ class SuppliersServiceTest {
     }
 
     @Test
-    void delete_WhenSupplierHasProducts_ShouldReturnFalse() {
+    void update_WhenSupplierNotFound_ShouldThrowNotFound() {
         // Arrange
-        int supplierId = 1;
-        when(productsDao.findAllBySupplier(any(Supplier.class))).thenReturn(List.of(new Product()));
+        when(suppliersDao.existsById(1)).thenReturn(false);
 
-        // Act
-        boolean result = suppliersService.delete(supplierId);
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> suppliersService.update(1, new Supplier()));
+        verify(suppliersDao, never()).save(any(Supplier.class));
+    }
 
-        // Assert
-        assertFalse(result);
+    @Test
+    void delete_WhenSupplierNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(suppliersDao.findById(1)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> suppliersService.delete(1));
         verify(suppliersDao, never()).delete(any(Supplier.class));
     }
 
     @Test
-    void delete_WhenSupplierHasNoProducts_ShouldReturnTrue() {
+    void delete_WhenSupplierHasProducts_ShouldThrowConflict() {
         // Arrange
-        int supplierId = 1;
-        when(productsDao.findAllBySupplier(any(Supplier.class))).thenReturn(Collections.emptyList());
+        Supplier supplier = new SupplierBuilder().withSupplierId(1).build();
+        when(suppliersDao.findById(1)).thenReturn(Optional.of(supplier));
+        when(productsDao.findAllBySupplier(supplier)).thenReturn(List.of(new Product()));
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> suppliersService.delete(1));
+        verify(suppliersDao, never()).delete(any(Supplier.class));
+    }
+
+    @Test
+    void delete_WhenSupplierHasNoProducts_ShouldDelete() {
+        // Arrange
+        Supplier supplier = new SupplierBuilder().withSupplierId(1).build();
+        when(suppliersDao.findById(1)).thenReturn(Optional.of(supplier));
+        when(productsDao.findAllBySupplier(supplier)).thenReturn(List.of());
 
         // Act
-        boolean result = suppliersService.delete(supplierId);
+        suppliersService.delete(1);
 
         // Assert
-        assertTrue(result);
-        verify(suppliersDao, times(1)).delete(any(Supplier.class));
+        verify(suppliersDao).delete(supplier);
     }
 }
