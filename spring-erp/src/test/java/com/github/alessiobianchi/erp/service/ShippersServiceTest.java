@@ -2,6 +2,8 @@ package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ShippersDAO;
+import com.github.alessiobianchi.erp.exception.ConflictException;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Order;
 import com.github.alessiobianchi.erp.model.Shipper;
 import com.github.alessiobianchi.erp.model.ShipperBuilder;
@@ -12,8 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,6 +80,7 @@ class ShippersServiceTest {
                 .withShipperId(1)
                 .withCompanyName("Test")
                 .build();
+        when(shippersDao.existsById(1)).thenReturn(true);
         when(shippersDao.save(any(Shipper.class))).thenReturn(shipperUpdated);
 
         // Act
@@ -91,30 +94,48 @@ class ShippersServiceTest {
     }
 
     @Test
-    void delete_WhenShipperHasOrders_ShouldReturnFalse() {
+    void update_WhenShipperNotFound_ShouldThrowNotFound() {
         // Arrange
-        int shipperId = 1;
-        when(ordersDao.findAllByShipper(any(Shipper.class))).thenReturn(List.of(new Order()));
+        when(shippersDao.existsById(1)).thenReturn(false);
 
-        // Act
-        boolean result = shippersService.delete(shipperId);
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> shippersService.update(1, new Shipper()));
+        verify(shippersDao, never()).save(any(Shipper.class));
+    }
 
-        // Assert
-        assertFalse(result);
+    @Test
+    void delete_WhenShipperNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(shippersDao.findById(1)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> shippersService.delete(1));
         verify(shippersDao, never()).delete(any(Shipper.class));
     }
 
     @Test
-    void delete_WhenShipperHasNoOrders_ShouldReturnTrue() {
+    void delete_WhenShipperHasOrders_ShouldThrowConflict() {
         // Arrange
-        int shipperId = 1;
-        when(ordersDao.findAllByShipper(any(Shipper.class))).thenReturn(Collections.emptyList());
+        Shipper shipper = new ShipperBuilder().withShipperId(1).build();
+        when(shippersDao.findById(1)).thenReturn(Optional.of(shipper));
+        when(ordersDao.findAllByShipper(shipper)).thenReturn(List.of(new Order()));
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> shippersService.delete(1));
+        verify(shippersDao, never()).delete(any(Shipper.class));
+    }
+
+    @Test
+    void delete_WhenShipperHasNoOrders_ShouldDelete() {
+        // Arrange
+        Shipper shipper = new ShipperBuilder().withShipperId(1).build();
+        when(shippersDao.findById(1)).thenReturn(Optional.of(shipper));
+        when(ordersDao.findAllByShipper(shipper)).thenReturn(List.of());
 
         // Act
-        boolean result = shippersService.delete(shipperId);
+        shippersService.delete(1);
 
         // Assert
-        assertTrue(result);
-        verify(shippersDao, times(1)).delete(any(Shipper.class));
+        verify(shippersDao).delete(shipper);
     }
 }

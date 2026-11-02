@@ -1,6 +1,7 @@
 package com.github.alessiobianchi.erp.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
@@ -9,7 +10,10 @@ import java.time.LocalDate;
 public class OrderDTO {
 
     private Integer orderId;
+
+    @NotNull
     private Integer customerId;
+
     private String customerName;
     private Integer employeeId;
     private String employeeName;

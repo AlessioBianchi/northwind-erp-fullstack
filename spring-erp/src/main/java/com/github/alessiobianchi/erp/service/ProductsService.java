@@ -2,6 +2,8 @@ package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.exception.ConflictException;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Product;
 import com.github.alessiobianchi.erp.model.ProductBuilder;
 import org.springframework.data.domain.Page;
@@ -36,6 +38,10 @@ public class ProductsService {
     }
 
     public Product update(int productId, Product product) {
+        if (!productsDao.existsById(productId)) {
+            throw new ResourceNotFoundException("Product not found");
+        }
+
         Product productToUpdate = new ProductBuilder(product)
                 .withProductId(productId)
                 .build();
@@ -43,16 +49,14 @@ public class ProductsService {
         return productsDao.save(productToUpdate);
     }
 
-    public boolean delete(int productId) {
-        Product productToDelete = new ProductBuilder()
-                .withProductId(productId)
-                .build();
+    public void delete(int productId) {
+        Product productToDelete = productsDao.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         if (!orderDetailsDao.findAllByProduct(productToDelete).isEmpty()) {
-            return false;
+            throw new ConflictException("This product is connected to an order. It can't be deleted.");
         }
 
         productsDao.delete(productToDelete);
-        return true;
     }
 }

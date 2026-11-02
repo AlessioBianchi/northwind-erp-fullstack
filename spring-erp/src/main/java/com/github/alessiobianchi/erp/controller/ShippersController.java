@@ -3,12 +3,11 @@ package com.github.alessiobianchi.erp.controller;
 import com.github.alessiobianchi.erp.model.Shipper;
 import com.github.alessiobianchi.erp.service.ShippersService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/shippers")
@@ -28,7 +27,7 @@ public class ShippersController {
     @PostMapping()
     public ResponseEntity<Shipper> create(@Valid @RequestBody Shipper shipper) {
         Shipper shipperSaved = service.create(shipper);
-        return ResponseEntity.ok(shipperSaved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(shipperSaved);
     }
 
     @PutMapping("/{shipperId}")
@@ -37,15 +36,9 @@ public class ShippersController {
         return ResponseEntity.ok(shipperSaved);
     }
 
-    @DeleteMapping("/delete/{shipperId}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable int shipperId) {
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Shipper deleted!");
-
-        if(!service.delete(shipperId)) {
-            response.put("message", "There are orders connected to this shipper. It can't be deleted.");
-        }
-
-        return ResponseEntity.ok(response);
+    @DeleteMapping("/{shipperId}")
+    public ResponseEntity<Void> delete(@PathVariable int shipperId) {
+        service.delete(shipperId);
+        return ResponseEntity.noContent().build();
     }
 }

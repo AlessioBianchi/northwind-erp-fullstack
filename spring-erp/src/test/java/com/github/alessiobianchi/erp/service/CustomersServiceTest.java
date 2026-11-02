@@ -2,6 +2,8 @@ package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dao.CustomersDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
+import com.github.alessiobianchi.erp.exception.ConflictException;
+import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Customer;
 import com.github.alessiobianchi.erp.model.CustomerBuilder;
 import com.github.alessiobianchi.erp.model.Order;
@@ -16,8 +18,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -98,6 +100,7 @@ class CustomersServiceTest {
                 .withCompanyName(newCompanyName)
                 .withCustomerId(customerId)
                 .build();
+        when(customersDao.existsById(customerId)).thenReturn(true);
         when(customersDao.save(any(Customer.class))).thenReturn(customerUpdated);
 
         // Act
@@ -111,30 +114,48 @@ class CustomersServiceTest {
     }
 
     @Test
-    void delete_WhenCustomerHasOrders_ShouldReturnFalse() {
+    void update_WhenCustomerNotFound_ShouldThrowNotFound() {
         // Arrange
-        int customerId = 1;
-        when(ordersDao.findAllByCustomer(any(Customer.class))).thenReturn(List.of(new Order()));
+        when(customersDao.existsById(1)).thenReturn(false);
 
-        // Act
-        boolean result = customersService.delete(customerId);
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> customersService.update(1, new Customer()));
+        verify(customersDao, never()).save(any(Customer.class));
+    }
 
-        // Assert
-        assertFalse(result);
+    @Test
+    void delete_WhenCustomerNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(customersDao.findById(1)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> customersService.delete(1));
         verify(customersDao, never()).delete(any(Customer.class));
     }
 
     @Test
-    void delete_WhenCustomerHasNoOrders_ShouldReturnTrue() {
+    void delete_WhenCustomerHasOrders_ShouldThrowConflict() {
         // Arrange
-        int customerId = 1;
-        when(ordersDao.findAllByCustomer(any(Customer.class))).thenReturn(Collections.emptyList());
+        Customer customer = new CustomerBuilder().withCustomerId(1).build();
+        when(customersDao.findById(1)).thenReturn(Optional.of(customer));
+        when(ordersDao.findAllByCustomer(customer)).thenReturn(List.of(new Order()));
+
+        // Act & Assert
+        assertThrows(ConflictException.class, () -> customersService.delete(1));
+        verify(customersDao, never()).delete(any(Customer.class));
+    }
+
+    @Test
+    void delete_WhenCustomerHasNoOrders_ShouldDelete() {
+        // Arrange
+        Customer customer = new CustomerBuilder().withCustomerId(1).build();
+        when(customersDao.findById(1)).thenReturn(Optional.of(customer));
+        when(ordersDao.findAllByCustomer(customer)).thenReturn(List.of());
 
         // Act
-        boolean result = customersService.delete(customerId);
+        customersService.delete(1);
 
         // Assert
-        assertTrue(result);
-        verify(customersDao, times(1)).delete(any(Customer.class));
+        verify(customersDao).delete(customer);
     }
 }
