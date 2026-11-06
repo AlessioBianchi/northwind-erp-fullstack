@@ -77,4 +77,20 @@ class DashboardServiceTest {
         verify(orderDetailsDao).calculateTotalRevenue();
         verify(productsDao).findByUnitsInStockLessThan(10);
     }
+
+    @Test
+    void getStats_ShouldFilterMonthlyFiguresFromFirstDayOfCurrentMonth() {
+        // Arrange
+        LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
+        when(orderDetailsDao.findOrdersCountByCategory()).thenReturn(List.of());
+
+        // Act
+        DashboardDTO stats = dashboardService.getStats();
+
+        // Assert
+        verify(ordersDao).countLastMonthOrders(startOfMonth);
+        verify(orderDetailsDao).calculateMonthlyRevenue(startOfMonth);
+        assertTrue(stats.getOrdersByCategory().isEmpty());
+        assertTrue(stats.getLastTenOrders().isEmpty());
+    }
 }
