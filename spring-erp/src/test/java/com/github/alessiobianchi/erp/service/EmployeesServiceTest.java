@@ -100,6 +100,54 @@ class EmployeesServiceTest {
     }
 
     @Test
+    void findByUsername_WhenEmployeeExists_ShouldReturnDto() {
+        // Arrange
+        Employee employee = new EmployeeBuilder(sampleEmployee)
+                .withUsername("jdoe")
+                .build();
+        when(employeesDao.findByUsername("jdoe")).thenReturn(Optional.of(employee));
+
+        // Act
+        EmployeeDTO result = employeesService.findByUsername("jdoe");
+
+        // Assert
+        assertEquals(1, result.getEmployeeId());
+        assertEquals("jdoe", result.getUsername());
+    }
+
+    @Test
+    void findByUsername_WhenEmployeeNotFound_ShouldThrowNotFound() {
+        // Arrange
+        when(employeesDao.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> employeesService.findByUsername("ghost"));
+    }
+
+    @Test
+    void create_ShouldSaveEncodedPassword() {
+        // Arrange
+        when(passwordEncoder.encode("secret")).thenReturn("hashed_password");
+        when(employeesDao.save(any(Employee.class))).thenReturn(sampleEmployee);
+        ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
+
+        // Act
+        employeesService.create(new EmployeeBuilder().withPassword("secret").build());
+
+        // Assert
+        verify(employeesDao).save(captor.capture());
+        assertEquals("hashed_password", captor.getValue().getPassword());
+    }
+
+    @Test
+    void create_WhenPasswordIsNull_ShouldThrow() {
+        // Act & Assert
+        assertThrows(BadRequestException.class, () -> employeesService.create(sampleEmployee));
+        verify(employeesDao, never()).save(any(Employee.class));
+        verifyNoInteractions(passwordEncoder);
+    }
+
+    @Test
     void create_WhenPasswordIsBlank_ShouldThrow() {
         // Arrange
         Employee incoming = new EmployeeBuilder(sampleEmployee)
