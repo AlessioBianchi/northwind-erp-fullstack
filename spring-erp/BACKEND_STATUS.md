@@ -60,7 +60,8 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 ```
 spring-erp/
 ├── pom.xml
-├── docker-compose.yml                          # PostgreSQL 16 container
+├── docker-compose.yml                          # PostgreSQL 16 container (creds from .env)
+├── .env.example                                # Template for the gitignored .env
 ├── .mvn/wrapper/
 │   └── maven-wrapper.properties
 └── src/
@@ -124,6 +125,7 @@ spring-erp/
     │   │       └── UsersDetailsService.java
     │   └── resources/
     │       ├── application.properties
+    │       ├── application-prod.properties
     │       └── db/migration/                   # Flyway V1–V4
     └── test/
         └── java/com/github/alessiobianchi/erp/
@@ -141,9 +143,11 @@ File: `src/main/resources/application.properties`
 ```properties
 spring.application.name=ERPSpring
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/northwind
-spring.datasource.username=erp_user
-spring.datasource.password=erp_password
+spring.config.import=optional:file:.env[.properties]
+
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=validate
@@ -151,9 +155,12 @@ spring.jpa.show-sql=true
 spring.jpa.open-in-view=false
 ```
 
+- **Secrets:** no credentials in the repo. `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` come from OS environment variables or, locally, from the gitignored `spring-erp/.env` (template `.env.example`). Real env vars override `.env`. No defaults → startup fails if missing.
+- `.env` is resolved relative to the working directory, so run the app from `spring-erp/` (`./mvnw`, or IntelliJ with working dir = module).
+- `docker-compose.yml` reads the same `.env` (`${DB_USERNAME:?…}` fails fast if unset).
+- **`prod` profile** (`application-prod.properties`, `SPRING_PROFILES_ACTIVE=prod`): `show-sql=false`; credentials via env vars only.
 - No connection pool tuning (uses HikariCP defaults).
 - Schema owned by Flyway (default config, runs on startup); Hibernate only validates it.
-- No profiles or environment-specific overrides.
 
 ---
 
@@ -451,7 +458,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
 - [ ] **No Actuator endpoints** — no health check or metrics.
 - [ ] **Thymeleaf dead code** — view references remain in some controllers; UI is fully Angular now.
-- [ ] **Hardcoded DB credentials** in `application.properties` — acceptable for dev, must not go to production.
+- [ ] **CORS origin hardcoded** — `http://localhost:4200` in `AppConfig.corsConfigurationSource()`; needs a property before a real prod deploy.
 - [ ] **Magic number** — low-stock threshold `< 10` is hardcoded in `DashboardService`.
 - [ ] **Date pattern typo** in `Employee.java` — `"yyy-MM-dd"` (three y's) should be `"yyyy-MM-dd"`.
 
@@ -465,6 +472,16 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-06] — DB credentials moved to environment variables
+- `application.properties`: datasource url/username/password → `${DB_URL}`, `${DB_USERNAME}`, `${DB_PASSWORD}` (no defaults); `spring.config.import=optional:file:.env[.properties]` loads a local `.env`.
+- New `application-prod.properties` (`prod` profile): `spring.jpa.show-sql=false`.
+- `docker-compose.yml`: `POSTGRES_USER`/`POSTGRES_PASSWORD` read from `.env`.
+- New `spring-erp/.env.example` (placeholders); `.env` added to root `.gitignore`.
+- `README.md`: setup step `cp .env.example .env`; credentials table points to `.env`.
+- Verified: full suite passes with `.env`; an exported `DB_PASSWORD` overrides `.env`.
 
 ---
 

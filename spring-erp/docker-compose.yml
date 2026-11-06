@@ -4,8 +4,8 @@ services:
     container_name: erp-postgres
     environment:
       POSTGRES_DB: northwind
-      POSTGRES_USER: erp_user
-      POSTGRES_PASSWORD: erp_password
+      POSTGRES_USER: ${DB_USERNAME:?set DB_USERNAME in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
     ports:
       - "5432:5432"
     volumes:
