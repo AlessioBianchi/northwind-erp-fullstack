@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -58,6 +59,30 @@ class OrdersServiceTest {
         // Assert
         assertEquals(1, result.getContent().size());
         verify(ordersDao).findAllByOrderByOrderIdDesc(PageRequest.of(pageNum, pageSize));
+    }
+
+    @Test
+    void findAllByOrderByOrderIdDesc_ShouldReturnList() {
+        // Arrange
+        Order order = new OrderBuilder().withOrderId(1).build();
+        when(ordersDao.findAllByOrderByOrderIdDesc()).thenReturn(List.of(order));
+
+        // Act
+        List<OrderDTO> result = ordersService.findAllByOrderByOrderIdDesc();
+
+        // Assert
+        assertEquals(1, result.size());
+        assertEquals(1, result.get(0).getOrderId());
+    }
+
+    @Test
+    void createOrder_WhenUserNotFound_ShouldThrow() {
+        // Arrange
+        when(employeesDao.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(UsernameNotFoundException.class, () -> ordersService.create(new OrderDTO(), "ghost"));
+        verify(ordersDao, never()).save(any(Order.class));
     }
 
     @Test

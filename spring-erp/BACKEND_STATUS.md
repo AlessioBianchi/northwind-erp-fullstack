@@ -439,7 +439,9 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 
 ## Tests
 
-10 test classes under `src/test/java/com/github/alessiobianchi/erp/service/` — one per service — plus the application context smoke test (`ErpSpringApplicationTests.java`). Tooling: JUnit 5 + Mockito via Spring Boot test starters. No test fixtures or test data files detected.
+- `service/` — 9 unit test classes, one per service (74 tests). JUnit 5 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
+- `controller/OrdersControllerValidationTest` — standalone MockMvc: bean validation, status codes.
+- `ErpSpringApplicationTests` — context smoke test; **needs the Postgres container running** (Flyway connects on startup).
 
 ---
 
@@ -452,7 +454,6 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 - [ ] **Hardcoded DB credentials** in `application.properties` — acceptable for dev, must not go to production.
 - [ ] **Magic number** — low-stock threshold `< 10` is hardcoded in `DashboardService`.
 - [ ] **Date pattern typo** in `Employee.java` — `"yyy-MM-dd"` (three y's) should be `"yyyy-MM-dd"`.
-- [ ] **No tests written** — test class stubs exist but no actual test logic verified.
 
 ---
 
@@ -464,6 +465,14 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-06] — Service unit test coverage completed
+- `EmployeesServiceTest`: `findByUsername` found / not found; `create` saves the encoded password (captor); `create` with null password → 400.
+- `OrdersServiceTest`: plain (non-paginated) `findAllByOrderByOrderIdDesc`; `create` with unknown username → `UsernameNotFoundException`, nothing saved.
+- `DashboardServiceTest`: monthly queries use the first day of the current month; empty category rows / last orders produce empty collections.
+- Service tests: 67 → 74, all passing. Removed the stale "No tests written" gap.
 
 ---
 
