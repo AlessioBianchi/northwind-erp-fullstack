@@ -41,8 +41,9 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 | Framework | Spring Boot | 4.0.5 |
 | Web | Spring Web MVC | (inherited) |
 | Persistence | Spring Data JPA + Hibernate | (inherited) |
-| Database | Oracle Database XE | XEPDB1 @ localhost:1521 |
-| JDBC Driver | ojdbc11 | runtime |
+| Database | PostgreSQL (Docker, `docker-compose.yml`) | 16 @ localhost:5432 |
+| JDBC Driver | postgresql | runtime |
+| Migrations | Flyway (`spring-boot-starter-flyway` + `flyway-database-postgresql`) | (inherited) |
 | Security | Spring Security 6 | (inherited) |
 | Validation | Bean Validation (Hibernate Validator via `spring-boot-starter-validation`) | (inherited) |
 | Templating | Thymeleaf (+ security extras) | (inherited) — mostly unused |
@@ -59,6 +60,7 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 ```
 spring-erp/
 ├── pom.xml
+├── docker-compose.yml                          # PostgreSQL 16 container
 ├── .mvn/wrapper/
 │   └── maven-wrapper.properties
 └── src/
@@ -121,7 +123,8 @@ spring-erp/
     │   │       ├── SuppliersService.java
     │   │       └── UsersDetailsService.java
     │   └── resources/
-    │       └── application.properties
+    │       ├── application.properties
+    │       └── db/migration/                   # Flyway V1–V4
     └── test/
         └── java/com/github/alessiobianchi/erp/
             ├── ErpSpringApplicationTests.java
@@ -137,23 +140,35 @@ File: `src/main/resources/application.properties`
 
 ```properties
 spring.application.name=ERPSpring
-logging.level.web=debug
-logging.level.org.springframework.jdbc.core=debug
 
-spring.datasource.url=jdbc:oracle:thin:@//localhost:1521/XEPDB1
-spring.datasource.username=ZRB_ERP
-spring.datasource.password=ZRB_ERP
+spring.datasource.url=jdbc:postgresql://localhost:5432/northwind
+spring.datasource.username=erp_user
+spring.datasource.password=erp_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+spring.jpa.open-in-view=false
 ```
 
 - No connection pool tuning (uses HikariCP defaults).
-- No schema migration tool (Flyway/Liquibase absent — schema is pre-existing Northwind-style Oracle DB).
+- Schema owned by Flyway (default config, runs on startup); Hibernate only validates it.
 - No profiles or environment-specific overrides.
 
 ---
 
 ## Database Schema
 
-**Oracle sequences:** `SEQ_NW_CATEGORIES`, `SEQ_NW_CUSTOMERS`, `SEQ_NW_EMPLOYEES`, `SEQ_NW_PRODUCTS`, `SEQ_NW_SUPPLIERS`, `SEQ_NW_SHIPPERS`, `SEQ_NW_ORDERS`
+**Migrations** (`src/main/resources/db/migration/`):
+
+| Version | File | Content |
+|---|---|---|
+| V1 | `V1__northwind_base_schema.sql` | Northwind PostgreSQL dump (tables + data) |
+| V2 | `V2__adapt_schema_to_entities.sql` | smallint → integer, `discontinued` → boolean, customers integer PK (old code → `customer_code`), IDENTITY on PKs |
+| V3 | `V3__add_employee_credentials.sql` | `employees.username`/`password` + seed logins (`password123`) |
+| V4 | `V4__sync_identity_sequences.sql` | `setval` identity sequences to `MAX(id)` |
+
+**ID generation:** `GENERATED ALWAYS AS IDENTITY` on categories, employees, orders, products, shippers, suppliers; `SERIAL` on customers. Entities use `GenerationType.IDENTITY`.
 
 **Tables and key relationships:**
 
@@ -167,7 +182,7 @@ ORDERS ──→ EMPLOYEES (self-ref: REPORTS_TO)
 ORDERS ──→ SHIPPERS
 ```
 
-No migration scripts in the repo — database objects are assumed to exist before the app starts.
+Schema changes go in a new `V{n}__*.sql` file — never edit an applied migration (checksum mismatch).
 
 ---
 
@@ -433,7 +448,6 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 - [ ] **No API documentation** — Swagger / SpringDoc OpenAPI not configured.
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
 - [ ] **No Actuator endpoints** — no health check or metrics.
-- [ ] **No database migration tool** — schema must be managed manually (no Flyway/Liquibase).
 - [ ] **Thymeleaf dead code** — view references remain in some controllers; UI is fully Angular now.
 - [ ] **Hardcoded DB credentials** in `application.properties` — acceptable for dev, must not go to production.
 - [ ] **Magic number** — low-stock threshold `< 10` is hardcoded in `DashboardService`.
@@ -450,6 +464,15 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-06] — Flyway schema migrations
+- `pom.xml`: added `spring-boot-starter-flyway` + `flyway-database-postgresql`.
+- Removed root `northwind_setup.sql`; split into `db/migration/V1__northwind_base_schema.sql`, `V2__adapt_schema_to_entities.sql`, `V3__add_employee_credentials.sql`.
+- New `V4__sync_identity_sequences.sql`: V2 added IDENTITY to populated tables, so sequences started at 1 and every create hit a duplicate PK (also broken in the old setup script).
+- `README.md`: setup step now says Flyway creates the schema on first startup.
+- This file: tech stack/config/schema sections updated from Oracle to the actual PostgreSQL setup.
 
 ---
 
