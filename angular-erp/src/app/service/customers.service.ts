@@ -22,7 +22,7 @@ export class CustomersService {
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<PageResponse<Customer>>(this.apiBaseUrl + '/paginated', {
+    return this.http.get<PageResponse<Customer>>(this.apiBaseUrl, {
       ...this.httpOptions,
       params
     });
@@ -36,7 +36,7 @@ export class CustomersService {
     return this.http.put<Customer>(this.apiBaseUrl + '/' + customer.customerId, customer, this.httpOptions);
   }
 
-  deleteCustomer(customerId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + customerId, this.httpOptions);
+  deleteCustomer(customerId: number): Observable<void> {
+    return this.http.delete<void>(this.apiBaseUrl + '/' + customerId, this.httpOptions);
   }
 }

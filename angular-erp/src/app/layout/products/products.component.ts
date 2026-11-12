@@ -156,8 +156,8 @@ export class ProductsComponent implements OnInit {
     if (confirm('Are you sure you want to delete this product?')) {
       this.isDeleting = true;
       this.productsService.deleteProduct(this.selectedProductId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (response) => {
-          alert(response.message || 'Product deleted.');
+        next: () => {
+          alert('Product deleted.');
           this.loadPaginatedProducts();
           this.cancelProductWorkspaceEdit();
         },
@@ -205,8 +205,8 @@ export class ProductsComponent implements OnInit {
     if (confirm('Are you sure you want to delete this category?')) {
       this.isDeleting = true;
       this.categoriesService.deleteCategory(targetId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (res) => {
-          alert(res.message || 'Category deleted.');
+        next: () => {
+          alert('Category deleted.');
           this.preloadDropdownRelationshipDependencies();
           this.cancelCategoryWorkspaceEdit();
           this.loadPaginatedProducts();

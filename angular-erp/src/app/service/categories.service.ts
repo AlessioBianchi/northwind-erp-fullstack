@@ -25,7 +25,7 @@ export class CategoriesService {
     return this.http.put<Category>(this.apiBaseUrl + '/' + category.categoryId, category, this.httpOptions);
   }
   
-  deleteCategory(categoryId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + categoryId, this.httpOptions);
+  deleteCategory(categoryId: number): Observable<void> {
+    return this.http.delete<void>(this.apiBaseUrl + '/' + categoryId, this.httpOptions);
   }
 }

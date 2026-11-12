@@ -155,8 +155,8 @@ export class EmployeesComponent implements OnInit {
     if (confirm('Are you sure you want to drop this worker profile history record?')) {
       this.isDeleting = true;
       this.employeesService.delete(this.selectedEmployeeId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (res) => {
-          alert(res.message || 'Profile removed securely.');
+        next: () => {
+          alert('Profile removed securely.');
           this.loadPaginatedEmployees();
           this.preloadDropdownRelationshipDependencies();
           this.cancelEmployeeWorkspaceEdit();

@@ -44,4 +44,22 @@ describe('ProductsService', () => {
     expect(req.request.method).toBe('PUT');
     req.flush(product);
   });
+
+  it('getPaginatedProducts sends a GET to the collection with page params', () => {
+    service.getPaginatedProducts(2, 10).subscribe();
+
+    const req = httpMock.expectOne(r => r.url === 'http://localhost:8080/api/v1/products');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('pageNumber')).toBe('2');
+    expect(req.request.params.get('pageSize')).toBe('10');
+    req.flush({ content: [] });
+  });
+
+  it('deleteProduct sends a DELETE to the product-specific endpoint', () => {
+    service.deleteProduct(7).subscribe();
+
+    const req = httpMock.expectOne('http://localhost:8080/api/v1/products/7');
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+  });
 });
