@@ -63,6 +63,7 @@ public class OpenApiConfig {
                                 "- On update and delete, the ID comes from the path; an ID in the body is ignored\n" +
                                 "- Lists are sorted newest first (ID descending)\n" +
                                 "- Errors return `{ status, message, timestamp }`\n" +
+                                "- Some operations are managers only (employees who report to no one) and return 403 for other users\n" +
                                 "- Every endpoint except login returns 401 when not logged in"))
                 .components(components)
                 .addSecurityItem(new SecurityRequirement().addList(SESSION_SCHEME));
