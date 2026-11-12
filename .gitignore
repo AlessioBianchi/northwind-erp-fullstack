@@ -22,6 +22,9 @@
 **/spring-erp/*.iws
 **/spring-erp/.mvn/wrapper/maven-wrapper.jar
 
+# Local secrets (template: spring-erp/.env.example)
+**/spring-erp/.env
+
 # ==========================================
 # 2. Angular (angular-erp)
 # ==========================================
