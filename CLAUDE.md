@@ -4,8 +4,8 @@
 
 ```
 northwind-erp-fullstack/
-├── spring-erp/          # Spring Boot REST backend (Java 17, Oracle DB)
-└── angular-erp/         # Angular frontend (TypeScript, Bootstrap)
+├── spring-erp/          # Spring Boot 4 REST backend (Java 21, PostgreSQL 16)
+└── angular-erp/         # Angular 21 frontend (TypeScript, Bootstrap)
 ```
 
 Both sub-projects are developed together. The backend exposes a JSON API on `localhost:8080`; the frontend consumes it from `localhost:4200`.
