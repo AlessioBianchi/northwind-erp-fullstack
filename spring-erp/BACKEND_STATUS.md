@@ -81,6 +81,7 @@ spring-erp/
     │   │   │   ├── DashboardController.java
     │   │   │   ├── EmployeesController.java
     │   │   │   ├── OrdersController.java
+    │   │   │   ├── Paging.java                 # MAX_PAGE_SIZE (100)
     │   │   │   ├── ProductsController.java
     │   │   │   ├── ShippersController.java
     │   │   │   └── SuppliersController.java
@@ -315,7 +316,7 @@ Every controller has `@Tag`; every endpoint has `@Operation(summary, description
 
 ## API Endpoints
 
-All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200, `POST` → 201 (no `Location`: there is no `GET /{id}`), `DELETE` → 204; `PUT`/`DELETE` on a missing id → 404; `DELETE` blocked by referencing rows → 409 (`ConflictException`); validation/bad input → 400. Errors use the `{ status, message, timestamp }` envelope. `POST` = create, `PUT /{id}` = update, `DELETE /{id}` = delete (ID comes from path, not body). Paginated lists are the same collection path selected by `pageNumber` + `pageSize` query params (`@GetMapping(params = ...)`).
+All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200, `POST` → 201 (no `Location`: there is no `GET /{id}`), `DELETE` → 204; `PUT`/`DELETE` on a missing id → 404; `DELETE` blocked by referencing rows → 409 (`ConflictException`); validation/bad input → 400. Errors use the `{ status, message, timestamp }` envelope. `POST` = create, `PUT /{id}` = update, `DELETE /{id}` = delete (ID comes from path, not body). Paginated lists are the same collection path selected by `pageNumber` + `pageSize` query params (`@GetMapping(params = ...)`). Limits: `pageNumber` ≥ 0, `pageSize` 1–100 (`Paging.MAX_PAGE_SIZE`), checked with `@Min`/`@Max` on the `@RequestParam`s; a violation → 400 via `HandlerMethodValidationException` (message e.g. `pageSize: must be at most 100`).
 
 ### CategoriesController (`/api/v1/categories`)
 | Method | Path | Response |
@@ -493,10 +494,11 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
   - `AuthIntegrationTest` (9): login ok / manager flag / wrong password / JSON body → 401, no session → 401, logout invalidates session, write without CSRF → 403.
   - `OrdersIntegrationTest` (10): employee set from the logged-in user, missing customer → 400, update keeps `createdAt`, detail unit price from product, missing order → 404, orderId mismatch → 400, delete with details → 409, PDF report, pagination.
   - `EmployeesIntegrationTest` (9): employee writes → 403 (incl. trying to reset the manager's password), manager create without ID → new employee can log in, password rules, blank password keeps the old one, change own password.
+  - `PaginationIntegrationTest` (26): all 5 paginated endpoints reject `pageNumber=-1`, `pageSize=0`, `pageSize=101` with 400 and accept 50 and 100.
   - Checked by breaking the code on purpose: removing the manager rule fails 6 tests; removing the order-exists check fails the 404 test (500).
 - `ErpSpringApplicationTests` — context smoke test, also on Testcontainers.
 - **Tests need Docker running**, not the dev `erp-postgres` container or `.env` (they never touch the dev DB).
-- 138 tests total, all passing, ~20 s (2026-11-12).
+- 164 tests total, all passing, ~20 s (2026-11-12).
 
 ---
 
@@ -521,6 +523,15 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Pagination input validated (400 instead of 500)
+- Invalid page parameters reached `PageRequest.of(...)`, which throws `IllegalArgumentException` → catch-all → 500; `pageSize` had no maximum (`pageSize=1000000` returned all 830 orders).
+- The 5 paginated controller methods (`Customers`, `Employees`, `Orders`, `Products`, `Suppliers`): `@Min(0) pageNumber`, `@Min(1) @Max(MAX_PAGE_SIZE) pageSize` with explicit messages (the validator's default messages follow the JVM locale). New `controller/Paging.MAX_PAGE_SIZE = 100` (frontend uses 50). Swagger: limits in the `@Parameter` descriptions, min/max in the schema, 400 response on the list operation.
+- `GlobalExceptionHandler`: `HandlerMethodValidationException` → 400, message `param: error; ...`.
+- New `integration/PaginationIntegrationTest` (26). Checked by removing `@Max` from `SuppliersController`: exactly that case fails. 164 passing.
+- Verified on the running app: -1 / 0 / 1000000 → 400 with the message, 50 → 200; no "Unhandled exception" log lines.
 
 ---
 

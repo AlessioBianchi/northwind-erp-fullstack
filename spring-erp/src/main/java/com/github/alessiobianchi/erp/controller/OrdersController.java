@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+
+import static com.github.alessiobianchi.erp.controller.Paging.MAX_PAGE_SIZE;
 
 @Tag(name = "Orders", description = "Customer orders, their detail lines and PDF reports.")
 @RestController
@@ -36,6 +40,7 @@ public class OrdersController {
             description = "Returns all orders, newest first." +
                     "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array.")
     @ApiResponse(responseCode = "200", description = "Order list, or a page of orders when paginated")
+    @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @GetMapping
     public List<OrderDTO> findAllByOrderByOrderIdDesc() {
         return service.findAllByOrderByOrderIdDesc();
@@ -43,8 +48,11 @@ public class OrdersController {
 
     @GetMapping(params = {"pageNumber", "pageSize"})
     public Page<OrderDTO> findAllByOrderByOrderIdDesc(
-            @Parameter(description = "0-based page index; send together with pageSize") @RequestParam int pageNumber,
-            @Parameter(description = "Page size; send together with pageNumber") @RequestParam int pageSize) {
+            @Parameter(description = "0-based page index (0 or greater); send together with pageSize")
+            @RequestParam @Min(value = 0, message = "must be 0 or greater") int pageNumber,
+            @Parameter(description = "Page size (1 to " + MAX_PAGE_SIZE + "); send together with pageNumber")
+            @RequestParam @Min(value = 1, message = "must be at least 1")
+            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize) {
         return service.findAllByOrderByOrderIdDesc(pageNumber, pageSize);
     }
 
