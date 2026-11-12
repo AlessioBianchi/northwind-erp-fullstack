@@ -63,6 +63,11 @@ angular-erp/
 │       ├── app.config.ts                # HttpClient, CSRF, router, API_BASE_URL providers
 │       ├── api-base-url.token.ts        # InjectionToken<string> for the backend base URL
 │       ├── page-response.model.ts       # Generic PageResponse<T> pagination model
+│       ├── auth.guard.ts                # CanActivateFn: logged in, else /login
+│       ├── manager.guard.ts             # CanActivateFn: manager, else /404
+│       ├── not-found/                   # 404 page (wildcard + /404 routes)
+│       ├── error-banner/                # Global error alert (ErrorNotificationService)
+│       ├── loading-spinner/             # Reusable list spinner
 │       │
 │       ├── login/
 │       │   ├── login.component.ts/html/css
@@ -87,7 +92,9 @@ angular-erp/
 │           ├── employees.service.ts
 │           ├── categories.service.ts
 │           ├── shippers.service.ts
-│           └── csrf.interceptor.ts      # Functional interceptor — adds X-XSRF-TOKEN header
+│           ├── csrf.interceptor.ts      # Functional interceptor — adds X-XSRF-TOKEN header
+│           ├── error.interceptor.ts     # Error banner; 401 → logout + /login?sessionExpired=true
+│           └── error-notification.service.ts # Signal holding the current error message
 ├── src/environments/
 │   ├── environment.ts                   # Dev config — apiBaseUrl: http://localhost:8080
 │   └── environment.prod.ts              # Prod config — apiBaseUrl: '' (same-origin), swapped in via angular.json fileReplacements
@@ -269,7 +276,7 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 | Route guards | `authGuard` (`src/app/auth.guard.ts`) — `CanActivateFn` on the `layout` route, redirects to `/login` if no session. `managerGuard` (`src/app/manager.guard.ts`) — `CanActivateFn` on the `employees` child route, redirects non-managers to `/404` |
 | Logout | Calls `POST /api/auth/logout`, then `AuthService.logout()` clears sessionStorage and the in-memory session cache, and navigates to `/login` |
 | Expired session | Backend session gone (30 min idle, backend restart) → next request gets 401 → `errorInterceptor` logs out locally and redirects to `/login?sessionExpired=true` (info alert) |
-| CSRF | HTTP-only cookie `XSRF-TOKEN` → `X-XSRF-TOKEN` header via interceptor |
+| CSRF | Backend sets a JS-readable cookie `XSRF-TOKEN` (`CookieCsrfTokenRepository.withHttpOnlyFalse()`); the interceptor copies it into the `X-XSRF-TOKEN` header on writes |
 | withCredentials | `true` on all requests — session cookie sent automatically |
 
 ---
@@ -305,6 +312,13 @@ None open. (`ng test --watch=false` is fully green: 23/23.)
 > - What was added / changed / fixed
 > - Include component/service/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Out-of-date docs fixed
+
+- Auth & Session: the `XSRF-TOKEN` cookie is JS-readable (`withHttpOnlyFalse()` on the backend), not HTTP-only as written before.
+- Project Structure: added `auth.guard.ts`, `manager.guard.ts`, `not-found/`, `error-banner/`, `loading-spinner/`, `service/error.interceptor.ts`, `service/error-notification.service.ts`.
 
 ---
 
