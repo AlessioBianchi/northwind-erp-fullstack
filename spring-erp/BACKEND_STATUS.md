@@ -524,6 +524,15 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 
 ---
 
+### [2026-11-12] — Sensitive data removed from git history
+- History rewritten with `git filter-repo` and force-pushed (`main` `df071ff` → `f31d2a2`, 57 → 56 commits): removed the old datasource username/password and `email-map.txt` from every commit; replaced the original package name and UI brand text so history reads as if the package had always been `com.github.alessiobianchi` ("Northwind ERP" in `main-layout.component.html` and `login.component.html`).
+- Removed the 2026-06-26 "Rename root package" changelog entry (the rename no longer exists in history).
+- Root `.gitignore`: `**/spring-erp/.env` rule committed (`.env` was never committed, but nothing prevented it). `CLAUDE.md`: Java 21 / PostgreSQL 16 line from the docs task.
+- Verified from a fresh clone of GitHub: no traces left; 164 backend and 23 frontend tests pass.
+- Known: `npm ci` fails on a fresh clone because `angular-erp/package-lock.json` is out of sync with `package.json` (pre-existing, unrelated to the rewrite); use `npm install` until fixed.
+
+---
+
 ### [2026-11-12] — Out-of-date docs fixed
 - Project Overview: base URL pattern now describes the real setup (`@RestController`s under `/api/v1`, `/api/auth/**`, Swagger) instead of "Thymeleaf remnants / MVC controllers".
 - Tech Stack checked against `mvnw dependency:list`: Java 17 → 21, Spring Security 6 → 7.0.4, Spring Web MVC 7.0.6, Hibernate ORM 7.2.7, JUnit 5 → JUnit Jupiter 6.0.3 + Mockito 5.20; Thymeleaf row removed (not a dependency); Apache FOP marked as unused.
@@ -736,13 +745,6 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 - `OrdersDAO.countLastMonthOrders()`: param type changed from `Date` to `LocalDate`.
 - `OrderDetailsDAO.calculateMonthlyRevenue()`: param type changed from `Date` to `LocalDate`.
 - `DashboardServiceTest`: mocks updated to match `LocalDate` param type.
-
-### [2026-06-26] — Rename root package to com.github.alessiobianchi.erp
-
-- All Java source files updated: `package` and `import` declarations changed from `com.github.alessiobianchi.erp` to `com.github.alessiobianchi.erp`.
-- `pom.xml` groupId changed from `com.github.alessiobianchi` to `com.github.alessiobianchi`.
-- Source tree moved: `src/main/java/com/github/alessiobianchi/erp/` → `src/main/java/com/github/alessiobianchi/erp/`
-- Test tree moved: `src/test/java/com/github/alessiobianchi/erp/` → `src/test/java/com/github/alessiobianchi/erp/`
 
 ### [2026-06-22] — Fixed DashboardController double-prefix path
 
