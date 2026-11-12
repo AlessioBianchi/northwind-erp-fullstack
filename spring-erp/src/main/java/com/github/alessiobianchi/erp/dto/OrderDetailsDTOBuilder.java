@@ -1,5 +1,7 @@
 package com.github.alessiobianchi.erp.dto;
 
+import java.time.Instant;
+
 public class OrderDetailsDTOBuilder {
 
     private Integer orderId;
@@ -8,6 +10,8 @@ public class OrderDetailsDTOBuilder {
     private Double unitPrice;
     private Integer quantity;
     private Double discount;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public OrderDetailsDTOBuilder() {
     }
@@ -19,6 +23,8 @@ public class OrderDetailsDTOBuilder {
         this.unitPrice = dto.getUnitPrice();
         this.quantity = dto.getQuantity();
         this.discount = dto.getDiscount();
+        this.createdAt = dto.getCreatedAt();
+        this.updatedAt = dto.getUpdatedAt();
     }
 
     public OrderDetailsDTOBuilder withOrderId(Integer orderId) {
@@ -51,6 +57,16 @@ public class OrderDetailsDTOBuilder {
         return this;
     }
 
+    public OrderDetailsDTOBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
+    public OrderDetailsDTOBuilder withUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+        return this;
+    }
+
     public OrderDetailsDTO build() {
         return new OrderDetailsDTO(
                 orderId,
@@ -58,7 +74,9 @@ public class OrderDetailsDTOBuilder {
                 productName,
                 unitPrice,
                 quantity,
-                discount
+                discount,
+                createdAt,
+                updatedAt
         );
     }
 }

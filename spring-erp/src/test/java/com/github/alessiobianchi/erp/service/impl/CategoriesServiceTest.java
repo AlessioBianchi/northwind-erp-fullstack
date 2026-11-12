@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,7 +79,11 @@ class CategoriesServiceTest {
                 .withCategoryId(categoryId)
                 .withCategoryName(newCategoryName)
                 .build();
-        when(categoriesDao.existsById(categoryId)).thenReturn(true);
+        Instant createdAt = Instant.parse("2020-01-01T00:00:00Z");
+        when(categoriesDao.findById(categoryId)).thenReturn(Optional.of(new CategoryBuilder()
+                .withCategoryId(categoryId)
+                .withCreatedAt(createdAt)
+                .build()));
         when(categoriesDao.save(any(Category.class))).thenReturn(categoryUpdated);
 
         // Act
@@ -88,12 +93,13 @@ class CategoriesServiceTest {
         assertEquals(1, updated.getCategoryId());
         assertEquals("Test", updated.getCategoryName());
         verify(categoriesDao, times(1)).save(any(Category.class));
+        verify(categoriesDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
 
     @Test
     void update_WhenCategoryNotFound_ShouldThrowNotFound() {
         // Arrange
-        when(categoriesDao.existsById(1)).thenReturn(false);
+        when(categoriesDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> categoriesService.update(1, new Category()));

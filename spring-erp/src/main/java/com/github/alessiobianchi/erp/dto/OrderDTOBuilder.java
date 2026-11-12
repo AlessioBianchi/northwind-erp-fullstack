@@ -1,5 +1,6 @@
 package com.github.alessiobianchi.erp.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public class OrderDTOBuilder {
@@ -21,6 +22,8 @@ public class OrderDTOBuilder {
     private String shipRegion;
     private String shipPostalCode;
     private String shipCountry;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public OrderDTOBuilder() {
     }
@@ -43,6 +46,8 @@ public class OrderDTOBuilder {
         this.shipRegion = dto.getShipRegion();
         this.shipPostalCode = dto.getShipPostalCode();
         this.shipCountry = dto.getShipCountry();
+        this.createdAt = dto.getCreatedAt();
+        this.updatedAt = dto.getUpdatedAt();
     }
 
     public OrderDTOBuilder withOrderId(Integer orderId) {
@@ -130,6 +135,16 @@ public class OrderDTOBuilder {
         return this;
     }
 
+    public OrderDTOBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
+    public OrderDTOBuilder withUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+        return this;
+    }
+
     public OrderDTO build() {
         return new OrderDTO(
                 orderId,
@@ -148,7 +163,9 @@ public class OrderDTOBuilder {
                 shipCity,
                 shipRegion,
                 shipPostalCode,
-                shipCountry
+                shipCountry,
+                createdAt,
+                updatedAt
         );
     }
 }

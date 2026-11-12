@@ -1,8 +1,10 @@
 package com.github.alessiobianchi.erp.model;
 
+import java.time.Instant;
+
 public class ProductBuilder {
 
-    private int productId;
+    private Integer productId;
     private String productName;
     private Supplier supplier;
     private Category category;
@@ -12,6 +14,7 @@ public class ProductBuilder {
     private Integer unitsOnOrder;
     private Integer reorderLevel;
     private boolean discontinued;
+    private Instant createdAt;
 
     public ProductBuilder() {}
 
@@ -26,9 +29,10 @@ public class ProductBuilder {
         this.unitsOnOrder = product.getUnitsOnOrder();
         this.reorderLevel = product.getReorderLevel();
         this.discontinued = product.getDiscontinued();
+        this.createdAt = product.getCreatedAt();
     }
 
-    public ProductBuilder withProductId(int productId) {
+    public ProductBuilder withProductId(Integer productId) {
         this.productId = productId;
         return this;
     }
@@ -78,8 +82,13 @@ public class ProductBuilder {
         return this;
     }
 
+    public ProductBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     public Product build() {
-        return new Product(
+        Product product = new Product(
                 productId,
                 productName,
                 supplier,
@@ -91,5 +100,7 @@ public class ProductBuilder {
                 reorderLevel,
                 discontinued
         );
+        product.setCreatedAt(createdAt);
+        return product;
     }
 }

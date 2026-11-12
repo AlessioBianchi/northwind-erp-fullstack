@@ -1,5 +1,6 @@
 package com.github.alessiobianchi.erp.model;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public class OrderBuilder {
@@ -18,6 +19,7 @@ public class OrderBuilder {
     private String shipRegion;
     private String shipPostalCode;
     private String shipCountry;
+    private Instant createdAt;
 
     public OrderBuilder() {
     }
@@ -37,6 +39,7 @@ public class OrderBuilder {
         this.shipRegion = order.getShipRegion();
         this.shipPostalCode = order.getShipPostalCode();
         this.shipCountry = order.getShipCountry();
+        this.createdAt = order.getCreatedAt();
     }
 
     public OrderBuilder withOrderId(Integer orderId) {
@@ -109,8 +112,13 @@ public class OrderBuilder {
         return this;
     }
 
+    public OrderBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     public Order build() {
-        return new Order(
+        Order order = new Order(
                 orderId,
                 customer,
                 employee,
@@ -126,5 +134,7 @@ public class OrderBuilder {
                 shipPostalCode,
                 shipCountry
         );
+        order.setCreatedAt(createdAt);
+        return order;
     }
 }

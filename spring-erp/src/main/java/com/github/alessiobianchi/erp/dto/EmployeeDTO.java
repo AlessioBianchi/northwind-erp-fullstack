@@ -2,6 +2,7 @@ package com.github.alessiobianchi.erp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public class EmployeeDTO {
@@ -27,6 +28,12 @@ public class EmployeeDTO {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Instant createdAt;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Instant updatedAt;
+
     public EmployeeDTO() {}
 
     public EmployeeDTO(int employeeId,
@@ -46,7 +53,9 @@ public class EmployeeDTO {
                        String notes,
                        EmployeeDTO reportsTo,
                        String username,
-                       String password) {
+                       String password,
+                       Instant createdAt,
+                       Instant updatedAt) {
         this.employeeId = employeeId;
         this.lastName = lastName;
         this.firstName = firstName;
@@ -65,6 +74,8 @@ public class EmployeeDTO {
         this.reportsTo = reportsTo;
         this.username = username;
         this.password = password;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public int getEmployeeId() {
@@ -137,5 +148,13 @@ public class EmployeeDTO {
 
     public String getPassword() {
         return password;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 }

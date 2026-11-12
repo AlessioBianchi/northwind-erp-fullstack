@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,7 +102,11 @@ class ProductsServiceTest {
                 .withProductId(productId)
                 .withProductName(productName)
                 .build();
-        when(productsDao.existsById(productId)).thenReturn(true);
+        Instant createdAt = Instant.parse("2020-01-01T00:00:00Z");
+        when(productsDao.findById(productId)).thenReturn(Optional.of(new ProductBuilder()
+                .withProductId(productId)
+                .withCreatedAt(createdAt)
+                .build()));
         when(productsDao.save(any(Product.class))).thenReturn(productUpdated);
 
         // Act
@@ -112,12 +117,13 @@ class ProductsServiceTest {
         assertEquals(1, updated.getProductId());
         assertEquals("Test", updated.getProductName());
         verify(productsDao).save(any(Product.class));
+        verify(productsDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
 
     @Test
     void update_WhenProductNotFound_ShouldThrowNotFound() {
         // Arrange
-        when(productsDao.existsById(1)).thenReturn(false);
+        when(productsDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> productsService.update(1, new Product()));

@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -100,7 +101,11 @@ class CustomersServiceTest {
                 .withCompanyName(newCompanyName)
                 .withCustomerId(customerId)
                 .build();
-        when(customersDao.existsById(customerId)).thenReturn(true);
+        Instant createdAt = Instant.parse("2020-01-01T00:00:00Z");
+        when(customersDao.findById(customerId)).thenReturn(Optional.of(new CustomerBuilder()
+                .withCustomerId(customerId)
+                .withCreatedAt(createdAt)
+                .build()));
         when(customersDao.save(any(Customer.class))).thenReturn(customerUpdated);
 
         // Act
@@ -111,12 +116,13 @@ class CustomersServiceTest {
         assertEquals(1, updated.getCustomerId());
         assertEquals("Test", updated.getCompanyName());
         verify(customersDao).save(any(Customer.class));
+        verify(customersDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
 
     @Test
     void update_WhenCustomerNotFound_ShouldThrowNotFound() {
         // Arrange
-        when(customersDao.existsById(1)).thenReturn(false);
+        when(customersDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> customersService.update(1, new Customer()));

@@ -19,6 +19,8 @@ public class OrderDetailsBeanToDtoConverter {
                 .withUnitPrice(orderDetail.getUnitPrice())
                 .withQuantity(orderDetail.getQuantity())
                 .withDiscount(orderDetail.getDiscount())
+                .withCreatedAt(orderDetail.getCreatedAt())
+                .withUpdatedAt(orderDetail.getUpdatedAt())
                 .build();
     }
 }
