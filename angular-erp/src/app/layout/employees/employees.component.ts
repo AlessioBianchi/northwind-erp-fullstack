@@ -134,6 +134,11 @@ export class EmployeesComponent implements OnInit {
     event.preventDefault();
 
     const employee = this.activeEmployeeForm as Employee;
+    if (employee.password && employee.password.length < 8) {
+      alert('Password must be at least 8 characters.');
+      return;
+    }
+
     const request$ = employee.employeeId
       ? this.employeesService.update(employee)
       : this.employeesService.create(employee);

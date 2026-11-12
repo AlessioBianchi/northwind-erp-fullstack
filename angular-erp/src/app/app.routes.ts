@@ -7,6 +7,7 @@ import { ProductsComponent } from './layout/products/products.component';
 import { CustomersComponent } from './layout/customers/customers.component';
 import { SuppliersComponent } from './layout/suppliers/suppliers.component';
 import { EmployeesComponent } from './layout/employees/employees.component';
+import { ProfileComponent } from './layout/profile/profile.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { authGuard } from './auth.guard';
 import { managerGuard } from './manager.guard';
@@ -24,7 +25,8 @@ export const routes: Routes = [
       { path: 'products', component: ProductsComponent },
       { path: 'customers', component: CustomersComponent },
       { path: 'suppliers', component: SuppliersComponent },
-      { path: 'employees', component: EmployeesComponent, canActivate: [managerGuard] }
+      { path: 'employees', component: EmployeesComponent, canActivate: [managerGuard] },
+      { path: 'profile', component: ProfileComponent }
     ]
   },
   { path: '404', component: NotFoundComponent },
