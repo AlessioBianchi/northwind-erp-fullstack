@@ -136,6 +136,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 - On success: saves `username` and `isManager` to `sessionStorage`, navigates to `/layout/dashboard`.
 - On failure: shows Bootstrap alert.
 - Handles logout message (query param or sessionStorage flag).
+- Shows "Your session has expired, please log in again" when opened with `?sessionExpired=true` (set by `errorInterceptor` on a 401).
 - **Status: complete.**
 
 ### Main Layout — `src/app/layout/main-layout/`
@@ -213,7 +214,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 - `withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' })`.
 - `withCredentials: true` on all requests (session cookie passed to backend).
 - `csrfInterceptor` — functional interceptor that reads the XSRF cookie and injects the header on non-GET requests.
-- `errorInterceptor` — functional interceptor that catches 4xx/5xx responses (except `/api/auth/login`, which has its own inline error handling), pushes the message to `ErrorNotificationService`, and re-throws so components can still react if needed. Displayed via `ErrorBannerComponent`, mounted at the root of `app.html`.
+- `errorInterceptor` — functional interceptor that catches 4xx/5xx responses (except `/api/auth/login`, which has its own inline error handling), pushes the message to `ErrorNotificationService`, and re-throws so components can still react if needed. Displayed via `ErrorBannerComponent`, mounted at the root of `app.html`. **401** is handled separately: no banner; if the app still thinks the user is logged in, it calls `AuthService.logout()` and navigates to `/login?sessionExpired=true`. Only the first 401 redirects (logout clears the state, so parallel failing requests are ignored).
 
 ### Endpoint map
 
@@ -267,6 +268,7 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 | Role check | `isManager === 'true'` string comparison |
 | Route guards | `authGuard` (`src/app/auth.guard.ts`) — `CanActivateFn` on the `layout` route, redirects to `/login` if no session. `managerGuard` (`src/app/manager.guard.ts`) — `CanActivateFn` on the `employees` child route, redirects non-managers to `/404` |
 | Logout | Calls `POST /api/auth/logout`, then `AuthService.logout()` clears sessionStorage and the in-memory session cache, and navigates to `/login` |
+| Expired session | Backend session gone (30 min idle, backend restart) → next request gets 401 → `errorInterceptor` logs out locally and redirects to `/login?sessionExpired=true` (info alert) |
 | CSRF | HTTP-only cookie `XSRF-TOKEN` → `X-XSRF-TOKEN` header via interceptor |
 | withCredentials | `true` on all requests — session cookie sent automatically |
 
@@ -303,6 +305,14 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 > - What was added / changed / fixed
 > - Include component/service/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Redirect to login when the session expires
+
+- `service/error.interceptor.ts`: on a 401 (any request except `/api/auth/login`), no error banner; if `AuthService.getUsernameLogged()` is still set, calls `authService.logout()` and navigates to `/login?sessionExpired=true`. Before, every request after a backend session timeout or restart showed "Request failed (401)" and the user stayed on the page.
+- `login/login.component.ts` / `.html`: `hasSessionExpired` from the `sessionExpired` query param → info alert "Your session has expired, please log in again" (same pattern as `loggedOut`).
+- Tests: new `service/error.interceptor.spec.ts` (4): 401 clears the session and redirects with the flag, parallel 401s redirect once, 400 still shows the banner, login 401 untouched. Checked by removing the redirect-once guard: that test fails.
 
 ---
 

@@ -22,9 +22,11 @@ export class LoginComponent {
 
   hasError: boolean = false;
   hasLoggedOut: boolean = false;
+  hasSessionExpired: boolean = false;
 
   constructor(private router: Router, private route: ActivatedRoute, private authService: AuthService) {
     this.hasLoggedOut = this.route.snapshot.queryParamMap.get('loggedOut') === 'true';
+    this.hasSessionExpired = this.route.snapshot.queryParamMap.get('sessionExpired') === 'true';
   }
 
   onLogin(form: any): void {
