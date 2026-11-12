@@ -1,6 +1,5 @@
 package com.github.alessiobianchi.erp.config;
 
-import com.github.alessiobianchi.erp.service.EmployeesService;
 import com.github.alessiobianchi.erp.service.UsersDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,12 +33,10 @@ public class AppConfig {
 
     private final PasswordEncoder passwordEncoder;
     private final UsersDetailsService usersDetailsService;
-    private final EmployeesService employeesService;
 
-    public AppConfig(PasswordEncoder passwordEncoder, UsersDetailsService usersDetailsService, EmployeesService employeesService) {
+    public AppConfig(PasswordEncoder passwordEncoder, UsersDetailsService usersDetailsService) {
         this.passwordEncoder = passwordEncoder;
         this.usersDetailsService = usersDetailsService;
-        this.employeesService = employeesService;
     }
 
     @Bean
@@ -54,10 +52,16 @@ public class AppConfig {
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) ->
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden"))
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/employees/me/password").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/employees/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/employees/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/**").hasRole("MANAGER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -67,7 +71,8 @@ public class AppConfig {
                             response.setContentType("application/json");
 
                             String username = authentication.getName();
-                            boolean isManager = employeesService.findByUsername(username).getReportsTo() == null;
+                            boolean isManager = authentication.getAuthorities().stream()
+                                    .anyMatch(authority -> authority.getAuthority().equals("ROLE_MANAGER"));
 
                             String jsonPayload = String.format(
                                     "{\"message\":\"Login successful\",\"username\":\"%s\",\"isManager\":%b}",

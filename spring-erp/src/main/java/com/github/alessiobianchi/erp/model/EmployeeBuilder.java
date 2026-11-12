@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class EmployeeBuilder {
 
-    private int employeeId;
+    private Integer employeeId;
     private String lastName;
     private String firstName;
     private String title;
@@ -47,7 +47,7 @@ public class EmployeeBuilder {
         this.password = employee.getPassword();
     }
 
-    public EmployeeBuilder withEmployeeId(int employeeId) {
+    public EmployeeBuilder withEmployeeId(Integer employeeId) {
         this.employeeId = employeeId;
         return this;
     }

@@ -13,7 +13,7 @@ public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int employeeId;
+    private Integer employeeId;
 
     @NotBlank
     @Size(max = 20)
@@ -72,7 +72,7 @@ public class Employee {
 
     public Employee() {}
 
-    public Employee(int employeeId,
+    public Employee(Integer employeeId,
                 String lastName,
                 String firstName,
                 String title,
@@ -110,7 +110,7 @@ public class Employee {
         this.password = password;
     }
 
-    public int getEmployeeId() {
+    public Integer getEmployeeId() {
         return employeeId;
     }
 
