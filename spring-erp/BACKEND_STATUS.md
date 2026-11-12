@@ -53,6 +53,7 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 | Dev Tools | spring-boot-devtools | runtime |
 | API Docs | springdoc-openapi (`springdoc-openapi-starter-webmvc-ui`) | 3.0.3 (built on Boot 4.0.5; 3.1+ target Boot 4.1) |
 | Testing | JUnit 5 + Mockito (via Spring Boot test starters) | (inherited) |
+| Integration tests | Testcontainers (`spring-boot-testcontainers`, `testcontainers-postgresql`, `postgres:16`) | 2.0.4 (Boot-managed) |
 
 ---
 
@@ -137,7 +138,9 @@ spring-erp/
     └── test/
         └── java/com/github/alessiobianchi/erp/
             ├── ErpSpringApplicationTests.java
+            ├── TestcontainersConfiguration.java # @ServiceConnection PostgreSQL container
             ├── controller/                     # MockMvc tests (validation, security)
+            ├── integration/                    # @SpringBootTest + real DB: Auth, Orders, Employees
             ├── model/                          # UserTest
             └── service/
                 ├── UsersDetailsServiceTest.java
@@ -486,8 +489,14 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 - `controller/EmployeesControllerSecurityTest` — `@WebMvcTest` + `AppConfig`, `@WithMockUser`: manager-only writes (403), create without `employeeId` (201), `/me/password` (204 / 401 / 400).
 - `model/UserTest` — `ROLE_MANAGER` only when `reportsTo == null`.
 - `model/EntityJsonBindingTest` — create bodies without an ID deserialize with a `null` ID (6 entities); `Product` without `discontinued` → `false`.
-- 110 tests total, all passing (2026-11-12).
-- `ErpSpringApplicationTests` — context smoke test; **needs the Postgres container running** (Flyway connects on startup).
+- `integration/` — `@SpringBootTest` + `@AutoConfigureMockMvc` against a throwaway PostgreSQL from Testcontainers (`TestcontainersConfiguration`, `@ServiceConnection`); Flyway V1–V5 + seed data run on it. Real form login (`AbstractIntegrationTest.login` → `MockHttpSession`), real CSRF (`.with(csrf())`), real services and DB. No `@Transactional` rollback on purpose (requests commit like production); each test creates the rows it changes.
+  - `AuthIntegrationTest` (9): login ok / manager flag / wrong password / JSON body → 401, no session → 401, logout invalidates session, write without CSRF → 403.
+  - `OrdersIntegrationTest` (10): employee set from the logged-in user, missing customer → 400, update keeps `createdAt`, detail unit price from product, missing order → 404, orderId mismatch → 400, delete with details → 409, PDF report, pagination.
+  - `EmployeesIntegrationTest` (9): employee writes → 403 (incl. trying to reset the manager's password), manager create without ID → new employee can log in, password rules, blank password keeps the old one, change own password.
+  - Checked by breaking the code on purpose: removing the manager rule fails 6 tests; removing the order-exists check fails the 404 test (500).
+- `ErpSpringApplicationTests` — context smoke test, also on Testcontainers.
+- **Tests need Docker running**, not the dev `erp-postgres` container or `.env` (they never touch the dev DB).
+- 138 tests total, all passing, ~20 s (2026-11-12).
 
 ---
 
@@ -512,6 +521,14 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Integration tests for auth, orders, employees
+- `pom.xml`: test deps `spring-boot-testcontainers`, `testcontainers-junit-jupiter`, `testcontainers-postgresql` (Boot-managed 2.0.4).
+- New `TestcontainersConfiguration` (`@ServiceConnection` `postgres:16`); `ErpSpringApplicationTests` imports it, so no test needs the dev DB anymore.
+- New `integration/AbstractIntegrationTest` (full app, MockMvc, real login helper) + `AuthIntegrationTest` (9), `OrdersIntegrationTest` (10), `EmployeesIntegrationTest` (9).
+- 138 tests passing; mutation checks (manager rule, order-exists check) make the expected tests fail.
 
 ---
 
