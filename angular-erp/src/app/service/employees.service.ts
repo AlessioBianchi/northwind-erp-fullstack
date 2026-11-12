@@ -40,4 +40,8 @@ export class EmployeesService {
     delete(employeeId: number): Observable<void> {
         return this.http.delete<void>(this.apiBaseUrl + '/' + employeeId, this.httpOptions);
     }
+
+    changeMyPassword(currentPassword: string, newPassword: string): Observable<void> {
+        return this.http.put<void>(this.apiBaseUrl + '/me/password', { currentPassword, newPassword }, this.httpOptions);
+    }
 }
