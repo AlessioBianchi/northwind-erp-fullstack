@@ -4,17 +4,28 @@ import com.github.alessiobianchi.erp.dto.ErrorMessage;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.tags.Tag;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
@@ -24,6 +35,7 @@ public class OpenApiConfig {
     public static final String CONFLICT = "Conflict";
 
     private static final String SESSION_SCHEME = "sessionCookie";
+    private static final String AUTH_TAG = "Authentication";
 
     @Bean
     public OpenAPI erpOpenApi() {
@@ -64,6 +76,47 @@ public class OpenApiConfig {
                 operation.getParameters().forEach(parameter -> parameter.setRequired(false));
             }
             return operation;
+        };
+    }
+
+    // Login/logout are handled by Spring Security filters, not controllers, so springdoc can't scan them.
+    // Its built-in login endpoint documents a JSON body, but formLogin only reads form fields.
+    @Bean
+    public OpenApiCustomizer authEndpoints() {
+        return openApi -> {
+            Schema<?> credentials = new ObjectSchema()
+                    .addProperty("username", new StringSchema())
+                    .addProperty("password", new StringSchema().format("password"))
+                    .required(List.of("username", "password"));
+            Schema<?> loginResult = new ObjectSchema()
+                    .addProperty("message", new StringSchema())
+                    .addProperty("username", new StringSchema())
+                    .addProperty("isManager", new BooleanSchema());
+
+            Operation login = new Operation()
+                    .addTagsItem(AUTH_TAG)
+                    .summary("Log in")
+                    .description("Starts a session: the response sets the `JSESSIONID` cookie used by every other endpoint. "
+                            + "`isManager` is true for employees who report to no one.")
+                    .security(List.of())
+                    .requestBody(new RequestBody().required(true).content(new Content()
+                            .addMediaType("application/x-www-form-urlencoded", new MediaType().schema(credentials))))
+                    .responses(new ApiResponses()
+                            .addApiResponse("200", new ApiResponse().description("Logged in")
+                                    .content(new Content().addMediaType("application/json", new MediaType().schema(loginResult))))
+                            .addApiResponse("401", new ApiResponse().description("Invalid username or password")));
+
+            Operation logout = new Operation()
+                    .addTagsItem(AUTH_TAG)
+                    .summary("Log out")
+                    .description("Invalidates the session and deletes the `JSESSIONID` cookie.")
+                    .security(List.of())
+                    .responses(new ApiResponses()
+                            .addApiResponse("200", new ApiResponse().description("Logged out")));
+
+            openApi.path("/api/auth/login", new PathItem().post(login))
+                    .path("/api/auth/logout", new PathItem().post(logout))
+                    .addTagsItem(new Tag().name(AUTH_TAG).description("Session login and logout."));
         };
     }
 
