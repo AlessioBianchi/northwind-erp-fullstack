@@ -16,6 +16,12 @@
                 </div>
             }
 
+            @if (hasSessionExpired) {
+                <div class="alert alert-info">
+                    Your session has expired, please log in again.
+                </div>
+            }
+
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input 
