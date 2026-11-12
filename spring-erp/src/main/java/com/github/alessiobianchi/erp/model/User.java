@@ -45,6 +45,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (isManager()) {
+            return List.of(new SimpleGrantedAuthority("ROLE_USER"), new SimpleGrantedAuthority("ROLE_MANAGER"));
+        }
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
@@ -56,6 +59,10 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         return employee.getPassword();
+    }
+
+    public boolean isManager() {
+        return employee.getReportsTo() == null;
     }
 
     public Employee getEmployee(){

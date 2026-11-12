@@ -232,7 +232,7 @@ Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@
 Every controller has `@Tag`; every endpoint has `@Operation(summary, description)` + `@ApiResponse` per status code. Error responses reference shared components defined in `OpenApiConfig` (`@ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)` → `ErrorMessage` schema). The list GET and the paginated GET share one path; OpenAPI allows one operation per path + method, so springdoc merges them (response `oneOf[PagedModel, array]`). Put `@Operation` on the plain list method only; `OpenApiConfig.optionalParamsOnMergedGets` marks the `pageNumber`/`pageSize` params as optional in the spec. Descriptions are Markdown: use `\n\n` or `- ` lists (a single `\n` renders as a space). They document behavior a client cannot guess (409 causes, password handling, auto-set fields); global conventions live in the `Info` description.
 
 ### Authentication adapter
-`User.java` is not a JPA entity — it wraps `Employee` and implements Spring Security's `UserDetails`. `UsersDetailsService` bridges JPA and Spring Security by loading an `Employee` by username and wrapping it in a `User`.
+`User.java` is not a JPA entity — it wraps `Employee` and implements Spring Security's `UserDetails`. `UsersDetailsService` bridges JPA and Spring Security by loading an `Employee` by username and wrapping it in a `User`. `User.getAuthorities()` returns `ROLE_USER`, plus `ROLE_MANAGER` when `reportsTo == null`.
 
 ---
 
@@ -252,6 +252,8 @@ Every controller has `@Tag`; every endpoint has `@Operation(summary, description
 - Full CRUD + pagination.
 - Self-referencing `reportsTo` relationship.
 - Carries `username`/`password` fields — doubles as the auth user model.
+- Create/update/delete are manager-only (403 otherwise); every employee can change their own password via `PUT /me/password` (current password checked).
+- Password rules in `EmployeesService.validatePassword`: min 8 characters, max 72 UTF-8 bytes (BCrypt limit) → 400.
 - Delete blocked if employee has orders.
 - **Status: complete.**
 
@@ -289,7 +291,7 @@ Every controller has `@Tag`; every endpoint has `@Operation(summary, description
 
 ### Authentication — `config/`, `service/`, `model/User.java`
 - Session-based login/logout via Spring Security form auth.
-- `isManager` flag derived from `employee.reportsTo == null`.
+- `isManager` flag derived from `employee.reportsTo == null`; exposed as `ROLE_MANAGER` and read from the authorities in the login success handler.
 - **Status: complete.**
 
 ---
@@ -320,9 +322,10 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 |---|---|---|
 | GET | `/api/v1/employees` | `List<EmployeeDTO>` |
 | GET | `/api/v1/employees?pageNumber=&pageSize=` | `Page<EmployeeDTO>` |
-| POST | `/api/v1/employees` | `201` + `EmployeeDTO` (body: `Employee`) |
-| PUT | `/api/v1/employees/{employeeId}` | `ResponseEntity<EmployeeDTO>` (body: `Employee`; blank password keeps the stored hash) |
-| DELETE | `/api/v1/employees/{employeeId}` | `204`; `404` if missing, `409` if referenced |
+| POST | `/api/v1/employees` | **Manager only.** `201` + `EmployeeDTO` (body: `Employee`); `400` if password missing/invalid |
+| PUT | `/api/v1/employees/{employeeId}` | **Manager only.** `ResponseEntity<EmployeeDTO>` (body: `Employee`; blank password keeps the stored hash, otherwise reset without the old one) |
+| DELETE | `/api/v1/employees/{employeeId}` | **Manager only.** `204`; `404` if missing, `409` if referenced |
+| PUT | `/api/v1/employees/me/password` | Any logged-in employee. Body `ChangePasswordDTO { currentPassword, newPassword }`; `204`; `400` if current password wrong or new one invalid |
 
 ### ProductsController (`/api/v1/products`) — same pattern as Customers
 | Method | Path | Response |
@@ -389,7 +392,9 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 | `isManager` logic | `employee.reportsTo == null` |
 | CSRF | `CookieCsrfTokenRepository` (httpOnly=false); custom `CsrfCookieFilter`; bypassed on `/api/auth/**` |
 | CORS | Origin `http://localhost:4200`; credentials allowed; `X-XSRF-TOKEN` header permitted |
-| Access control | All endpoints require authentication except `/api/auth/**`, `/v3/api-docs/**`, `/swagger-ui/**`, `/swagger-ui.html`; no role-based restrictions yet |
+| Access control | All endpoints require authentication except `/api/auth/**`, `/v3/api-docs/**`, `/swagger-ui/**`, `/swagger-ui.html`. `POST`/`PUT`/`DELETE` on `/api/v1/employees/**` require `ROLE_MANAGER` (403), except `PUT /api/v1/employees/me/password` |
+| Roles | `ROLE_USER` for everyone, `ROLE_MANAGER` when `reportsTo == null` (`User.getAuthorities()`) |
+| Password rules | Min 8 characters, max 72 UTF-8 bytes (`EmployeesService.validatePassword`) |
 
 ---
 
@@ -428,7 +433,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 |---|---|
 | `CategoriesService` | CRUD; delete blocked if products reference the category |
 | `CustomersService` | CRUD + pagination; delete blocked if customer has orders |
-| `EmployeesService` | CRUD + pagination; delete blocked if employee has orders |
+| `EmployeesService` | CRUD + pagination; delete blocked if employee has orders; password rules on create/update; `changeOwnPassword(username, current, new)` checks the current password |
 | `ProductsService` | CRUD + pagination; delete blocked if product appears in order details |
 | `SuppliersService` | CRUD + pagination; delete blocked if supplier has products |
 | `ShippersService` | CRUD; delete blocked if shipper has orders |
@@ -462,7 +467,9 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 
 - `service/` — 9 unit test classes, one per service (74 tests). JUnit 5 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
 - `controller/OrdersControllerValidationTest` — standalone MockMvc: bean validation, status codes.
-- 84 tests total, all passing (2026-11-12).
+- `controller/EmployeesControllerSecurityTest` — `@WebMvcTest` + `AppConfig`, `@WithMockUser`: manager-only writes (403), create without `employeeId` (201), `/me/password` (204 / 401 / 400).
+- `model/UserTest` — `ROLE_MANAGER` only when `reportsTo == null`.
+- 103 tests total, all passing (2026-11-12).
 - `ErpSpringApplicationTests` — context smoke test; **needs the Postgres container running** (Flyway connects on startup).
 
 ---
@@ -474,6 +481,8 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 - [ ] **Thymeleaf dead code** — view references remain in some controllers; UI is fully Angular now.
 - [ ] **CORS origin hardcoded** — `http://localhost:4200` in `AppConfig.corsConfigurationSource()`; needs a property before a real prod deploy.
 - [ ] **Magic number** — low-stock threshold `< 10` is hardcoded in `DashboardService`.
+- [ ] **Frontend: no "change my password" form** for `PUT /api/v1/employees/me/password`; 403 on employee writes not shown specifically.
+- [ ] **Other sessions survive a password change** — would need a `SessionRegistry`.
 - [ ] **Date pattern typo** in `Employee.java` — `"yyy-MM-dd"` (three y's) should be `"yyyy-MM-dd"`.
 
 ---
@@ -486,6 +495,24 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Employee create without `employeeId` fixed
+- `model/Employee.employeeId` and `EmployeeBuilder.withEmployeeId`: `int` → `Integer`. Jackson binds `Employee` through its all-args constructor, so a body without `employeeId` (the Angular create form) failed with 400 "Malformed request body" — same root cause as the earlier `Order.orderId` fix.
+- `EmployeesControllerSecurityTest`: `create_AsManagerWithoutEmployeeId_ShouldReturn201`. 103 passing.
+- Verified on the running app: manager create → 201, new employee can log in, test row deleted.
+
+---
+
+### [2026-11-12] — Employee password security
+- `model/User.getAuthorities()`: adds `ROLE_MANAGER` when `reportsTo == null` (new `isManager()`).
+- `config/AppConfig`: `POST`/`PUT`/`DELETE` `/api/v1/employees/**` require `ROLE_MANAGER` (`accessDeniedHandler` → 403); `PUT /api/v1/employees/me/password` open to any logged-in user. Login handler reads `isManager` from the authorities; removed the `EmployeesService` dependency. Closes the hole where any employee could reset another's password or set their own `reportsTo` to `null` to become manager.
+- `service/EmployeesService`: `validatePassword` (min 8 chars, max 72 UTF-8 bytes → 400) on create and on update when a password is sent; new `changeOwnPassword(username, current, new)` (`passwordEncoder.matches`, 400 if wrong); `getEmployee` helper for find-or-404; `StringUtils.hasText` for blank checks.
+- New `dto/ChangePasswordDTO` record; new `EmployeesController.changeOwnPassword` (`PUT /me/password`, 204).
+- `OpenApiConfig`: shared `ManagerOnly` 403 response; Employees operations documented as manager-only with the password rules.
+- Tests: `EmployeesServiceTest` (+7: rules, changeOwnPassword), new `EmployeesControllerSecurityTest` (9), new `UserTest` (2); existing tests use 8+ char passwords. 102 passing.
+- Verified on the running app: employee → 403 on PUT/DELETE of another employee; self-change 400 / 204; old password stops working.
 
 ---
 

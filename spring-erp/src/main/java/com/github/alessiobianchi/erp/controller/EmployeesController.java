@@ -1,6 +1,7 @@
 package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.config.OpenApiConfig;
+import com.github.alessiobianchi.erp.dto.ChangePasswordDTO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
 import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.service.EmployeesService;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @Tag(name = "Employees", description = "Employees; they are also the users who log in to the application. Passwords are never returned.")
@@ -44,10 +46,12 @@ public class EmployeesController {
     }
 
     @Operation(summary = "Create an employee",
-            description = "Creates a new employee. The password is required and stored hashed.\n\n" +
-                    "- 400 if the password is missing or blank")
+            description = "Managers only. Creates a new employee. The password is required and stored hashed." +
+                    "\n\nPassword rules: at least 8 characters, at most 72 bytes.\n\n" +
+                    "- 400 if the password is missing or breaks the rules")
     @ApiResponse(responseCode = "201", description = "Employee created")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
+    @ApiResponse(responseCode = "403", ref = OpenApiConfig.MANAGER_ONLY)
     @PostMapping()
     public ResponseEntity<EmployeeDTO> create(@Valid @RequestBody Employee employee) {
         EmployeeDTO employeeSaved = service.create(employee);
@@ -55,10 +59,14 @@ public class EmployeesController {
     }
 
     @Operation(summary = "Update an employee",
-            description = "Updates the employee. Send a blank or null password to keep the current one.\n\n" +
+            description = "Managers only. Updates the employee. Send a blank or null password to keep the current one; " +
+                    "a new password resets it without asking for the old one." +
+                    "\n\nPassword rules: at least 8 characters, at most 72 bytes.\n\n" +
+                    "- 400 if the new password breaks the rules\n" +
                     "- 404 if the employee does not exist")
     @ApiResponse(responseCode = "200", description = "Employee updated")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
+    @ApiResponse(responseCode = "403", ref = OpenApiConfig.MANAGER_ONLY)
     @ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)
     @PutMapping("/{employeeId}")
     public ResponseEntity<EmployeeDTO> update(@PathVariable int employeeId, @Valid @RequestBody Employee employee) {
@@ -67,14 +75,28 @@ public class EmployeesController {
     }
 
     @Operation(summary = "Delete an employee",
-            description = "Deletes the employee.\n\n- 404 if the employee does not exist\n" +
+            description = "Managers only. Deletes the employee.\n\n- 404 if the employee does not exist\n" +
                     "- 409 if the employee has orders")
     @ApiResponse(responseCode = "204", description = "Employee deleted")
+    @ApiResponse(responseCode = "403", ref = OpenApiConfig.MANAGER_ONLY)
     @ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)
     @ApiResponse(responseCode = "409", ref = OpenApiConfig.CONFLICT)
     @DeleteMapping("/{employeeId}")
     public ResponseEntity<Void> delete(@PathVariable int employeeId) {
         service.delete(employeeId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Change my password",
+            description = "Changes the password of the logged-in employee. Open to every employee." +
+                    "\n\nPassword rules: at least 8 characters, at most 72 bytes.\n\n" +
+                    "- 400 if the current password is wrong or the new one breaks the rules")
+    @ApiResponse(responseCode = "204", description = "Password changed")
+    @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changeOwnPassword(@Valid @RequestBody ChangePasswordDTO body,
+                                                  @Parameter(hidden = true) Principal principal) {
+        service.changeOwnPassword(principal.getName(), body.currentPassword(), body.newPassword());
         return ResponseEntity.noContent().build();
     }
 }

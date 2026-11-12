@@ -33,6 +33,7 @@ public class OpenApiConfig {
     public static final String BAD_REQUEST = "BadRequest";
     public static final String NOT_FOUND = "NotFound";
     public static final String CONFLICT = "Conflict";
+    public static final String MANAGER_ONLY = "ManagerOnly";
 
     private static final String SESSION_SCHEME = "sessionCookie";
     private static final String AUTH_TAG = "Authentication";
@@ -46,7 +47,8 @@ public class OpenApiConfig {
                         .name("JSESSIONID"))
                 .addResponses(BAD_REQUEST, errorResponse("Invalid request body or parameters"))
                 .addResponses(NOT_FOUND, errorResponse("Resource not found"))
-                .addResponses(CONFLICT, errorResponse("Resource is still referenced by other records"));
+                .addResponses(CONFLICT, errorResponse("Resource is still referenced by other records"))
+                .addResponses(MANAGER_ONLY, new ApiResponse().description("Only managers (employees who report to no one) can do this"));
         ModelConverters.getInstance().read(ErrorMessage.class).forEach(components::addSchemas);
 
         return new OpenAPI()
