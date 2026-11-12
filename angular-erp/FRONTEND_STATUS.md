@@ -293,7 +293,7 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 
 ## Known Gaps & TODOs
 
-- [ ] `app.spec.ts`'s `should render title` test fails (pre-existing, unrelated to services/guard testing work — stale title assertion).
+None open. (`ng test --watch=false` is fully green: 23/23.)
 
 ---
 
@@ -305,6 +305,13 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 > - What was added / changed / fixed
 > - Include component/service/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Fix the failing frontend test
+
+- `app.spec.ts`: replaced the Angular CLI scaffold test "should render title" (expected an `<h1>` with "Hello, northwind-erp" that `App` never renders) with "should render the error banner and the router outlet", which checks `<app-error-banner>` and `<main> <router-outlet>` from `app.html`. Checked by removing the banner from `app.html`: the test fails.
+- `ng test --watch=false` now exits 0 (23/23). Removed the Known Gaps entry.
 
 ---
 
