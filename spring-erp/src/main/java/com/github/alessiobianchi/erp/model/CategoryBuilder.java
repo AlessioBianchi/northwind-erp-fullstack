@@ -1,10 +1,13 @@
 package com.github.alessiobianchi.erp.model;
 
+import java.time.Instant;
+
 public class CategoryBuilder {
 
-    private int categoryId;
+    private Integer categoryId;
     private String categoryName;
     private String description;
+    private Instant createdAt;
 
     public CategoryBuilder() {
     }
@@ -13,9 +16,10 @@ public class CategoryBuilder {
         this.categoryId = category.getCategoryId();
         this.categoryName = category.getCategoryName();
         this.description = category.getDescription();
+        this.createdAt = category.getCreatedAt();
     }
 
-    public CategoryBuilder withCategoryId(int categoryId) {
+    public CategoryBuilder withCategoryId(Integer categoryId) {
         this.categoryId = categoryId;
         return this;
     }
@@ -30,11 +34,18 @@ public class CategoryBuilder {
         return this;
     }
 
+    public CategoryBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     public Category build() {
-        return new Category(
+        Category category = new Category(
                 categoryId,
                 categoryName,
                 description
         );
+        category.setCreatedAt(createdAt);
+        return category;
     }
 }

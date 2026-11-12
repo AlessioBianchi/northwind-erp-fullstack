@@ -34,12 +34,12 @@ public class ShippersServiceImpl implements ShippersService {
 
     @Override
     public Shipper update(int shipperId, Shipper shipper) {
-        if (!shippersDao.existsById(shipperId)) {
-            throw new ResourceNotFoundException("Shipper not found");
-        }
+        Shipper existing = shippersDao.findById(shipperId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shipper not found"));
 
         Shipper shipperToUpdate = new ShipperBuilder(shipper)
                 .withShipperId(shipperId)
+                .withCreatedAt(existing.getCreatedAt())
                 .build();
 
         return shippersDao.save(shipperToUpdate);

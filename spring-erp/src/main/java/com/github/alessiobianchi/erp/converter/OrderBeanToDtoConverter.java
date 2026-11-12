@@ -32,6 +32,8 @@ public class OrderBeanToDtoConverter {
                 .withShipRegion(order.getShipRegion())
                 .withShipPostalCode(order.getShipPostalCode())
                 .withShipCountry(order.getShipCountry())
+                .withCreatedAt(order.getCreatedAt())
+                .withUpdatedAt(order.getUpdatedAt())
                 .build();
     }
 }

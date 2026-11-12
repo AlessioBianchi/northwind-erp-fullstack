@@ -1,5 +1,6 @@
 package com.github.alessiobianchi.erp.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public class EmployeeDTOBuilder {
@@ -22,6 +23,8 @@ public class EmployeeDTOBuilder {
     private EmployeeDTO reportsTo;
     private String username;
     private String password;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public EmployeeDTOBuilder() {
     }
@@ -45,6 +48,8 @@ public class EmployeeDTOBuilder {
         this.reportsTo = dto.getReportsTo();
         this.username = dto.getUsername();
         this.password = dto.getPassword();
+        this.createdAt = dto.getCreatedAt();
+        this.updatedAt = dto.getUpdatedAt();
     }
 
     public EmployeeDTOBuilder withEmployeeId(int employeeId) {
@@ -137,6 +142,16 @@ public class EmployeeDTOBuilder {
         return this;
     }
 
+    public EmployeeDTOBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
+    public EmployeeDTOBuilder withUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+        return this;
+    }
+
     public EmployeeDTO build() {
         return new EmployeeDTO(
                 employeeId,
@@ -156,7 +171,9 @@ public class EmployeeDTOBuilder {
                 notes,
                 reportsTo,
                 username,
-                password
+                password,
+                createdAt,
+                updatedAt
         );
     }
 }

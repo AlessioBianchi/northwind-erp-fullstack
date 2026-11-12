@@ -1,5 +1,7 @@
 package com.github.alessiobianchi.erp.model;
 
+import java.time.Instant;
+
 public class OrderDetailBuilder {
 
     private Order order;
@@ -7,6 +9,7 @@ public class OrderDetailBuilder {
     private Double unitPrice;
     private Integer quantity;
     private Double discount;
+    private Instant createdAt;
 
     public OrderDetailBuilder() {
     }
@@ -17,6 +20,7 @@ public class OrderDetailBuilder {
         this.unitPrice = orderDetail.getUnitPrice();
         this.quantity = orderDetail.getQuantity();
         this.discount = orderDetail.getDiscount();
+        this.createdAt = orderDetail.getCreatedAt();
     }
 
     public OrderDetailBuilder withOrder(Order order) {
@@ -44,13 +48,20 @@ public class OrderDetailBuilder {
         return this;
     }
 
+    public OrderDetailBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     public OrderDetail build() {
-        return new OrderDetail(
+        OrderDetail orderDetail = new OrderDetail(
                 order,
                 product,
                 unitPrice,
                 quantity,
                 discount
         );
+        orderDetail.setCreatedAt(createdAt);
+        return orderDetail;
     }
 }

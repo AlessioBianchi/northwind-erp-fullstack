@@ -1,5 +1,6 @@
 package com.github.alessiobianchi.erp.model;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public class EmployeeBuilder {
@@ -22,6 +23,7 @@ public class EmployeeBuilder {
     private Employee reportsTo;
     private String username;
     private String password;
+    private Instant createdAt;
 
     public EmployeeBuilder() {
     }
@@ -45,6 +47,7 @@ public class EmployeeBuilder {
         this.reportsTo = employee.getReportsTo();
         this.username = employee.getUsername();
         this.password = employee.getPassword();
+        this.createdAt = employee.getCreatedAt();
     }
 
     public EmployeeBuilder withEmployeeId(Integer employeeId) {
@@ -137,8 +140,13 @@ public class EmployeeBuilder {
         return this;
     }
 
+    public EmployeeBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     public Employee build() {
-        return new Employee(
+        Employee employee = new Employee(
                 employeeId,
                 lastName,
                 firstName,
@@ -158,5 +166,7 @@ public class EmployeeBuilder {
                 username,
                 password
         );
+        employee.setCreatedAt(createdAt);
+        return employee;
     }
 }

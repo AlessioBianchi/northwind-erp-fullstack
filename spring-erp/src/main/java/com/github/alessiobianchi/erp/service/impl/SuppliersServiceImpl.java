@@ -43,12 +43,12 @@ public class SuppliersServiceImpl implements SuppliersService {
 
     @Override
     public Supplier update(int supplierId, Supplier supplier) {
-        if (!suppliersDao.existsById(supplierId)) {
-            throw new ResourceNotFoundException("Supplier not found");
-        }
+        Supplier existing = suppliersDao.findById(supplierId)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found"));
 
         Supplier supplierToUpdate = new SupplierBuilder(supplier)
                 .withSupplierId(supplierId)
+                .withCreatedAt(existing.getCreatedAt())
                 .build();
 
         return suppliersDao.save(supplierToUpdate);

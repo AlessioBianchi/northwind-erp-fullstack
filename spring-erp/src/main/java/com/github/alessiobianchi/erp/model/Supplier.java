@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="SUPPLIERS")
-public class Supplier {
+public class Supplier extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int supplierId;
+    private Integer supplierId;
 
     @NotBlank
     @Size(max = 40)
@@ -47,7 +47,7 @@ public class Supplier {
 
     public Supplier() {}
 
-    public Supplier(int supplierId,
+    public Supplier(Integer supplierId,
                     String companyName,
                     String contactName,
                     String contactTitle,
@@ -73,7 +73,7 @@ public class Supplier {
         this.homepage = homepage;
     }
 
-    public int getSupplierId() {
+    public Integer getSupplierId() {
         return supplierId;
     }
 

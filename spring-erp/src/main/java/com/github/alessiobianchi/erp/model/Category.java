@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="CATEGORIES")
-public class Category {
+public class Category extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int categoryId;
+    private Integer categoryId;
 
     @NotBlank
     @Size(max = 15)
@@ -20,7 +20,7 @@ public class Category {
 
     public Category() {}
 
-    public Category(int categoryId,
+    public Category(Integer categoryId,
                     String categoryName,
                     String description) {
         this.categoryId = categoryId;
@@ -28,7 +28,7 @@ public class Category {
         this.description = description;
     }
 
-    public int getCategoryId() {
+    public Integer getCategoryId() {
         return categoryId;
     }
 

@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,7 +122,11 @@ class OrdersServiceTest {
                 .withFreight(freight)
                 .build();
 
-        when(ordersDao.existsById(orderId)).thenReturn(true);
+        Instant createdAt = Instant.parse("2020-01-01T00:00:00Z");
+        when(ordersDao.findById(orderId)).thenReturn(Optional.of(new OrderBuilder()
+                .withOrderId(orderId)
+                .withCreatedAt(createdAt)
+                .build()));
         when(ordersDao.save(any(Order.class))).thenReturn(orderUpdated);
 
         // Act
@@ -132,6 +137,7 @@ class OrdersServiceTest {
         assertEquals(orderId, createdOrder.getOrderId());
         assertEquals(freight, createdOrder.getFreight());
         verify(ordersDao).save(any(Order.class));
+        verify(ordersDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
 
     @Test
@@ -265,7 +271,7 @@ class OrdersServiceTest {
     @Test
     void update_WhenOrderNotFound_ShouldThrowNotFound() {
         // Arrange
-        when(ordersDao.existsById(1)).thenReturn(false);
+        when(ordersDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> ordersService.update(1, new OrderDTO()));

@@ -43,12 +43,12 @@ public class CustomersServiceImpl implements CustomersService {
 
     @Override
     public Customer update(int customerId, Customer customer) {
-        if (!customersDao.existsById(customerId)) {
-            throw new ResourceNotFoundException("Customer not found");
-        }
+        Customer existing = customersDao.findById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         Customer customerToUpdate = new CustomerBuilder(customer)
                 .withCustomerId(customerId)
+                .withCreatedAt(existing.getCreatedAt())
                 .build();
 
         return customersDao.save(customerToUpdate);
