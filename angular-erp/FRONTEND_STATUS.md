@@ -35,7 +35,7 @@ Angular 21 frontend for a Northwind ERP replica. Connected to a Spring Boot back
 
 | Layer | Technology | Version |
 |---|---|---|
-| Framework | Angular | 21.2.0 |
+| Framework | Angular | 21.2.26 |
 | Language | TypeScript | ~5.9.2 |
 | UI Framework | Bootstrap | 5.3.8 |
 | Icons | Bootstrap Icons | 1.13.1 |
@@ -43,7 +43,7 @@ Angular 21 frontend for a Northwind ERP replica. Connected to a Spring Boot back
 | Reactive | RxJS | ~7.8.0 |
 | Testing | Vitest + jsdom | 4.0.8 |
 | Formatter | Prettier | 3.5.3 |
-| Build | Angular CLI / @angular/build | 21.2.11 |
+| Build | Angular CLI / @angular/build | 21.2.30 |
 
 **Angular style:** Standalone components (no NgModules). Dependency injection via `inject()` function (not constructor params).
 
@@ -312,6 +312,14 @@ None open. (`ng test --watch=false` is fully green: 23/23.)
 > - What was added / changed / fixed
 > - Include component/service/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Dependency security updates
+
+- `package.json`: undid the `@angular/cli` downgrade to `^16.2.16` (left by `npm audit fix --force`). Angular packages are now `^21.2.26` via `ng update`, and the CLI/build tools are at 21.2.30. `npm audit fix` updated `package-lock.json` (vite, undici, piscina, tar and others).
+- `npm audit`: 36 → 16 (all moderate, no high or critical). The 16 left are in the CLI's npm tooling (`pacote`, `sigstore`, `tuf-js`, `cacache`, …). They're only used by `ng add`/`ng update` and never ship in the app bundle. npm's only offered fix is a CLI downgrade to 17, so don't run `npm audit fix --force`.
+- `ng build` and `ng test --watch=false` (23/23) pass.
 
 ---
 
