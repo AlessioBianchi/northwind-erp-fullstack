@@ -1,4 +1,4 @@
-package com.github.alessiobianchi.erp.service;
+package com.github.alessiobianchi.erp.service.impl;
 
 import com.github.alessiobianchi.erp.dao.CategoriesDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
@@ -31,7 +31,7 @@ class CategoriesServiceTest {
     private ProductsDAO productsDao;
 
     @InjectMocks
-    private CategoriesService categoriesService;
+    private CategoriesServiceImpl categoriesService;
 
     private Category sampleCategory;
 

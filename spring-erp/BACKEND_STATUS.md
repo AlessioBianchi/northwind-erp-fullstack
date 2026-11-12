@@ -116,7 +116,7 @@ spring-erp/
     │   │   │   ├── Shipper.java + ShipperBuilder.java
     │   │   │   ├── Supplier.java + SupplierBuilder.java
     │   │   │   └── User.java                   # UserDetails adapter (not an entity)
-    │   │   └── service/
+    │   │   └── service/                        # Interfaces (what controllers depend on)
     │   │       ├── CategoriesService.java
     │   │       ├── CustomersService.java
     │   │       ├── DashboardService.java
@@ -125,7 +125,9 @@ spring-erp/
     │   │       ├── ProductsService.java
     │   │       ├── ShippersService.java
     │   │       ├── SuppliersService.java
-    │   │       └── UsersDetailsService.java
+    │   │       ├── UsersDetailsService.java    # Class: implements Spring's UserDetailsService
+    │   │       └── impl/                       # @Service implementations
+    │   │           └── *ServiceImpl.java       # One per interface above (8)
     │   └── resources/
     │       ├── application.properties
     │       ├── application-prod.properties
@@ -133,8 +135,11 @@ spring-erp/
     └── test/
         └── java/com/github/alessiobianchi/erp/
             ├── ErpSpringApplicationTests.java
-            └── service/                        # One test class per service
-                └── (10 test files)
+            ├── controller/                     # MockMvc tests (validation, security)
+            ├── model/                          # UserTest
+            └── service/
+                ├── UsersDetailsServiceTest.java
+                └── impl/                       # One test class per *ServiceImpl (8)
 ```
 
 ---
@@ -211,13 +216,16 @@ Schema changes go in a new `V{n}__*.sql` file — never edit an applied migratio
 
 ```
 controller/   @Controller / @RestController — HTTP only, no logic
-service/      Business rules, delete guards, aggregations
+service/      Service interfaces; service/impl/ holds the @Service *ServiceImpl classes (business rules, delete guards, aggregations)
 dao/          Spring Data JPA interfaces (CrudRepository + @Query)
 model/        JPA entities + Builder companions
 dto/          API DTOs + builders (Dashboard, Employee, Order, OrderDetails)
 converter/    Static bean ↔ DTO converters, called from services
 config/       Security and CORS (AppConfig.java), OpenAPI (OpenApiConfig.java)
 ```
+
+### Service interfaces
+Each service is an interface in `service/` with one `@Service` implementation `service/impl/<Name>ServiceImpl`. Controllers and `@MockitoBean`/`@Mock` in tests depend on the interface; service unit tests (`test/.../service/impl/`) `@InjectMocks` the `Impl`. Names stay plural (`ProductsService`) to match the rest of the code. `UsersDetailsService` is the exception: it already implements Spring's `UserDetailsService`.
 
 ### Builder pattern
 Every entity has a hand-written `*Builder` companion (fluent API). Used in service layer for partial updates — the service loads the existing entity, applies changes via the builder, then saves.
@@ -465,7 +473,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 
 ## Tests
 
-- `service/` — 9 unit test classes, one per service (74 tests). JUnit 5 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
+- `service/impl/` — 8 unit test classes, one per `*ServiceImpl`; `service/UsersDetailsServiceTest`. 9 classes in total. JUnit 5 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
 - `controller/OrdersControllerValidationTest` — standalone MockMvc: bean validation, status codes.
 - `controller/EmployeesControllerSecurityTest` — `@WebMvcTest` + `AppConfig`, `@WithMockUser`: manager-only writes (403), create without `employeeId` (201), `/me/password` (204 / 401 / 400).
 - `model/UserTest` — `ROLE_MANAGER` only when `reportsTo == null`.
@@ -495,6 +503,13 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Service interfaces (ServiceImpl pattern)
+- The 8 domain services (`Categories`, `Customers`, `Dashboard`, `Employees`, `Orders`, `Products`, `Shippers`, `Suppliers`) are now interfaces in `service/`; implementations moved to `service/impl/<Name>ServiceImpl` (`implements`, `@Override` on every public method). `UsersDetailsService` unchanged.
+- Controllers, `AppConfig` and the controller tests unchanged (they already depend on `<Name>Service`). Service tests live in `test/.../service/impl/` (same package as the class under test) and `@InjectMocks` the `Impl`.
+- No behavior change: 103 tests passing; app starts and endpoints respond.
 
 ---
 

@@ -1,4 +1,4 @@
-package com.github.alessiobianchi.erp.service;
+package com.github.alessiobianchi.erp.service.impl;
 
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
@@ -40,7 +40,7 @@ class EmployeesServiceTest {
     private OrdersDAO ordersDao;
 
     @InjectMocks
-    private EmployeesService employeesService;
+    private EmployeesServiceImpl employeesService;
 
     private Employee sampleEmployee;
 
