@@ -28,7 +28,7 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 
 - **Root package:** `com.github.alessiobianchi.erp`
 - **Main class:** `ErpSpringApplication.java`
-- **Base URL pattern:** mix of `/api/**` (REST controllers) and `/**` (MVC controllers — Thymeleaf remnants, largely dead code now that Angular handles the UI)
+- **Base URL pattern:** all resource endpoints are `@RestController`s under `/api/v1/**`; login/logout at `/api/auth/**` (handled by Spring Security); Swagger UI at `/swagger-ui.html` (dev only)
 - **Frontend base URL:** `http://localhost:4200` (CORS allowed origin)
 
 ---
@@ -37,22 +37,21 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 
 | Layer | Technology | Version |
 |---|---|---|
-| Language | Java | 17 |
+| Language | Java | 21 |
 | Framework | Spring Boot | 4.0.5 |
-| Web | Spring Web MVC | (inherited) |
-| Persistence | Spring Data JPA + Hibernate | (inherited) |
+| Web | Spring Web MVC (Spring Framework 7) | 7.0.6 (inherited) |
+| Persistence | Spring Data JPA + Hibernate ORM 7 | 7.2.7 (inherited) |
 | Database | PostgreSQL (Docker, `docker-compose.yml`) | 16 @ localhost:5432 |
 | JDBC Driver | postgresql | runtime |
 | Migrations | Flyway (`spring-boot-starter-flyway` + `flyway-database-postgresql`) | (inherited) |
-| Security | Spring Security 6 | (inherited) |
+| Security | Spring Security 7 | 7.0.4 (inherited) |
 | Validation | Bean Validation (Hibernate Validator via `spring-boot-starter-validation`) | (inherited) |
-| Templating | Thymeleaf (+ security extras) | (inherited) — mostly unused |
 | PDF Generation | OpenPDF | 1.3.30 |
-| PDF Formatting | Apache FOP | 2.9 |
+| (unused) | Apache FOP | 2.9 — still in `pom.xml`, not used by the code |
 | Build | Maven + spring-boot-maven-plugin | — |
 | Dev Tools | spring-boot-devtools | runtime |
 | API Docs | springdoc-openapi (`springdoc-openapi-starter-webmvc-ui`) | 3.0.3 (built on Boot 4.0.5; 3.1+ target Boot 4.1) |
-| Testing | JUnit 5 + Mockito (via Spring Boot test starters) | (inherited) |
+| Testing | JUnit Jupiter 6 + Mockito 5 (via Spring Boot test starters) | 6.0.3 / 5.20 (inherited) |
 | Integration tests | Testcontainers (`spring-boot-testcontainers`, `testcontainers-postgresql`, `postgres:16`) | 2.0.4 (Boot-managed) |
 
 ---
@@ -222,7 +221,7 @@ Schema changes go in a new `V{n}__*.sql` file — never edit an applied migratio
 3-tier layered architecture: **Controller → Service → DAO (Repository)**
 
 ```
-controller/   @Controller / @RestController — HTTP only, no logic
+controller/   @RestController — HTTP only, no logic
 service/      Service interfaces; service/impl/ holds the @Service *ServiceImpl classes (business rules, delete guards, aggregations)
 dao/          Spring Data JPA interfaces (CrudRepository + @Query)
 model/        JPA entities + Builder companions
@@ -485,7 +484,7 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 
 ## Tests
 
-- `service/impl/` — 8 unit test classes, one per `*ServiceImpl`; `service/UsersDetailsServiceTest`. 9 classes in total. JUnit 5 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
+- `service/impl/` — 8 unit test classes, one per `*ServiceImpl`; `service/UsersDetailsServiceTest`. 9 classes in total. JUnit 6 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
 - `controller/OrdersControllerValidationTest` — standalone MockMvc: bean validation, status codes.
 - `controller/EmployeesControllerSecurityTest` — `@WebMvcTest` + `AppConfig`, `@WithMockUser`: manager-only writes (403), create without `employeeId` (201), `/me/password` (204 / 401 / 400).
 - `model/UserTest` — `ROLE_MANAGER` only when `reportsTo == null`.
@@ -506,10 +505,9 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
 - [ ] **No Actuator endpoints** — no health check or metrics.
-- [ ] **Thymeleaf dead code** — view references remain in some controllers; UI is fully Angular now.
 - [ ] **CORS origin hardcoded** — `http://localhost:4200` in `AppConfig.corsConfigurationSource()`; needs a property before a real prod deploy.
 - [ ] **Magic number** — low-stock threshold `< 10` is hardcoded in `DashboardService`.
-- [ ] **Frontend: no "change my password" form** for `PUT /api/v1/employees/me/password`; 403 on employee writes not shown specifically.
+- [ ] **401/403 have no `{ status, message, timestamp }` body** — they come from `sendError` in `AppConfig`, so the frontend can only show "Request failed (403)" (non-managers can't reach the employee write buttons, so it rarely shows).
 - [ ] **Other sessions survive a password change** — would need a `SessionRegistry`.
 - [ ] **Date pattern typo** in `Employee.java` — `"yyy-MM-dd"` (three y's) should be `"yyyy-MM-dd"`.
 
@@ -523,6 +521,15 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Out-of-date docs fixed
+- Project Overview: base URL pattern now describes the real setup (`@RestController`s under `/api/v1`, `/api/auth/**`, Swagger) instead of "Thymeleaf remnants / MVC controllers".
+- Tech Stack checked against `mvnw dependency:list`: Java 17 → 21, Spring Security 6 → 7.0.4, Spring Web MVC 7.0.6, Hibernate ORM 7.2.7, JUnit 5 → JUnit Jupiter 6.0.3 + Mockito 5.20; Thymeleaf row removed (not a dependency); Apache FOP marked as unused.
+- Architecture: `controller/` is `@RestController` only. Tests: JUnit 6.
+- Known Gaps: removed "Thymeleaf dead code" (no Thymeleaf, `ModelAndView`, `@Controller` or `templates/` left) and the frontend change-password gap (done: `layout/profile/`); its 403 half rewritten as the real gap (401/403 bodies come from `sendError`).
+- Root `CLAUDE.md`: "Java 17, Oracle DB" → "Spring Boot 4, Java 21, PostgreSQL 16"; frontend "Angular 21".
 
 ---
 
