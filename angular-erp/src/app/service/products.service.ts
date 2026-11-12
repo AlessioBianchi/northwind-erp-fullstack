@@ -23,7 +23,7 @@ export class ProductsService {
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<PageResponse<Product>>(this.apiBaseUrl + '/paginated', {
+    return this.http.get<PageResponse<Product>>(this.apiBaseUrl, {
       ...this.httpOptions,
       params
     });
@@ -37,7 +37,7 @@ export class ProductsService {
     return this.http.put<Product>(this.apiBaseUrl + '/' + product.productId, product, this.httpOptions);
   }
   
-  deleteProduct(productId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + productId, this.httpOptions);
+  deleteProduct(productId: number): Observable<void> {
+    return this.http.delete<void>(this.apiBaseUrl + '/' + productId, this.httpOptions);
   }
 }

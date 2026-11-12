@@ -149,14 +149,14 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 - Chart.js **pie chart**: Orders by category.
 - Table: last 10 orders (customer, date, shipper).
 - Table: low-stock products (unitsInStock < 10, highlighted red).
-- Data from `GET /api/dashboard/stats` via `DashboardService`.
+- Data from `GET /api/v1/dashboard` via `DashboardService`.
 - Chart initialized in `ngAfterViewInit`.
 - **Status: complete.**
 
 ### Orders — `src/app/layout/orders/`
 - Left panel: paginated list (Order ID, customer company, country). New + Delete buttons.
 - Right panel tab 1 — Order form:
-  - Customer dropdown, order/required/shipped dates, freight, shipper dropdown.
+  - Customer dropdown (required — save is blocked without one), order/required/shipped dates, freight, shipper dropdown.
   - Ship-to address fields.
 - Right panel tab 2 — Order Details:
   - Line items table (product, qty, unit price, discount %).
@@ -209,43 +209,43 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 
 ### Endpoint map
 
-All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}` = update.
+All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /{id}` = update (200), `DELETE /{id}` = delete (204, no body). Paginated lists use the collection path with `?pageNumber=&pageSize=`. A blocked delete returns 409 and a missing id 404; their `message` is shown by `errorInterceptor`, so components only alert on success.
 
 | Feature | Method | Endpoint |
 |---|---|---|
 | Auth | POST | `/api/auth/login` |
-| Dashboard | GET | `/api/v1/dashboard/stats` |
-| Orders | GET | `/api/v1/orders/paginated` |
+| Dashboard | GET | `/api/v1/dashboard` |
+| Orders | GET | `/api/v1/orders?pageNumber=&pageSize=` |
 | Orders | POST | `/api/v1/orders` |
 | Orders | PUT | `/api/v1/orders/{orderId}` |
-| Orders | DELETE | `/api/v1/orders/delete/{orderId}` |
-| Order Details | GET | `/api/v1/orders/details/{orderId}` |
-| Order Details | POST | `/api/v1/orders/details` |
-| Order Details | DELETE | `/api/v1/orders/details/delete` (body) |
-| Products | GET | `/api/v1/products`, `/api/v1/products/paginated` |
+| Orders | DELETE | `/api/v1/orders/{orderId}` |
+| Order Details | GET | `/api/v1/orders/{orderId}/details` |
+| Order Details | POST | `/api/v1/orders/{orderId}/details` |
+| Order Details | DELETE | `/api/v1/orders/{orderId}/details/{productId}` |
+| Products | GET | `/api/v1/products`, `/api/v1/products?pageNumber=&pageSize=` |
 | Products | POST | `/api/v1/products` |
 | Products | PUT | `/api/v1/products/{productId}` |
-| Products | DELETE | `/api/v1/products/delete/{productId}` |
+| Products | DELETE | `/api/v1/products/{productId}` |
 | Categories | GET | `/api/v1/categories` |
 | Categories | POST | `/api/v1/categories` |
 | Categories | PUT | `/api/v1/categories/{categoryId}` |
-| Categories | DELETE | `/api/v1/categories/delete/{categoryId}` |
-| Customers | GET | `/api/v1/customers`, `/api/v1/customers/paginated` |
+| Categories | DELETE | `/api/v1/categories/{categoryId}` |
+| Customers | GET | `/api/v1/customers`, `/api/v1/customers?pageNumber=&pageSize=` |
 | Customers | POST | `/api/v1/customers` |
 | Customers | PUT | `/api/v1/customers/{customerId}` |
-| Customers | DELETE | `/api/v1/customers/delete/{customerId}` |
-| Suppliers | GET | `/api/v1/suppliers`, `/api/v1/suppliers/paginated` |
+| Customers | DELETE | `/api/v1/customers/{customerId}` |
+| Suppliers | GET | `/api/v1/suppliers`, `/api/v1/suppliers?pageNumber=&pageSize=` |
 | Suppliers | POST | `/api/v1/suppliers` |
 | Suppliers | PUT | `/api/v1/suppliers/{supplierId}` |
-| Suppliers | DELETE | `/api/v1/suppliers/delete/{supplierId}` |
+| Suppliers | DELETE | `/api/v1/suppliers/{supplierId}` |
 | Shippers | GET | `/api/v1/shippers` |
 | Shippers | POST | `/api/v1/shippers` |
 | Shippers | PUT | `/api/v1/shippers/{shipperId}` |
-| Shippers | DELETE | `/api/v1/shippers/delete/{shipperId}` |
-| Employees | GET | `/api/v1/employees`, `/api/v1/employees/paginated` |
+| Shippers | DELETE | `/api/v1/shippers/{shipperId}` |
+| Employees | GET | `/api/v1/employees`, `/api/v1/employees?pageNumber=&pageSize=` |
 | Employees | POST | `/api/v1/employees` |
 | Employees | PUT | `/api/v1/employees/{employeeId}` |
-| Employees | DELETE | `/api/v1/employees/delete/{employeeId}` |
+| Employees | DELETE | `/api/v1/employees/{employeeId}` |
 
 ---
 
@@ -296,6 +296,24 @@ All endpoints are under `/api/v1/`. `POST` = create (no ID in body), `PUT /{id}`
 > ```
 
 ---
+
+### [2026-11-02] — Align with the RESTful backend API
+
+- Backend paths and status codes changed (see `BACKEND_STATUS.md`, 2026-11-02 entries).
+- `service/*.service.ts`: paginated GETs call the collection path (`/api/v1/{resource}`) with `pageNumber`/`pageSize` params instead of `/paginated`; deletes call `DELETE /api/v1/{resource}/{id}` and return `Observable<void>` (204, no body).
+- `service/orders.service.ts`: `getOrderDetails` → `GET /orders/{orderId}/details`; `createOrderDetail(orderId, detail)` → `POST /orders/{orderId}/details`; `deleteOrderDetail(orderId, productId)` → `DELETE /orders/{orderId}/details/{productId}` (no request body).
+- `service/dashboard.service.ts`: `GET /api/v1/dashboard` instead of `/dashboard/stats`.
+- Delete handlers in `products`, `suppliers`, `employees`, `orders` components no longer read `res.message`; they alert a fixed success text. Blocked (409) / missing (404) deletes land in the error path and their backend message is shown by `errorInterceptor`, and the list is no longer reloaded as if the delete had succeeded.
+- Orders: customer is mandatory (backend `@NotNull`). `orders.component.ts` `saveActiveOrder()` alerts and stops when no customer is selected; the customer `<select>` has `required`; removed the `'Walk-in Customer'` fallback in the list.
+- Tests: new `service/orders.service.spec.ts` (details GET/POST/DELETE, order DELETE); `products.service.spec.ts` covers paginated GET params and DELETE.
+
+### [2026-10-26] — Switch orders to the backend's flat Order/OrderDetail DTOs
+
+- Backend now sends and accepts flat `OrderDTO` / `OrderDetailsDTO` instead of nested entities (see `BACKEND_STATUS.md`).
+- `orders/order.model.ts`: `Order` has `customerId`/`customerName`, `employeeId`/`employeeName`, `shipperId`/`shipperName` instead of nested `customer`/`employee`/`shipper`. `OrderDetail` has `orderId`, `productId`, `productName` instead of nested `order`/`product`.
+- `orders.component.html`: customer and shipper `<select>`s bind to `activeForm.customerId` / `activeForm.shipperId` (option values are ids, so no `compareWith` needed). The add-detail modal's product `<select>` binds to `modalDetailForm.productId`. The list and details table read `customerName` and `productName`.
+- `orders.component.ts`: removed `compareCustomers()` / `compareShippers()`. `addDetail()` just sets `modalDetailForm.orderId`. `onProductSelectChange()` looks up the product in `productsList` to prefill `unitPrice`.
+- `dashboard.component.html`: last-10-orders table reads `order.customerName` / `order.shipperName`.
 
 ### [2026-10-22] — Align CustomersComponent.onPageChange with the other CRUD modules
 

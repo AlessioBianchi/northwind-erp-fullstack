@@ -23,7 +23,7 @@ export class SuppliersService {
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<PageResponse<Supplier>>(this.apiBaseUrl + '/paginated', {
+    return this.http.get<PageResponse<Supplier>>(this.apiBaseUrl, {
       ...this.httpOptions,
       params
     });
@@ -37,7 +37,7 @@ export class SuppliersService {
     return this.http.put<Supplier>(this.apiBaseUrl + '/' + supplier.supplierId, supplier, this.httpOptions);
   }
   
-  deleteSupplier(supplierId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + supplierId, this.httpOptions);
+  deleteSupplier(supplierId: number): Observable<void> {
+    return this.http.delete<void>(this.apiBaseUrl + '/' + supplierId, this.httpOptions);
   }
 }

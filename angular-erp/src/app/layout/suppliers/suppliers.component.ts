@@ -148,8 +148,8 @@ export class SuppliersComponent implements OnInit {
     if (confirm('Are you sure you want to delete this supplier?')) {
       this.isDeleting = true;
       this.suppliersService.deleteSupplier(this.selectedSupplierId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (response) => {
-          alert(response.message || 'Supplier deleted.');
+        next: () => {
+          alert('Supplier deleted.');
           this.loadPaginatedSuppliers();
           this.cancelSupplierWorkspaceEdit();
         },
@@ -197,8 +197,8 @@ export class SuppliersComponent implements OnInit {
     if (confirm('Are you sure you want to delete this shipper?')) {
       this.isDeleting = true;
       this.shippersService.deleteShipper(targetId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (res) => {
-          alert(res.message || 'Shipper deleted.');
+        next: () => {
+          alert('Shipper deleted.');
           this.preloadDropdownRelationshipDependencies();
           this.cancelShipperWorkspaceEdit();
           this.loadPaginatedSuppliers();

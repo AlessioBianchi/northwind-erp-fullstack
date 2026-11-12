@@ -95,6 +95,10 @@ export class OrdersComponent implements OnInit{
     if (event) event.preventDefault();
 
     const order = this.activeForm as Order;
+    if (order.customerId == null) {
+      alert('Please select a customer.');
+      return;
+    }
     if (order.freight != null && order.freight < 0) {
       alert('Freight cannot be negative.');
       return;
@@ -120,8 +124,8 @@ export class OrdersComponent implements OnInit{
     if (confirm('Are you sure you want to drop this order record?')) {
       this.isDeleting = true;
       this.ordersService.deleteOrder(this.selectedOrderId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (res) => {
-          alert(res.message);
+        next: () => {
+          alert('Order deleted.');
           this.loadPaginatedOrders();
           this.cancelWorkspaceEdit();
         },
@@ -147,8 +151,8 @@ export class OrdersComponent implements OnInit{
       shipRegion: '',
       shipPostalCode: '',
       shipCountry: '',
-      customer: undefined,
-      shipper: undefined
+      customerId: undefined,
+      shipperId: undefined
     };
 
     this.loadCustomersList();
@@ -169,16 +173,6 @@ export class OrdersComponent implements OnInit{
     this.activeTab = targetTab;
   }
 
-  compareCustomers(customerInDropdown: Customer, customerInSelectedOrder: Customer): boolean {
-    if (!customerInDropdown || !customerInSelectedOrder) return false;
-    return customerInDropdown.customerId === customerInSelectedOrder.customerId;
-  }
-
-  compareShippers(shipperInDropdown: Shipper, shipperInSelectedOrder: Shipper): boolean {
-    if (!shipperInDropdown || !shipperInSelectedOrder) return false;
-    return shipperInDropdown.shipperId === shipperInSelectedOrder.shipperId;
-  }
-
   selectDetail(detail: OrderDetail) {
     this.selectedDetail = this.selectedDetail === detail ? null : detail;
   }
@@ -186,22 +180,7 @@ export class OrdersComponent implements OnInit{
   addDetail() {
     if (!this.selectedOrderId) return;
 
-    this.modalDetailForm.order = {
-      orderId: this.selectedOrderId,
-      customer: undefined,
-      employee: undefined,
-      orderDate: '',
-      requiredDate: '',
-      shippedDate: '',
-      shipper: undefined,
-      freight: 0,
-      shipName: '',
-      shipAddress: '',
-      shipCity: '',
-      shipRegion: '',
-      shipPostalCode: '',
-      shipCountry: ''
-    };
+    this.modalDetailForm.orderId = this.selectedOrderId;
 
     this.productsService.getAllProducts().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (products) => this.productsList = products,
@@ -216,8 +195,9 @@ export class OrdersComponent implements OnInit{
   }
 
   onProductSelectChange(): void {
-    if (this.modalDetailForm.product) {
-      this.modalDetailForm.unitPrice = this.modalDetailForm.product.unitPrice || 0;
+    const product = this.productsList.find(p => p.productId === this.modalDetailForm.productId);
+    if (product) {
+      this.modalDetailForm.unitPrice = product.unitPrice || 0;
     }
   }
 
@@ -226,9 +206,9 @@ export class OrdersComponent implements OnInit{
   }
 
   submitDetailForm(): void {
-    if (!this.modalDetailForm.product || !this.modalDetailForm.quantity) return;
+    if (!this.modalDetailForm.orderId || !this.modalDetailForm.productId || !this.modalDetailForm.quantity) return;
 
-    this.ordersService.createOrderDetail(this.modalDetailForm as OrderDetail).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.ordersService.createOrderDetail(this.modalDetailForm.orderId, this.modalDetailForm as OrderDetail).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedDetail) => {
         alert('Order detail saved successfully!');
         this.modalDetailForm = this.createEmptyDetailForm();
@@ -243,8 +223,8 @@ export class OrdersComponent implements OnInit{
 
   private createEmptyDetailForm(): OrderDetail {
     return {
-      product: undefined,
-      order: undefined,
+      orderId: undefined,
+      productId: undefined,
       unitPrice: 0.00,
       quantity: 1,
       discount: 0.00
@@ -256,9 +236,10 @@ export class OrdersComponent implements OnInit{
 
     if (confirm('Are you sure you want to drop this order detail record?')) {
       this.isDeleting = true;
-      this.ordersService.deleteOrderDetail(this.selectedDetail).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (res) => {
-          alert(res.message);
+      const { orderId, productId } = this.selectedDetail;
+      this.ordersService.deleteOrderDetail(orderId!, productId!).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: () => {
+          alert('Order detail deleted.');
           this.loadPaginatedOrders();
           this.cancelWorkspaceEdit();
         },

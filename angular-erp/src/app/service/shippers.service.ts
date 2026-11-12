@@ -25,7 +25,7 @@ export class ShippersService {
     return this.http.put<Shipper>(this.apiBaseUrl + '/' + shipper.shipperId, shipper, this.httpOptions);
   }
   
-  deleteShipper(shipperId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + shipperId, this.httpOptions);
+  deleteShipper(shipperId: number): Observable<void> {
+    return this.http.delete<void>(this.apiBaseUrl + '/' + shipperId, this.httpOptions);
   }
 }

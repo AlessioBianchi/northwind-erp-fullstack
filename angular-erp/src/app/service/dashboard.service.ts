@@ -9,7 +9,7 @@ import { API_BASE_URL } from '../api-base-url.token';
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private apiUrl = `${inject(API_BASE_URL)}/api/v1/dashboard/stats`;
+  private apiUrl = `${inject(API_BASE_URL)}/api/v1/dashboard`;
 
   getDashboardStats(): Observable<DashboardData> {
     return this.http.get<DashboardData>(this.apiUrl, { 
