@@ -175,7 +175,13 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold text-secondary mb-1">Password</label>
-                                <input type="password" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.password" name="password" required>
+                                <input type="password" class="form-control form-control-sm" [(ngModel)]="activeEmployeeForm.password" name="password" autocomplete="new-password" minlength="8" [required]="currentWorkspaceState === 'new'">
+                                <div class="form-text">
+                                    At least 8 characters.
+                                    @if (currentWorkspaceState === 'edit') {
+                                        Leave blank to keep the current password.
+                                    }
+                                </div>
                             </div>
 
                             <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-3">

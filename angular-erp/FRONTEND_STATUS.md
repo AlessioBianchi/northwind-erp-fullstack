@@ -74,7 +74,8 @@ angular-erp/
 │       │   ├── products/                # Products CRUD + category management tab
 │       │   ├── customers/               # Customers CRUD
 │       │   ├── suppliers/               # Suppliers CRUD + shippers management tab
-│       │   └── employees/              # Employees CRUD (manager-only)
+│       │   ├── employees/              # Employees CRUD (manager-only)
+│       │   └── profile/                # "My account": change own password (every user)
 │       │
 │       └── service/
 │           ├── auth.service.ts
@@ -139,7 +140,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 
 ### Main Layout — `src/app/layout/main-layout/`
 - Bootstrap sidebar (collapsible) + top navbar.
-- Nav links: Dashboard, Orders, Products, Customers, Suppliers+Shippers, Employees.
+- Nav links: Dashboard, Orders, Products, Customers, Suppliers+Shippers, Employees, My account.
 - Employees link hidden if `sessionStorage.isManager !== 'true'`.
 - Logout clears sessionStorage, navigates to `/login`.
 - **Status: complete.**
@@ -192,8 +193,15 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 - **Manager-only section** (hidden in nav if not manager).
 - Left panel: paginated list with search (firstname, lastname, title). Shows "reports to" manager.
 - Right panel: employee form — lastname, firstname, title, reports-to dropdown, birthdate, hire date, address, phone, extension, username, password.
+- Password: min 8 characters (checked on save), required only for new employees; blank on edit keeps the stored password.
 - **API:** employees (paginated + all + save + delete).
-- **Status: complete** (UI built; opened in IDE — may be in progress or under review).
+- **Status: complete.**
+
+### My account — `src/app/layout/profile/`
+- Open to every logged-in user (sidebar link "My account", route `/layout/profile`, no manager guard).
+- Change-password form: current, new, confirm. Min length and confirm match checked client-side; wrong current password / invalid new one (400) shown by `errorInterceptor`.
+- **API:** `EmployeesService.changeMyPassword()` → `PUT /api/v1/employees/me/password`.
+- **Status: complete.**
 
 ---
 
@@ -246,6 +254,7 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 | Employees | POST | `/api/v1/employees` |
 | Employees | PUT | `/api/v1/employees/{employeeId}` |
 | Employees | DELETE | `/api/v1/employees/{employeeId}` |
+| Employees | PUT | `/api/v1/employees/me/password` (body `{ currentPassword, newPassword }`, 204) |
 
 ---
 
@@ -296,6 +305,14 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 > ```
 
 ---
+
+### [2026-11-12] — Change-password form and password hints
+
+- Added `layout/profile/profile.component.ts` + `.html`: "My account" page for every logged-in user, routed at `/layout/profile` (`app.routes.ts`) and linked in the sidebar (`main-layout.component.html`). Fields current / new / confirm; checks min 8 characters and confirm match client-side, shows a success alert and clears the form on 204. 400s are shown by `errorInterceptor`.
+- `service/employees.service.ts`: `changeMyPassword(currentPassword, newPassword)` → `PUT /api/v1/employees/me/password`.
+- `employees.component.html`: password field has `minlength="8"`, is required only in `'new'` state, and shows "At least 8 characters" plus "Leave blank to keep the current password" when editing.
+- `employees.component.ts`: `saveEmployeeHeader()` alerts and stops when a non-blank password is shorter than 8 characters (forms are `novalidate`, so `minlength` alone doesn't block submit).
+- Tests: new `service/employees.service.spec.ts` (PUT `/me/password` body).
 
 ### [2026-11-02] — Align with the RESTful backend API
 
