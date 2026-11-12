@@ -498,6 +498,11 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 
 ---
 
+### [2026-11-12] — Swagger: roles in the API description
+- `config/OpenApiConfig`: `Info` conventions list now says some operations are managers only and return 403 for other users.
+
+---
+
 ### [2026-11-12] — Employee create without `employeeId` fixed
 - `model/Employee.employeeId` and `EmployeeBuilder.withEmployeeId`: `int` → `Integer`. Jackson binds `Employee` through its all-args constructor, so a body without `employeeId` (the Angular create form) failed with 400 "Malformed request body" — same root cause as the earlier `Order.orderId` fix.
 - `EmployeesControllerSecurityTest`: `create_AsManagerWithoutEmployeeId_ShouldReturn201`. 103 passing.
