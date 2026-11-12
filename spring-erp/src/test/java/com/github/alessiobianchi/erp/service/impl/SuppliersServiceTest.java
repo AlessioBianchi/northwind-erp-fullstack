@@ -1,4 +1,4 @@
-package com.github.alessiobianchi.erp.service;
+package com.github.alessiobianchi.erp.service.impl;
 
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dao.SuppliersDAO;
@@ -35,7 +35,7 @@ class SuppliersServiceTest {
     private ProductsDAO productsDao;
 
     @InjectMocks
-    private SuppliersService suppliersService;
+    private SuppliersServiceImpl suppliersService;
 
     private Supplier sampleSupplier;
 

@@ -1,4 +1,4 @@
-package com.github.alessiobianchi.erp.service;
+package com.github.alessiobianchi.erp.service.impl;
 
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
@@ -33,7 +33,7 @@ class DashboardServiceTest {
     private ProductsDAO productsDao;
 
     @InjectMocks
-    private DashboardService dashboardService;
+    private DashboardServiceImpl dashboardService;
 
     @Test
     void getStats_ShouldAggregateDataCorrectly() {
