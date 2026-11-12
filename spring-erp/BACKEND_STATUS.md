@@ -526,6 +526,11 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 
 ---
 
+### [2026-11-12] — `mvnw` executable
+- `spring-erp/mvnw` was tracked as `100644`, so `./mvnw` failed with "permission denied" on a fresh clone (workaround: `sh ./mvnw`). Now `100755`; content unchanged.
+
+---
+
 ### [2026-11-12] — Pagination input validated (400 instead of 500)
 - Invalid page parameters reached `PageRequest.of(...)`, which throws `IllegalArgumentException` → catch-all → 500; `pageSize` had no maximum (`pageSize=1000000` returned all 830 orders).
 - The 5 paginated controller methods (`Customers`, `Employees`, `Orders`, `Products`, `Suppliers`): `@Min(0) pageNumber`, `@Min(1) @Max(MAX_PAGE_SIZE) pageSize` with explicit messages (the validator's default messages follow the JVM locale). New `controller/Paging.MAX_PAGE_SIZE = 100` (frontend uses 50). Swagger: limits in the `@Parameter` descriptions, min/max in the schema, 400 response on the list operation.
