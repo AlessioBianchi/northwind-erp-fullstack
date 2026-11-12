@@ -18,7 +18,7 @@ export class OrdersService {
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<PageResponse<Order>>(this.apiBaseUrl + '/paginated', {
+    return this.http.get<PageResponse<Order>>(this.apiBaseUrl, {
       ...this.httpOptions,
       params
     });
@@ -32,22 +32,19 @@ export class OrdersService {
     return this.http.put<Order>(this.apiBaseUrl + '/' + order.orderId, order, this.httpOptions);
   }
 
-  deleteOrder(orderId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + orderId, this.httpOptions);
+  deleteOrder(orderId: number): Observable<void> {
+    return this.http.delete<void>(this.apiBaseUrl + '/' + orderId, this.httpOptions);
   }
 
   getOrderDetails(orderId: number): Observable<OrderDetail[]> {
-    return this.http.get<OrderDetail[]>(this.apiBaseUrl + '/details/' + orderId, this.httpOptions);
+    return this.http.get<OrderDetail[]>(this.apiBaseUrl + '/' + orderId + '/details', this.httpOptions);
   }
 
-  createOrderDetail(orderDetail: OrderDetail): Observable<OrderDetail> {
-    return this.http.post<OrderDetail>(this.apiBaseUrl + '/details', orderDetail, this.httpOptions);
+  createOrderDetail(orderId: number, orderDetail: OrderDetail): Observable<OrderDetail> {
+    return this.http.post<OrderDetail>(this.apiBaseUrl + '/' + orderId + '/details', orderDetail, this.httpOptions);
   }
 
-  deleteOrderDetail(orderDetail: OrderDetail): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(this.apiBaseUrl + '/details/delete', {
-      ...this.httpOptions,
-      body: orderDetail
-    });
+  deleteOrderDetail(orderId: number, productId: number): Observable<void> {
+    return this.http.delete<void>(this.apiBaseUrl + '/' + orderId + '/details/' + productId, this.httpOptions);
   }
 }

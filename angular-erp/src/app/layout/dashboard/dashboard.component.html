@@ -48,9 +48,9 @@
                         <tbody>
                             @for (order of stats?.lastTenOrders; track order.orderId) {
                                 <tr>
-                                    <td>{{ order.customer?.companyName }}</td>
+                                    <td>{{ order.customerName }}</td>
                                     <td>{{ getFormatDate(order.orderDate) }}</td>
-                                    <td>{{ order.shipper?.companyName }}</td>
+                                    <td>{{ order.shipperName }}</td>
                                 </tr>
                             } @empty {
                                 <tr>

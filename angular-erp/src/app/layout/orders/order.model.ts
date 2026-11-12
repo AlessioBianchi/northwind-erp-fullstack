@@ -1,16 +1,14 @@
-import { type Customer } from "../customers/customer.model";
-import { type Employee } from "../employees/employee.model";
-import { Product } from "../products/product.model";
-import { type Shipper } from "../suppliers/shipper.model";
-
 export interface Order {
     orderId: number;
-    customer?: Customer;
-    employee?: Employee;
+    customerId?: number;
+    customerName?: string;
+    employeeId?: number;
+    employeeName?: string;
     orderDate: string;
     requiredDate: string;
     shippedDate?: string;
-    shipper?: Shipper;
+    shipperId?: number;
+    shipperName?: string;
     freight: number;
     shipName: string;
     shipAddress: string;
@@ -21,9 +19,10 @@ export interface Order {
 }
 
 export interface OrderDetail {
+  orderId?: number;
+  productId?: number;
+  productName?: string;
   unitPrice: number;
   quantity: number;
   discount: number;
-  product?: Product; 
-  order?: Order;
 }

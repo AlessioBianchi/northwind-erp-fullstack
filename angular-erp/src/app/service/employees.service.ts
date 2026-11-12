@@ -23,7 +23,7 @@ export class EmployeesService {
             .set('pageNumber', pageNumber.toString())
             .set('pageSize', pageSize.toString());
 
-        return this.http.get<PageResponse<Employee>>(this.apiBaseUrl + '/paginated', { 
+        return this.http.get<PageResponse<Employee>>(this.apiBaseUrl, { 
             ...this.httpOptions, 
             params 
         });
@@ -37,7 +37,7 @@ export class EmployeesService {
         return this.http.put<Employee>(this.apiBaseUrl + '/' + employee.employeeId, employee, this.httpOptions);
     }
     
-    delete(employeeId: number): Observable<{ message: string }> {
-        return this.http.delete<{ message: string }>(this.apiBaseUrl + '/delete/' + employeeId, this.httpOptions);
+    delete(employeeId: number): Observable<void> {
+        return this.http.delete<void>(this.apiBaseUrl + '/' + employeeId, this.httpOptions);
     }
 }

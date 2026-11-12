@@ -51,7 +51,7 @@
                                         (click)="selectOrder(order)"
                                         style="cursor: pointer;">
                                         <td class="px-3 fw-bold text-secondary">#{{ order.orderId }}</td>
-                                        <td>{{ order.customer?.companyName ?? 'Walk-in Customer' }}</td>
+                                        <td>{{ order.customerName }}</td>
                                         <td>
                                             <span class="badge bg-light text-dark border px-2">
                                                 {{ order.shipCountry }}
@@ -126,10 +126,10 @@
                         <form class="row g-3" (ngSubmit)="saveActiveOrder($event)">
                             <div class="col-12">
                                 <label class="form-label small fw-semibold text-secondary mb-1">Customer</label>
-                                <select class="form-select form-select-sm" [(ngModel)]="activeForm.customer" [compareWith]="compareCustomers" name="customer">
+                                <select class="form-select form-select-sm" [(ngModel)]="activeForm.customerId" name="customer" required>
                                     <option [ngValue]="undefined">Select a customer...</option>
                                     @for (c of customersList; track c.customerId) {
-                                        <option [ngValue]="c">{{ c.companyName }}</option>
+                                        <option [ngValue]="c.customerId">{{ c.companyName }}</option>
                                     }
                                 </select>
                             </div>
@@ -159,10 +159,10 @@
                             
                             <div class="col-12">
                                 <label class="form-label small fw-semibold text-secondary mb-1">Shippers</label>
-                                <select class="form-select form-select-sm" [(ngModel)]="activeForm.shipper" [compareWith]="compareShippers" name="shipper">
+                                <select class="form-select form-select-sm" [(ngModel)]="activeForm.shipperId" name="shipper">
                                     <option [ngValue]="undefined">Select a shipper...</option>
                                     @for (s of shippersList; track s.shipperId) {
-                                        <option [ngValue]="s">{{ s.companyName }}</option>
+                                        <option [ngValue]="s.shipperId">{{ s.companyName }}</option>
                                     }
                                 </select>
                             </div>
@@ -210,12 +210,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @for (detail of orderDetailsList; track detail.product?.productId) {
-                                            <tr class="pointer-row" 
-                                                [class.table-primary]="selectedDetail?.order?.orderId === detail.order?.orderId && selectedDetail?.product?.productId == detail.product?.productId"
+                                        @for (detail of orderDetailsList; track detail.productId) {
+                                            <tr class="pointer-row"
+                                                [class.table-primary]="selectedDetail?.orderId === detail.orderId && selectedDetail?.productId == detail.productId"
                                                 (click)="selectDetail(detail)"
                                                 style="cursor: pointer;">
-                                                <td>{{ detail.product?.productName }}</td>
+                                                <td>{{ detail.productName }}</td>
                                                 <td class="text-center">{{ detail.quantity }}</td>
                                                 <td class="text-end">{{ detail.unitPrice | currency:'EUR' }}</td>
                                                 <td class="text-end">{{ (detail.discount * 100) }}%</td>
@@ -253,10 +253,10 @@
                     
                     <div class="col-12">
                         <label class="form-label small fw-semibold text-secondary mb-1">Product Target</label>
-                        <select class="form-select form-select-sm" [(ngModel)]="modalDetailForm.product" name="product" required (change)="onProductSelectChange()">
+                        <select class="form-select form-select-sm" [(ngModel)]="modalDetailForm.productId" name="product" required (change)="onProductSelectChange()">
                         <option [ngValue]="undefined">Choose item stock catalog reference...</option>
                         @for (p of productsList; track p.productId) {
-                            <option [ngValue]="p">{{ p.productName }} (In Stock: {{ p.unitsInStock }})</option>
+                            <option [ngValue]="p.productId">{{ p.productName }} (In Stock: {{ p.unitsInStock }})</option>
                         }
                         </select>
                     </div>
@@ -281,7 +281,7 @@
 
                 <div class="modal-footer bg-light py-2 px-3 justify-content-end gap-2">
                     <button type="button" class="btn btn-xs btn-secondary py-1" (click)="closeDetailModal()">Discard</button>
-                    <button type="submit" class="btn btn-xs btn-success py-1 fw-bold" [disabled]="!modalDetailForm.product || !modalDetailForm.quantity"><i class="bi bi-plus-lg me-1"></i>Append Item</button>
+                    <button type="submit" class="btn btn-xs btn-success py-1 fw-bold" [disabled]="!modalDetailForm.productId || !modalDetailForm.quantity"><i class="bi bi-plus-lg me-1"></i>Append Item</button>
                 </div>
                 </form>
 
