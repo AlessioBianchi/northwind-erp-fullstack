@@ -1,10 +1,13 @@
 package com.github.alessiobianchi.erp.model;
 
+import java.time.Instant;
+
 public class ShipperBuilder {
 
-    private int shipperId;
+    private Integer shipperId;
     private String companyName;
     private String phone;
+    private Instant createdAt;
 
     public ShipperBuilder() {}
 
@@ -12,9 +15,10 @@ public class ShipperBuilder {
         this.shipperId = shipper.getShipperId();
         this.companyName = shipper.getCompanyName();
         this.phone = shipper.getPhone();
+        this.createdAt = shipper.getCreatedAt();
     }
 
-    public ShipperBuilder withShipperId(int shipperId) {
+    public ShipperBuilder withShipperId(Integer shipperId) {
         this.shipperId = shipperId;
         return this;
     }
@@ -29,7 +33,14 @@ public class ShipperBuilder {
         return this;
     }
 
+    public ShipperBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     public Shipper build() {
-        return new Shipper(shipperId, companyName, phone);
+        Shipper shipper = new Shipper(shipperId, companyName, phone);
+        shipper.setCreatedAt(createdAt);
+        return shipper;
     }
 }

@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,7 +81,11 @@ class ShippersServiceTest {
                 .withShipperId(1)
                 .withCompanyName("Test")
                 .build();
-        when(shippersDao.existsById(1)).thenReturn(true);
+        Instant createdAt = Instant.parse("2020-01-01T00:00:00Z");
+        when(shippersDao.findById(1)).thenReturn(Optional.of(new ShipperBuilder()
+                .withShipperId(1)
+                .withCreatedAt(createdAt)
+                .build()));
         when(shippersDao.save(any(Shipper.class))).thenReturn(shipperUpdated);
 
         // Act
@@ -91,12 +96,13 @@ class ShippersServiceTest {
         assertEquals(1, updated.getShipperId());
         assertEquals("Test", updated.getCompanyName());
         verify(shippersDao).save(any(Shipper.class));
+        verify(shippersDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
 
     @Test
     void update_WhenShipperNotFound_ShouldThrowNotFound() {
         // Arrange
-        when(shippersDao.existsById(1)).thenReturn(false);
+        when(shippersDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> shippersService.update(1, new Shipper()));

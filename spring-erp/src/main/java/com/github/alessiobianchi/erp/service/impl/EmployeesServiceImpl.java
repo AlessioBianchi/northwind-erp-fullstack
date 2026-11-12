@@ -74,7 +74,7 @@ public class EmployeesServiceImpl implements EmployeesService {
 
     @Override
     public EmployeeDTO update(int employeeId, Employee employee) {
-        String oldPassword = getEmployee(employeeId).getPassword();
+        Employee existing = getEmployee(employeeId);
         String newPassword = employee.getPassword();
         if (StringUtils.hasText(newPassword)) {
             validatePassword(newPassword);
@@ -82,7 +82,8 @@ public class EmployeesServiceImpl implements EmployeesService {
 
         Employee employeeToUpdate = new EmployeeBuilder(employee)
                 .withEmployeeId(employeeId)
-                .withPassword(StringUtils.hasText(newPassword) ? passwordEncoder.encode(newPassword) : oldPassword)
+                .withPassword(StringUtils.hasText(newPassword) ? passwordEncoder.encode(newPassword) : existing.getPassword())
+                .withCreatedAt(existing.getCreatedAt())
                 .build();
 
         return EmployeeBeanToDtoConverter.convert(employeesDao.save(employeeToUpdate));

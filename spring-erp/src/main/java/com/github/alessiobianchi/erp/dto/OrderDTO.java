@@ -1,10 +1,12 @@
 package com.github.alessiobianchi.erp.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 public class OrderDTO {
@@ -51,6 +53,12 @@ public class OrderDTO {
     @Size(max = 15)
     private String shipCountry;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Instant createdAt;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Instant updatedAt;
+
     public OrderDTO() {}
 
     public OrderDTO(Integer orderId,
@@ -69,7 +77,9 @@ public class OrderDTO {
                     String shipCity,
                     String shipRegion,
                     String shipPostalCode,
-                    String shipCountry) {
+                    String shipCountry,
+                    Instant createdAt,
+                    Instant updatedAt) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.customerName = customerName;
@@ -87,6 +97,8 @@ public class OrderDTO {
         this.shipRegion = shipRegion;
         this.shipPostalCode = shipPostalCode;
         this.shipCountry = shipCountry;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public Integer getOrderId() { return orderId; }
@@ -106,4 +118,12 @@ public class OrderDTO {
     public String getShipRegion() { return shipRegion; }
     public String getShipPostalCode() { return shipPostalCode; }
     public String getShipCountry() { return shipCountry; }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
 }

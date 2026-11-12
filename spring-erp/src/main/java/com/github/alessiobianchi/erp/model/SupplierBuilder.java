@@ -1,8 +1,10 @@
 package com.github.alessiobianchi.erp.model;
 
+import java.time.Instant;
+
 public class SupplierBuilder {
 
-    private int supplierId;
+    private Integer supplierId;
     private String companyName;
     private String contactName;
     private String contactTitle;
@@ -14,6 +16,7 @@ public class SupplierBuilder {
     private String phone;
     private String fax;
     private String homepage;
+    private Instant createdAt;
 
     public SupplierBuilder() {
     }
@@ -31,9 +34,10 @@ public class SupplierBuilder {
         this.phone = supplier.getPhone();
         this.fax = supplier.getFax();
         this.homepage = supplier.getHomepage();
+        this.createdAt = supplier.getCreatedAt();
     }
 
-    public SupplierBuilder withSupplierId(int supplierId) {
+    public SupplierBuilder withSupplierId(Integer supplierId) {
         this.supplierId = supplierId;
         return this;
     }
@@ -93,8 +97,13 @@ public class SupplierBuilder {
         return this;
     }
 
+    public SupplierBuilder withCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     public Supplier build() {
-        return new Supplier(
+        Supplier supplier = new Supplier(
                 supplierId,
                 companyName,
                 contactName,
@@ -108,5 +117,7 @@ public class SupplierBuilder {
                 fax,
                 homepage
         );
+        supplier.setCreatedAt(createdAt);
+        return supplier;
     }
 }

@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name="ORDERS")
-public class Order {
+public class Order extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

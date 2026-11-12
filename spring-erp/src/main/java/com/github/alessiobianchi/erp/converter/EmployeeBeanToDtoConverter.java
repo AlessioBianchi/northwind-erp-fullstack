@@ -25,6 +25,8 @@ public class EmployeeBeanToDtoConverter {
                 .withNotes(employee.getNotes())
                 .withReportsTo(employee.getReportsTo() != null ? convert(employee.getReportsTo()) : null)
                 .withUsername(employee.getUsername())
+                .withCreatedAt(employee.getCreatedAt())
+                .withUpdatedAt(employee.getUpdatedAt())
                 .build();
     }
 }

@@ -73,12 +73,12 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public OrderDTO update(int orderId, OrderDTO orderDto) {
-        if (!ordersDao.existsById(orderId)) {
-            throw new ResourceNotFoundException("Order not found");
-        }
+        Order existing = ordersDao.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         Order orderToUpdate = new OrderBuilder(OrderDtoToBeanConverter.convert(orderDto))
                 .withOrderId(orderId)
+                .withCreatedAt(existing.getCreatedAt())
                 .build();
 
         return OrderBeanToDtoConverter.convert(ordersDao.save(orderToUpdate));

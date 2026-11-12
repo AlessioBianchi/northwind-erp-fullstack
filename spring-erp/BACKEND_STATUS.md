@@ -71,6 +71,7 @@ spring-erp/
     │   │   ├── ErpSpringApplication.java
     │   │   ├── config/
     │   │   │   ├── AppConfig.java              # Security + CORS configuration
+    │   │   │   ├── JpaAuditingConfig.java      # @EnableJpaAuditing
     │   │   │   ├── OpenApiConfig.java          # OpenAPI info, session-cookie scheme, shared error responses
     │   │   │   └── PasswordConfig.java
     │   │   ├── controller/
@@ -106,6 +107,7 @@ spring-erp/
     │   │   │   ├── GlobalExceptionHandler.java # @RestControllerAdvice
     │   │   │   └── ResourceNotFoundException.java # → 404
     │   │   ├── model/
+    │   │   │   ├── Auditable.java              # @MappedSuperclass: createdAt / updatedAt
     │   │   │   ├── Category.java + CategoryBuilder.java
     │   │   │   ├── Customer.java + CustomerBuilder.java
     │   │   │   ├── Employee.java + EmployeeBuilder.java
@@ -131,7 +133,7 @@ spring-erp/
     │   └── resources/
     │       ├── application.properties
     │       ├── application-prod.properties
-    │       └── db/migration/                   # Flyway V1–V4
+    │       └── db/migration/                   # Flyway V1–V5
     └── test/
         └── java/com/github/alessiobianchi/erp/
             ├── ErpSpringApplicationTests.java
@@ -190,6 +192,7 @@ springdoc.default-produces-media-type=application/json
 | V2 | `V2__adapt_schema_to_entities.sql` | smallint → integer, `discontinued` → boolean, customers integer PK (old code → `customer_code`), IDENTITY on PKs |
 | V3 | `V3__add_employee_credentials.sql` | `employees.username`/`password` + seed logins (`password123`) |
 | V4 | `V4__sync_identity_sequences.sql` | `setval` identity sequences to `MAX(id)` |
+| V5 | `V5__add_auditing_columns.sql` | `created_at` / `updated_at` `timestamptz NOT NULL DEFAULT now()` on all 8 tables; existing rows = migration time |
 
 **ID generation:** `GENERATED ALWAYS AS IDENTITY` on categories, employees, orders, products, shippers, suppliers; `SERIAL` on customers. Entities use `GenerationType.IDENTITY`.
 
@@ -226,6 +229,9 @@ config/       Security and CORS (AppConfig.java), OpenAPI (OpenApiConfig.java)
 
 ### Service interfaces
 Each service is an interface in `service/` with one `@Service` implementation `service/impl/<Name>ServiceImpl`. Controllers and `@MockitoBean`/`@Mock` in tests depend on the interface; service unit tests (`test/.../service/impl/`) `@InjectMocks` the `Impl`. Names stay plural (`ProductsService`) to match the rest of the code. `UsersDetailsService` is the exception: it already implements Spring's `UserDetailsService`.
+
+### Auditing (createdAt / updatedAt)
+All 8 entities extend `model/Auditable` (`@MappedSuperclass`, `@EntityListeners(AuditingEntityListener.class)`): `@CreatedDate createdAt` (`updatable = false`) and `@LastModifiedDate updatedAt`, both `Instant` → `timestamptz`, `@JsonProperty(READ_ONLY)` so clients can't set them. Enabled by `config/JpaAuditingConfig` (kept off the main class so `@WebMvcTest` slices still start). Updates rebuild the entity from the request body, so each service `update` loads the row with `findById` and passes `withCreatedAt(existing.getCreatedAt())` to the builder; otherwise the PUT response would show `createdAt: null`. Builders copy `createdAt` and set it through `Auditable`'s package-private setter. `EmployeeDTO`, `OrderDTO`, `OrderDetailsDTO` expose both fields (read-only) via the bean→DTO converters.
 
 ### Builder pattern
 Every entity has a hand-written `*Builder` companion (fluent API). Used in service layer for partial updates — the service loads the existing entity, applies changes via the builder, then saves.
@@ -410,6 +416,8 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 
 ### Entities
 
+All entities also have `createdAt` / `updatedAt` (from `Auditable`).
+
 | Entity | Table | Key Fields / Notes |
 |---|---|---|
 | `Category` | CATEGORIES | categoryId, categoryName, description, picture |
@@ -477,7 +485,8 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 - `controller/OrdersControllerValidationTest` — standalone MockMvc: bean validation, status codes.
 - `controller/EmployeesControllerSecurityTest` — `@WebMvcTest` + `AppConfig`, `@WithMockUser`: manager-only writes (403), create without `employeeId` (201), `/me/password` (204 / 401 / 400).
 - `model/UserTest` — `ROLE_MANAGER` only when `reportsTo == null`.
-- 103 tests total, all passing (2026-11-12).
+- `model/EntityJsonBindingTest` — create bodies without an ID deserialize with a `null` ID (6 entities); `Product` without `discontinued` → `false`.
+- 110 tests total, all passing (2026-11-12).
 - `ErpSpringApplicationTests` — context smoke test; **needs the Postgres container running** (Flyway connects on startup).
 
 ---
@@ -503,6 +512,25 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Create without an ID fixed on the remaining entities
+- `Category`, `Customer`, `Product`, `Shipper`, `Supplier` (+ builders): ID `int` → `Integer`. Jackson binds entities through their all-args constructor, so a `POST` body without the ID failed with 400 "Malformed request body" (same cause as the `Employee` / `Order` fixes).
+- `Product` constructor: `discontinued` parameter is `Boolean`, `null` → `false` (field stays `boolean`; the column is `NOT NULL`). A body without `discontinued` failed the same way.
+- New `model/EntityJsonBindingTest` (7 tests); confirmed it fails with the old `int` type. 110 passing.
+- Verified on the running app: `POST` without an ID → 201 for all 5; test rows deleted.
+
+---
+
+### [2026-11-12] — Spring Data auditing (createdAt / updatedAt)
+- New `db/migration/V5__add_auditing_columns.sql`: `created_at`, `updated_at` (`timestamptz NOT NULL DEFAULT now()`) on all 8 tables; existing rows get the migration time.
+- New `model/Auditable` (`@MappedSuperclass` + `AuditingEntityListener`, `@CreatedDate` / `@LastModifiedDate`, read-only in JSON); all 8 entities extend it. New `config/JpaAuditingConfig` (`@EnableJpaAuditing`).
+- All 8 entity builders copy `createdAt` and have `withCreatedAt`. The 7 service `update` methods use `findById` (instead of `existsById`) and keep the stored `createdAt`, so the PUT response doesn't show `null`.
+- `EmployeeDTO`, `OrderDTO`, `OrderDetailsDTO` (+ builders, bean→DTO converters): `createdAt` / `updatedAt`, read-only.
+- Tests: 12 update tests stub `findById`; success cases assert the saved entity keeps `createdAt`. 103 passing.
+- Verified on the running app: backfilled rows; create sets both; update keeps `createdAt` and moves `updatedAt`; values sent in the body are ignored; Swagger shows both as read-only `date-time`.
+- Found: create without an ID failed on 5 entities — fixed in the next entry.
 
 ---
 

@@ -43,12 +43,12 @@ public class ProductsServiceImpl implements ProductsService {
 
     @Override
     public Product update(int productId, Product product) {
-        if (!productsDao.existsById(productId)) {
-            throw new ResourceNotFoundException("Product not found");
-        }
+        Product existing = productsDao.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         Product productToUpdate = new ProductBuilder(product)
                 .withProductId(productId)
+                .withCreatedAt(existing.getCreatedAt())
                 .build();
 
         return productsDao.save(productToUpdate);

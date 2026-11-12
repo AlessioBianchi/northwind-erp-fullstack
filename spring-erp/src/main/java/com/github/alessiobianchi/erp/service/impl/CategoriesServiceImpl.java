@@ -34,12 +34,12 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     @Override
     public Category update(int categoryId, Category category) {
-        if (!categoriesDao.existsById(categoryId)) {
-            throw new ResourceNotFoundException("Category not found");
-        }
+        Category existing = categoriesDao.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         Category categoryToUpdate = new CategoryBuilder(category)
                 .withCategoryId(categoryId)
+                .withCreatedAt(existing.getCreatedAt())
                 .build();
 
         return categoriesDao.save(categoryToUpdate);

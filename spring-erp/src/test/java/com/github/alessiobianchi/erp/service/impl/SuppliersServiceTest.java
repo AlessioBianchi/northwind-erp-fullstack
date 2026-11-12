@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,7 +100,11 @@ class SuppliersServiceTest {
                 .withSupplierId(1)
                 .withCompanyName("Test")
                 .build();
-        when(suppliersDao.existsById(1)).thenReturn(true);
+        Instant createdAt = Instant.parse("2020-01-01T00:00:00Z");
+        when(suppliersDao.findById(1)).thenReturn(Optional.of(new SupplierBuilder()
+                .withSupplierId(1)
+                .withCreatedAt(createdAt)
+                .build()));
         when(suppliersDao.save(any(Supplier.class))).thenReturn(supplierUpdated);
 
         // Act
@@ -110,12 +115,13 @@ class SuppliersServiceTest {
         assertEquals(1, updated.getSupplierId());
         assertEquals("Test", updated.getCompanyName());
         verify(suppliersDao).save(any(Supplier.class));
+        verify(suppliersDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
 
     @Test
     void update_WhenSupplierNotFound_ShouldThrowNotFound() {
         // Arrange
-        when(suppliersDao.existsById(1)).thenReturn(false);
+        when(suppliersDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> suppliersService.update(1, new Supplier()));

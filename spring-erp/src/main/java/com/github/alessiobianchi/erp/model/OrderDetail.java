@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name="ORDER_DETAILS")
 @IdClass(OrderDetailId.class)
-public class OrderDetail {
+public class OrderDetail extends Auditable {
 
     @Id
     @ManyToOne

@@ -8,11 +8,11 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="PRODUCTS")
-public class Product {
+public class Product extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int productId;
+    private Integer productId;
 
     @NotBlank
     @Size(max = 40)
@@ -45,7 +45,7 @@ public class Product {
 
     public Product() {}
 
-    public Product(int productId,
+    public Product(Integer productId,
                    String productName,
                    Supplier supplier,
                    Category category,
@@ -54,7 +54,7 @@ public class Product {
                    Integer unitsInStock,
                    Integer unitsOnOrder,
                    Integer reorderLevel,
-                   boolean discontinued) {
+                   Boolean discontinued) {
         this.productId = productId;
         this.productName = productName;
         this.supplier = supplier;
@@ -64,10 +64,10 @@ public class Product {
         this.unitsInStock = unitsInStock;
         this.unitsOnOrder = unitsOnOrder;
         this.reorderLevel = reorderLevel;
-        this.discontinued = discontinued;
+        this.discontinued = Boolean.TRUE.equals(discontinued);
     }
 
-    public int getProductId() { return productId; }
+    public Integer getProductId() { return productId; }
     public String getProductName() { return productName; }
     public Supplier getSupplier() { return supplier; }
     public Category getCategory() { return category; }
