@@ -163,14 +163,13 @@ springdoc.swagger-ui.tags-sorter=alpha
 springdoc.swagger-ui.operations-sorter=method
 springdoc.paths-to-match=/api/**
 springdoc.default-produces-media-type=application/json
-springdoc.show-login-endpoint=true
 ```
 
 - **Secrets:** no credentials in the repo. `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` come from OS environment variables or, locally, from the gitignored `spring-erp/.env` (template `.env.example`). Real env vars override `.env`. No defaults → startup fails if missing.
 - `.env` is resolved relative to the working directory, so run the app from `spring-erp/` (`./mvnw`, or IntelliJ with working dir = module).
 - `docker-compose.yml` reads the same `.env` (`${DB_USERNAME:?…}` fails fast if unset).
 - **`prod` profile** (`application-prod.properties`, `SPRING_PROFILES_ACTIVE=prod`): `show-sql=false`; springdoc api-docs + Swagger UI disabled (→ 404); credentials via env vars only.
-- **Swagger UI:** `http://localhost:8080/swagger-ui.html` (spec at `/v3/api-docs`). Log in via the `login-endpoint` operation first; the session cookie is then reused and `csrf.enabled` sends `X-XSRF-TOKEN` on writes.
+- **Swagger UI:** `http://localhost:8080/swagger-ui.html` (spec at `/v3/api-docs`). Log in via **Authentication → Log in** first (form fields), then run any GET once so the `XSRF-TOKEN` cookie is set; the session cookie is then reused and `csrf.enabled` sends `X-XSRF-TOKEN` on writes.
 - No connection pool tuning (uses HikariCP defaults).
 - Schema owned by Flyway (default config, runs on startup); Hibernate only validates it.
 
@@ -490,6 +489,12 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 
 ---
 
+### [2026-11-12] — Swagger login fixed
+- Swagger UI login always returned 401: `springdoc.show-login-endpoint=true` documents a JSON body, but `formLogin` only reads `application/x-www-form-urlencoded` fields.
+- Removed `springdoc.show-login-endpoint`; `OpenApiConfig.authEndpoints()` (`OpenApiCustomizer`) documents `POST /api/auth/login` (form body, `{message, username, isManager}` response, 401) and `POST /api/auth/logout` under an `Authentication` tag, with no security requirement.
+
+---
+
 ### [2026-11-12] — Order detail create on a missing order → 404
 - `OrdersService.create(int, OrderDetailsDTO)`: checks `ordersDao.existsById(orderId)` after the path/body match → `ResourceNotFoundException` (404). Previously the insert failed on the FK and the catch-all returned 500.
 - `OrdersServiceTest`: new `createOrderDetail_WhenOrderNotFound_ShouldThrowNotFound`; existing detail-create tests stub `existsById`.
@@ -505,7 +510,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 
 ### [2026-11-12] — Swagger / OpenAPI documentation
 - `pom.xml`: added `springdoc-openapi-starter-webmvc-ui` 3.0.3.
-- New `config/OpenApiConfig.java`: `OpenAPI` bean (title, version, empty description), `JSESSIONID` cookie security scheme, shared `BadRequest`/`NotFound`/`Conflict` responses (`ErrorMessage` schema), `OperationCustomizer` that makes params optional on `@GetMapping(params = …)` methods (merged with the plain list GET).
+- New `config/OpenApiConfig.java` (see the later entry for the auth endpoints): `OpenAPI` bean (title, version, empty description), `JSESSIONID` cookie security scheme, shared `BadRequest`/`NotFound`/`Conflict` responses (`ErrorMessage` schema), `OperationCustomizer` that makes params optional on `@GetMapping(params = …)` methods (merged with the plain list GET).
 - `config/AppConfig.java`: `permitAll` on `/v3/api-docs/**`, `/swagger-ui/**`, `/swagger-ui.html`.
 - `application.properties`: springdoc settings (UI path, CSRF header, sorters, `/api/**` only, JSON default, login endpoint shown). `application-prod.properties`: api-docs + UI disabled.
 - All 8 controllers: `@Tag`, `@Operation(summary, description = "")`, `@ApiResponse` codes matching the real statuses (201/204/400/404/409); pagination params described; `Principal` hidden on `POST /orders`; PDF report documented as `application/pdf` binary.
