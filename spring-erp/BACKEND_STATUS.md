@@ -51,6 +51,7 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 | PDF Formatting | Apache FOP | 2.9 |
 | Build | Maven + spring-boot-maven-plugin | — |
 | Dev Tools | spring-boot-devtools | runtime |
+| API Docs | springdoc-openapi (`springdoc-openapi-starter-webmvc-ui`) | 3.0.3 (built on Boot 4.0.5; 3.1+ target Boot 4.1) |
 | Testing | JUnit 5 + Mockito (via Spring Boot test starters) | (inherited) |
 
 ---
@@ -69,7 +70,9 @@ spring-erp/
     │   ├── java/com/github/alessiobianchi/erp/
     │   │   ├── ErpSpringApplication.java
     │   │   ├── config/
-    │   │   │   └── AppConfig.java              # Security + CORS configuration
+    │   │   │   ├── AppConfig.java              # Security + CORS configuration
+    │   │   │   ├── OpenApiConfig.java          # OpenAPI info, session-cookie scheme, shared error responses
+    │   │   │   └── PasswordConfig.java
     │   │   ├── controller/
     │   │   │   ├── CategoriesController.java
     │   │   │   ├── CustomersController.java
@@ -153,12 +156,21 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=true
 spring.jpa.open-in-view=false
+
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.csrf.enabled=true
+springdoc.swagger-ui.tags-sorter=alpha
+springdoc.swagger-ui.operations-sorter=method
+springdoc.paths-to-match=/api/**
+springdoc.default-produces-media-type=application/json
+springdoc.show-login-endpoint=true
 ```
 
 - **Secrets:** no credentials in the repo. `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` come from OS environment variables or, locally, from the gitignored `spring-erp/.env` (template `.env.example`). Real env vars override `.env`. No defaults → startup fails if missing.
 - `.env` is resolved relative to the working directory, so run the app from `spring-erp/` (`./mvnw`, or IntelliJ with working dir = module).
 - `docker-compose.yml` reads the same `.env` (`${DB_USERNAME:?…}` fails fast if unset).
-- **`prod` profile** (`application-prod.properties`, `SPRING_PROFILES_ACTIVE=prod`): `show-sql=false`; credentials via env vars only.
+- **`prod` profile** (`application-prod.properties`, `SPRING_PROFILES_ACTIVE=prod`): `show-sql=false`; springdoc api-docs + Swagger UI disabled (→ 404); credentials via env vars only.
+- **Swagger UI:** `http://localhost:8080/swagger-ui.html` (spec at `/v3/api-docs`). Log in via the `login-endpoint` operation first; the session cookie is then reused and `csrf.enabled` sends `X-XSRF-TOKEN` on writes.
 - No connection pool tuning (uses HikariCP defaults).
 - Schema owned by Flyway (default config, runs on startup); Hibernate only validates it.
 
@@ -205,7 +217,7 @@ dao/          Spring Data JPA interfaces (CrudRepository + @Query)
 model/        JPA entities + Builder companions
 dto/          API DTOs + builders (Dashboard, Employee, Order, OrderDetails)
 converter/    Static bean ↔ DTO converters, called from services
-config/       Security and CORS (AppConfig.java)
+config/       Security and CORS (AppConfig.java), OpenAPI (OpenApiConfig.java)
 ```
 
 ### Builder pattern
@@ -216,6 +228,9 @@ Employees, Orders, Order Details and the Dashboard's `lastTenOrders` go through 
 
 ### Data access
 Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@Query` for aggregations (revenue sums, category counts). Pagination uses Spring Data `Page` + `Pageable`; serialization mode: `VIA_DTO` (Spring 6.1+).
+
+### API documentation (springdoc)
+Every controller has `@Tag`; every endpoint has `@Operation(summary, description)` + `@ApiResponse` per status code. Error responses reference shared components defined in `OpenApiConfig` (`@ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)` → `ErrorMessage` schema). The list GET and the paginated GET share one path; OpenAPI allows one operation per path + method, so springdoc merges them (response `oneOf[PagedModel, array]`). Put `@Operation` on the plain list method only; `OpenApiConfig.optionalParamsOnMergedGets` marks the `pageNumber`/`pageSize` params as optional in the spec. Descriptions are Markdown: use `\n\n` or `- ` lists (a single `\n` renders as a space). They document behavior a client cannot guess (409 causes, password handling, auto-set fields); global conventions live in the `Info` description.
 
 ### Authentication adapter
 `User.java` is not a JPA entity — it wraps `Employee` and implements Spring Security's `UserDetails`. `UsersDetailsService` bridges JPA and Spring Security by loading an `Employee` by username and wrapping it in a `User`.
@@ -345,7 +360,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 | PUT | `/api/v1/orders/{orderId}` | Body/response `OrderDTO` |
 | DELETE | `/api/v1/orders/{orderId}` | `204`; `404` if missing, `409` if it has details |
 | GET | `/api/v1/orders/{orderId}/details` | `List<OrderDetailsDTO>` |
-| POST | `/api/v1/orders/{orderId}/details` | `201`; body/response `OrderDetailsDTO`; body `orderId` must match path (400); unit price auto-set from product |
+| POST | `/api/v1/orders/{orderId}/details` | `201`; body/response `OrderDetailsDTO`; body `orderId` must match path (400); `404` if order or product missing; unit price auto-set from product |
 | DELETE | `/api/v1/orders/{orderId}/details/{productId}` | `204`; `404` if missing |
 | GET | `/api/v1/orders/{id}/report` | `application/pdf` byte stream; `404` if order missing |
 
@@ -375,7 +390,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 | `isManager` logic | `employee.reportsTo == null` |
 | CSRF | `CookieCsrfTokenRepository` (httpOnly=false); custom `CsrfCookieFilter`; bypassed on `/api/auth/**` |
 | CORS | Origin `http://localhost:4200`; credentials allowed; `X-XSRF-TOKEN` header permitted |
-| Access control | All endpoints require authentication; no role-based restrictions yet |
+| Access control | All endpoints require authentication except `/api/auth/**`, `/v3/api-docs/**`, `/swagger-ui/**`, `/swagger-ui.html`; no role-based restrictions yet |
 
 ---
 
@@ -418,7 +433,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 | `ProductsService` | CRUD + pagination; delete blocked if product appears in order details |
 | `SuppliersService` | CRUD + pagination; delete blocked if supplier has products |
 | `ShippersService` | CRUD; delete blocked if shipper has orders |
-| `OrdersService` | CRUD + pagination; `save(order, username)` auto-sets employee from auth principal; detail create checks path `orderId` matches body (400 otherwise) and auto-sets unitPrice from product; PDF report via OpenPDF (EUR) |
+| `OrdersService` | CRUD + pagination; `save(order, username)` auto-sets employee from auth principal; detail create checks path `orderId` matches body (400 otherwise), that the order exists (404) and auto-sets unitPrice from product; PDF report via OpenPDF (EUR) |
 | `DashboardService` | Aggregates: total/monthly orders & revenue, last 10 orders, orders-by-category map, low-stock products |
 | `UsersDetailsService` | Implements `UserDetailsService`; loads `Employee` by username, wraps in `User` |
 
@@ -448,13 +463,13 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 
 - `service/` — 9 unit test classes, one per service (74 tests). JUnit 5 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
 - `controller/OrdersControllerValidationTest` — standalone MockMvc: bean validation, status codes.
+- 84 tests total, all passing (2026-11-12).
 - `ErpSpringApplicationTests` — context smoke test; **needs the Postgres container running** (Flyway connects on startup).
 
 ---
 
 ## Known Gaps & TODOs
 
-- [ ] **No API documentation** — Swagger / SpringDoc OpenAPI not configured.
 - [ ] **No caching** — no `@Cacheable` on read-heavy endpoints.
 - [ ] **No Actuator endpoints** — no health check or metrics.
 - [ ] **Thymeleaf dead code** — view references remain in some controllers; UI is fully Angular now.
@@ -472,6 +487,29 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-12] — Order detail create on a missing order → 404
+- `OrdersService.create(int, OrderDetailsDTO)`: checks `ordersDao.existsById(orderId)` after the path/body match → `ResourceNotFoundException` (404). Previously the insert failed on the FK and the catch-all returned 500.
+- `OrdersServiceTest`: new `createOrderDetail_WhenOrderNotFound_ShouldThrowNotFound`; existing detail-create tests stub `existsById`.
+- `OrdersController`: Swagger description updated (404 for order or product).
+
+---
+
+### [2026-11-12] — OpenAPI descriptions written
+- All 8 `@Tag`s, every `@Operation` and the `OpenApiConfig` `Info` description filled in (Info: auth flow, CSRF header, conventions).
+- Operation descriptions list the real error cases (e.g. which references cause 409) and non-obvious behavior: employee password rules, order employee from the logged-in user, detail unit price from the product.
+
+---
+
+### [2026-11-12] — Swagger / OpenAPI documentation
+- `pom.xml`: added `springdoc-openapi-starter-webmvc-ui` 3.0.3.
+- New `config/OpenApiConfig.java`: `OpenAPI` bean (title, version, empty description), `JSESSIONID` cookie security scheme, shared `BadRequest`/`NotFound`/`Conflict` responses (`ErrorMessage` schema), `OperationCustomizer` that makes params optional on `@GetMapping(params = …)` methods (merged with the plain list GET).
+- `config/AppConfig.java`: `permitAll` on `/v3/api-docs/**`, `/swagger-ui/**`, `/swagger-ui.html`.
+- `application.properties`: springdoc settings (UI path, CSRF header, sorters, `/api/**` only, JSON default, login endpoint shown). `application-prod.properties`: api-docs + UI disabled.
+- All 8 controllers: `@Tag`, `@Operation(summary, description = "")`, `@ApiResponse` codes matching the real statuses (201/204/400/404/409); pagination params described; `Principal` hidden on `POST /orders`; PDF report documented as `application/pdf` binary.
+- `exception/GlobalExceptionHandler`: `NoResourceFoundException` → 404 (unknown URLs, e.g. Swagger in prod, previously hit the catch-all → 500).
 
 ---
 

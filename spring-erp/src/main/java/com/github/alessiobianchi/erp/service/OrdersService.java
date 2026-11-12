@@ -103,6 +103,9 @@ public class OrdersService {
         if (!Objects.equals(orderDetailDto.getOrderId(), orderId)) {
             throw new BadRequestException("orderId in body does not match the path.");
         }
+        if (!ordersDao.existsById(orderId)) {
+            throw new ResourceNotFoundException("Order not found");
+        }
 
         OrderDetail orderDetail = OrderDetailsDtoToBeanConverter.convert(orderDetailDto);
         Product product = productsDao.findById(orderDetail.getProduct().getProductId())

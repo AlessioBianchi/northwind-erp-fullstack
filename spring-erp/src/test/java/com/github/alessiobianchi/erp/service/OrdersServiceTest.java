@@ -148,6 +148,7 @@ class OrdersServiceTest {
                 .withProductId(50)
                 .build();
 
+        when(ordersDao.existsById(1)).thenReturn(true);
         when(productsDao.findById(50)).thenReturn(Optional.of(mockProduct));
         when(orderDetailsDao.save(any(OrderDetail.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -168,10 +169,26 @@ class OrdersServiceTest {
                 .withProductId(99)
                 .build();
 
+        when(ordersDao.existsById(1)).thenReturn(true);
         when(productsDao.findById(99)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> ordersService.create(1, detail));
+    }
+
+    @Test
+    void createOrderDetail_WhenOrderNotFound_ShouldThrowNotFound() {
+        // Arrange
+        OrderDetailsDTO detail = new OrderDetailsDTOBuilder()
+                .withOrderId(999)
+                .withProductId(50)
+                .build();
+
+        when(ordersDao.existsById(999)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> ordersService.create(999, detail));
+        verifyNoInteractions(productsDao, orderDetailsDao);
     }
 
     @Test
