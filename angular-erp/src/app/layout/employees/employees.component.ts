@@ -6,6 +6,8 @@ import { finalize } from 'rxjs';
 import { Employee } from './employee.model';
 import { EmployeesService } from '../../service/employees.service';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
+import { ErrorNotificationService } from '../../service/error-notification.service';
+import { ConfirmDialogService } from '../../service/confirm-dialog.service';
 
 @Component({
   selector: 'app-employees',
@@ -17,6 +19,8 @@ import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.c
 export class EmployeesComponent implements OnInit {
   private employeesService = inject(EmployeesService);
   private destroyRef = inject(DestroyRef);
+  private notifications = inject(ErrorNotificationService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   currentPage = 1;
   pageSize = 50;
@@ -135,7 +139,7 @@ export class EmployeesComponent implements OnInit {
 
     const employee = this.activeEmployeeForm as Employee;
     if (employee.password && employee.password.length < 8) {
-      alert('Password must be at least 8 characters.');
+      this.notifications.show('Password must be at least 8 characters.');
       return;
     }
 
@@ -145,7 +149,7 @@ export class EmployeesComponent implements OnInit {
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedResult) => {
-          alert('Employee profile record saved successfully.');
+          this.notifications.success('Employee profile record saved successfully.');
           this.loadPaginatedEmployees();
           this.preloadDropdownRelationshipDependencies();
           this.cancelEmployeeWorkspaceEdit();
@@ -154,14 +158,14 @@ export class EmployeesComponent implements OnInit {
     });
   }
 
-  deleteActiveEmployee(): void {
+  async deleteActiveEmployee(): Promise<void> {
     if (!this.selectedEmployeeId || this.isDeleting) return;
 
-    if (confirm('Are you sure you want to drop this worker profile history record?')) {
+    if (await this.confirmDialog.confirm('Are you sure you want to drop this worker profile history record?')) {
       this.isDeleting = true;
       this.employeesService.delete(this.selectedEmployeeId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          alert('Profile removed securely.');
+          this.notifications.success('Profile removed securely.');
           this.loadPaginatedEmployees();
           this.preloadDropdownRelationshipDependencies();
           this.cancelEmployeeWorkspaceEdit();

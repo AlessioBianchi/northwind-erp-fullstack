@@ -12,6 +12,8 @@ import { ShippersService } from '../../service/shippers.service';
 import { Product } from '../products/product.model';
 import { ProductsService } from '../../service/products.service';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
+import { ErrorNotificationService } from '../../service/error-notification.service';
+import { ConfirmDialogService } from '../../service/confirm-dialog.service';
 
 @Component({
   selector: 'app-orders',
@@ -26,6 +28,8 @@ export class OrdersComponent implements OnInit{
   private shippersService = inject(ShippersService);
   private productsService = inject(ProductsService);
   private destroyRef = inject(DestroyRef);
+  private notifications = inject(ErrorNotificationService);
+  private confirmDialog = inject(ConfirmDialogService);
   
   currentPage = 1;
   pageSize = 50;
@@ -96,11 +100,11 @@ export class OrdersComponent implements OnInit{
 
     const order = this.activeForm as Order;
     if (order.customerId == null) {
-      alert('Please select a customer.');
+      this.notifications.show('Please select a customer.');
       return;
     }
     if (order.freight != null && order.freight < 0) {
-      alert('Freight cannot be negative.');
+      this.notifications.show('Freight cannot be negative.');
       return;
     }
 
@@ -110,7 +114,7 @@ export class OrdersComponent implements OnInit{
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedOrder) => {
-          alert('Order saved successfully!');
+          this.notifications.success('Order saved successfully!');
           this.loadPaginatedOrders();
           this.cancelWorkspaceEdit();
         },
@@ -118,14 +122,14 @@ export class OrdersComponent implements OnInit{
     });
   }
 
-  deleteActiveOrder(): void {
+  async deleteActiveOrder(): Promise<void> {
     if (!this.selectedOrderId || this.isDeleting) return;
     
-    if (confirm('Are you sure you want to drop this order record?')) {
+    if (await this.confirmDialog.confirm('Are you sure you want to drop this order record?')) {
       this.isDeleting = true;
       this.ordersService.deleteOrder(this.selectedOrderId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          alert('Order deleted.');
+          this.notifications.success('Order deleted.');
           this.loadPaginatedOrders();
           this.cancelWorkspaceEdit();
         },
@@ -210,7 +214,7 @@ export class OrdersComponent implements OnInit{
 
     this.ordersService.createOrderDetail(this.modalDetailForm.orderId, this.modalDetailForm as OrderDetail).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedDetail) => {
-        alert('Order detail saved successfully!');
+        this.notifications.success('Order detail saved successfully!');
         this.modalDetailForm = this.createEmptyDetailForm();
         this.loadPaginatedOrders();
         this.cancelWorkspaceEdit();
@@ -231,15 +235,15 @@ export class OrdersComponent implements OnInit{
     };
   }
 
-  deleteActiveDetail() {
+  async deleteActiveDetail(): Promise<void> {
     if (!this.selectedDetail || this.isDeleting) return;
 
-    if (confirm('Are you sure you want to drop this order detail record?')) {
+    if (await this.confirmDialog.confirm('Are you sure you want to drop this order detail record?')) {
       this.isDeleting = true;
       const { orderId, productId } = this.selectedDetail;
       this.ordersService.deleteOrderDetail(orderId!, productId!).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          alert('Order detail deleted.');
+          this.notifications.success('Order detail deleted.');
           this.loadPaginatedOrders();
           this.cancelWorkspaceEdit();
         },

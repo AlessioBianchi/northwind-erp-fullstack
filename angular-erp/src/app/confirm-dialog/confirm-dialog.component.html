@@ -1,0 +1,20 @@
+@if (confirmDialog.request(); as request) {
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true"
+       style="background: rgba(0, 0, 0, 0.5); z-index: 1070;"
+       (click)="confirmDialog.answer(false)">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+      <div class="modal-content shadow-lg border-0">
+        <div class="modal-header bg-danger text-white py-2 px-3">
+          <h6 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>{{ request.title }}</h6>
+          <button type="button" class="btn-close btn-close-white shadow-none" aria-label="Close"
+                  (click)="confirmDialog.answer(false)"></button>
+        </div>
+        <div class="modal-body p-3">{{ request.message }}</div>
+        <div class="modal-footer py-2 px-3">
+          <button type="button" class="btn btn-secondary btn-sm" (click)="confirmDialog.answer(false)">Cancel</button>
+          <button type="button" class="btn btn-danger btn-sm" (click)="confirmDialog.answer(true)">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

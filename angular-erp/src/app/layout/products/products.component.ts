@@ -10,6 +10,8 @@ import { ProductsService } from '../../service/products.service';
 import { SuppliersService } from '../../service/suppliers.service';
 import { CategoriesService } from '../../service/categories.service';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
+import { ErrorNotificationService } from '../../service/error-notification.service';
+import { ConfirmDialogService } from '../../service/confirm-dialog.service';
 
 @Component({
   selector: 'app-products',
@@ -23,6 +25,8 @@ export class ProductsComponent implements OnInit {
   private suppliersService = inject(SuppliersService);
   private categoriesService = inject(CategoriesService);
   private destroyRef = inject(DestroyRef);
+  private notifications = inject(ErrorNotificationService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   currentPage = 1;
   pageSize = 50;
@@ -142,7 +146,7 @@ export class ProductsComponent implements OnInit {
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedResult) => {
-          alert('Product saved successfully.');
+          this.notifications.success('Product saved successfully.');
           this.loadPaginatedProducts();
           this.cancelProductWorkspaceEdit();
         },
@@ -150,14 +154,14 @@ export class ProductsComponent implements OnInit {
     });
   }
 
-  deleteActiveProduct(): void {
+  async deleteActiveProduct(): Promise<void> {
     if (!this.selectedProductId || this.isDeleting) return;
 
-    if (confirm('Are you sure you want to delete this product?')) {
+    if (await this.confirmDialog.confirm('Are you sure you want to delete this product?')) {
       this.isDeleting = true;
       this.productsService.deleteProduct(this.selectedProductId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          alert('Product deleted.');
+          this.notifications.success('Product deleted.');
           this.loadPaginatedProducts();
           this.cancelProductWorkspaceEdit();
         },
@@ -189,7 +193,7 @@ export class ProductsComponent implements OnInit {
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        alert('Category saved successfully.');
+        this.notifications.success('Category saved successfully.');
         this.preloadDropdownRelationshipDependencies();
         this.cancelCategoryWorkspaceEdit();
         this.loadPaginatedProducts();
@@ -198,15 +202,15 @@ export class ProductsComponent implements OnInit {
     });
   }
 
-  deleteActiveCategory(): void {
+  async deleteActiveCategory(): Promise<void> {
     const targetId = this.activeCategoryForm.categoryId;
     if (!targetId || this.isDeleting) return;
 
-    if (confirm('Are you sure you want to delete this category?')) {
+    if (await this.confirmDialog.confirm('Are you sure you want to delete this category?')) {
       this.isDeleting = true;
       this.categoriesService.deleteCategory(targetId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          alert('Category deleted.');
+          this.notifications.success('Category deleted.');
           this.preloadDropdownRelationshipDependencies();
           this.cancelCategoryWorkspaceEdit();
           this.loadPaginatedProducts();

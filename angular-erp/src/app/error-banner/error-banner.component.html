@@ -1,5 +1,7 @@
 @if (notificationService.message(); as message) {
-  <div class="alert alert-danger alert-dismissible position-fixed top-0 end-0 mt-3 me-3"
+  <div class="alert alert-dismissible position-fixed top-0 end-0 mt-3 me-3"
+       [class.alert-danger]="notificationService.type() === 'error'"
+       [class.alert-success]="notificationService.type() === 'success'"
        style="z-index: 1080; max-width: 24rem;" role="alert">
     {{ message }}
     <button type="button" class="btn-close" (click)="notificationService.clear()" aria-label="Close"></button>
