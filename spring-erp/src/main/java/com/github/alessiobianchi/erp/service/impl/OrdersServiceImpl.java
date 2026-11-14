@@ -21,12 +21,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.Objects;
 
 @Service
+@Transactional(readOnly = true)
 public class OrdersServiceImpl implements OrdersService {
 
     private final EmployeesDAO employeesDao;
@@ -60,6 +62,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional
     public OrderDTO create(OrderDTO orderDto, String username) {
         Employee userLogged = employeesDao.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
@@ -72,6 +75,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional
     public OrderDTO update(int orderId, OrderDTO orderDto) {
         Order existing = ordersDao.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
@@ -85,6 +89,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional
     public void delete(int orderId) {
         Order orderToDelete = ordersDao.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
@@ -107,6 +112,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional
     public OrderDetailsDTO create(int orderId, OrderDetailsDTO orderDetailDto) {
         if (!Objects.equals(orderDetailDto.getOrderId(), orderId)) {
             throw new BadRequestException("orderId in body does not match the path.");
@@ -128,6 +134,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional
     public void delete(int orderId, int productId) {
         if (!orderDetailsDao.existsByOrderOrderIdAndProductProductId(orderId, productId)) {
             throw new ResourceNotFoundException("Order detail not found");

@@ -15,12 +15,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class EmployeesServiceImpl implements EmployeesService {
 
     private static final int MIN_PASSWORD_LENGTH = 8;
@@ -61,6 +63,7 @@ public class EmployeesServiceImpl implements EmployeesService {
     }
 
     @Override
+    @Transactional
     public EmployeeDTO create(Employee employee) {
         if (!StringUtils.hasText(employee.getPassword())) {
             throw new BadRequestException("Password is required.");
@@ -75,6 +78,7 @@ public class EmployeesServiceImpl implements EmployeesService {
     }
 
     @Override
+    @Transactional
     public EmployeeDTO update(int employeeId, Employee employee) {
         Employee existing = getEmployee(employeeId);
         String newPassword = employee.getPassword();
@@ -92,6 +96,7 @@ public class EmployeesServiceImpl implements EmployeesService {
     }
 
     @Override
+    @Transactional
     public void delete(int employeeId) {
         Employee employeeToDelete = getEmployee(employeeId);
 
@@ -103,6 +108,7 @@ public class EmployeesServiceImpl implements EmployeesService {
     }
 
     @Override
+    @Transactional
     public void changeOwnPassword(String username, String currentPassword, String newPassword) {
         Employee employee = employeesDao.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));

@@ -8,11 +8,13 @@ import com.github.alessiobianchi.erp.dto.DashboardDTO;
 import com.github.alessiobianchi.erp.dto.DashboardDTOBuilder;
 import com.github.alessiobianchi.erp.service.DashboardService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class DashboardServiceImpl implements DashboardService {
 
     private final OrdersDAO ordersDao;

@@ -8,10 +8,12 @@ import com.github.alessiobianchi.erp.model.Category;
 import com.github.alessiobianchi.erp.model.CategoryBuilder;
 import com.github.alessiobianchi.erp.service.CategoriesService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class CategoriesServiceImpl implements CategoriesService {
 
     private final CategoriesDAO categoriesDao;
@@ -28,11 +30,13 @@ public class CategoriesServiceImpl implements CategoriesService {
     }
 
     @Override
+    @Transactional
     public Category create(Category category) {
         return categoriesDao.save(category);
     }
 
     @Override
+    @Transactional
     public Category update(int categoryId, Category category) {
         Category existing = categoriesDao.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -46,6 +50,7 @@ public class CategoriesServiceImpl implements CategoriesService {
     }
 
     @Override
+    @Transactional
     public void delete(int categoryId) {
         Category categoryToDelete = categoriesDao.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));

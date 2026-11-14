@@ -11,11 +11,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class SuppliersServiceImpl implements SuppliersService {
 
     private final SuppliersDAO suppliersDao;
@@ -40,11 +42,13 @@ public class SuppliersServiceImpl implements SuppliersService {
     }
 
     @Override
+    @Transactional
     public Supplier create(Supplier supplier) {
         return suppliersDao.save(supplier);
     }
 
     @Override
+    @Transactional
     public Supplier update(int supplierId, Supplier supplier) {
         Supplier existing = suppliersDao.findById(supplierId)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier not found"));
@@ -58,6 +62,7 @@ public class SuppliersServiceImpl implements SuppliersService {
     }
 
     @Override
+    @Transactional
     public void delete(int supplierId) {
         Supplier supplierToDelete = suppliersDao.findById(supplierId)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier not found"));
