@@ -24,7 +24,7 @@ class DtoJsonBindingTest {
         return Stream.of(
                 Arguments.of(CategoryDTO.class, "{\"categoryName\":\"Tea\"}", (Function<CategoryDTO, Object>) CategoryDTO::categoryId),
                 Arguments.of(CustomerDTO.class, "{\"companyName\":\"ACME\"}", (Function<CustomerDTO, Object>) CustomerDTO::customerId),
-                Arguments.of(EmployeeDTO.class, "{\"firstName\":\"John\",\"lastName\":\"Doe\"}", (Function<EmployeeDTO, Object>) EmployeeDTO::getEmployeeId),
+                Arguments.of(EmployeeDTO.class, "{\"firstName\":\"John\",\"lastName\":\"Doe\"}", (Function<EmployeeDTO, Object>) EmployeeDTO::employeeId),
                 Arguments.of(ProductDTO.class, "{\"productName\":\"Chai\"}", (Function<ProductDTO, Object>) ProductDTO::productId),
                 Arguments.of(ShipperDTO.class, "{\"companyName\":\"Speedy\"}", (Function<ShipperDTO, Object>) ShipperDTO::shipperId),
                 Arguments.of(SupplierDTO.class, "{\"companyName\":\"Exotic Liquids\"}", (Function<SupplierDTO, Object>) SupplierDTO::supplierId)

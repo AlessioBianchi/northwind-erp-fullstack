@@ -10,11 +10,11 @@ public class OrderDetailsDtoToBeanConverter {
 
     public static OrderDetail convert(OrderDetailsDTO dto) {
         return new OrderDetailBuilder()
-                .withOrder(dto.getOrderId() != null ? new OrderBuilder().withOrderId(dto.getOrderId()).build() : null)
-                .withProduct(dto.getProductId() != null ? new ProductBuilder().withProductId(dto.getProductId()).build() : null)
-                .withUnitPrice(dto.getUnitPrice())
-                .withQuantity(dto.getQuantity())
-                .withDiscount(dto.getDiscount())
+                .withOrder(dto.orderId() != null ? new OrderBuilder().withOrderId(dto.orderId()).build() : null)
+                .withProduct(dto.productId() != null ? new ProductBuilder().withProductId(dto.productId()).build() : null)
+                .withUnitPrice(dto.unitPrice())
+                .withQuantity(dto.quantity())
+                .withDiscount(dto.discount())
                 .build();
     }
 }

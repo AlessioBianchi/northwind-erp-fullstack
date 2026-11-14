@@ -6,7 +6,6 @@ import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dto.DashboardDTO;
-import com.github.alessiobianchi.erp.dto.DashboardDTOBuilder;
 import com.github.alessiobianchi.erp.service.DashboardService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,25 +31,20 @@ public class DashboardServiceImpl implements DashboardService {
     public DashboardDTO getStats() {
         LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
 
-        return new DashboardDTOBuilder()
-                .withTotalOrdersCount(ordersDao.countAllOrders())
-                .withTotalRevenue(orderDetailsDao.calculateTotalRevenue())
-                .withLastMonthOrdersCount(ordersDao.countLastMonthOrders(startOfMonth))
-                .withLastMonthRevenue(orderDetailsDao.calculateMonthlyRevenue(startOfMonth))
-                .withLastTenOrders(ordersDao.findFirst10ByOrderByOrderIdDesc().stream()
+        return new DashboardDTO(
+                ordersDao.countAllOrders(),
+                orderDetailsDao.calculateTotalRevenue(),
+                ordersDao.countLastMonthOrders(startOfMonth),
+                orderDetailsDao.calculateMonthlyRevenue(startOfMonth),
+                ordersDao.findFirst10ByOrderByOrderIdDesc().stream()
                         .map(OrderBeanToDtoConverter::convert)
-                        .toList())
-                .withOrdersByCategory(
-                        orderDetailsDao
-                                .findOrdersCountByCategory()
-                                .stream()
-                                .collect(Collectors.toMap(
-                                        row -> (String) row[0],
-                                        row -> ((Long) row[1]).intValue()
-                                )))
-                .withProductStock(productsDao.findByUnitsInStockLessThan(10).stream()
+                        .toList(),
+                orderDetailsDao.findOrdersCountByCategory().stream()
+                        .collect(Collectors.toMap(
+                                row -> (String) row[0],
+                                row -> ((Long) row[1]).intValue())),
+                productsDao.findByUnitsInStockLessThan(10).stream()
                         .map(ProductBeanToDtoConverter::convert)
-                        .toList())
-                .build();
+                        .toList());
     }
 }

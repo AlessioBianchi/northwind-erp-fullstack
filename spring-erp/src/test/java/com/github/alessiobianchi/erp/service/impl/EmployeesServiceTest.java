@@ -4,7 +4,6 @@ import com.github.alessiobianchi.erp.converter.EmployeeBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
-import com.github.alessiobianchi.erp.dto.EmployeeDTOBuilder;
 import com.github.alessiobianchi.erp.exception.BadRequestException;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
@@ -126,7 +125,7 @@ class EmployeesServiceTest {
 
         // Assert
         assertNotNull(created);
-        assertEquals(1, created.getEmployeeId());
+        assertEquals(1, created.employeeId());
         verify(employeesDao).save(any(Employee.class));
     }
 
@@ -142,8 +141,8 @@ class EmployeesServiceTest {
         EmployeeDTO result = employeesService.findByUsername("jdoe");
 
         // Assert
-        assertEquals(1, result.getEmployeeId());
-        assertEquals("jdoe", result.getUsername());
+        assertEquals(1, result.employeeId());
+        assertEquals("jdoe", result.username());
     }
 
     @Test
@@ -234,8 +233,8 @@ class EmployeesServiceTest {
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1, updated.getEmployeeId());
-        assertEquals("Test", updated.getFirstName());
+        assertEquals(1, updated.employeeId());
+        assertEquals("Test", updated.firstName());
         verify(employeesDao).save(any(Employee.class));
     }
 
@@ -414,9 +413,29 @@ class EmployeesServiceTest {
         verify(employeesDao, never()).save(any(Employee.class));
     }
 
+    // The bean -> DTO converter never copies the password; request bodies carry one.
     private static EmployeeDTO toDto(Employee employee) {
-        return new EmployeeDTOBuilder(EmployeeBeanToDtoConverter.convert(employee))
-                .withPassword(employee.getPassword())
-                .build();
+        EmployeeDTO dto = EmployeeBeanToDtoConverter.convert(employee);
+        return new EmployeeDTO(
+                dto.employeeId(),
+                dto.lastName(),
+                dto.firstName(),
+                dto.title(),
+                dto.titleOfCourtesy(),
+                dto.birthDate(),
+                dto.hireDate(),
+                dto.address(),
+                dto.city(),
+                dto.region(),
+                dto.postalCode(),
+                dto.country(),
+                dto.homePhone(),
+                dto.extension(),
+                dto.notes(),
+                dto.reportsTo(),
+                dto.username(),
+                employee.getPassword(),
+                dto.createdAt(),
+                dto.updatedAt());
     }
 }

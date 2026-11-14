@@ -6,7 +6,6 @@ import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dto.OrderDTO;
 import com.github.alessiobianchi.erp.dto.OrderDetailsDTO;
-import com.github.alessiobianchi.erp.dto.OrderDetailsDTOBuilder;
 import com.github.alessiobianchi.erp.exception.BadRequestException;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
@@ -33,6 +32,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OrdersServiceTest {
+
+    private static final OrderDTO EMPTY_ORDER = new OrderDTO(
+            null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, null);
 
     @Mock
     private EmployeesDAO employeesDao;
@@ -73,7 +76,7 @@ class OrdersServiceTest {
 
         // Assert
         assertEquals(1, result.size());
-        assertEquals(1, result.get(0).getOrderId());
+        assertEquals(1, result.get(0).orderId());
     }
 
     @Test
@@ -82,7 +85,7 @@ class OrdersServiceTest {
         when(employeesDao.findByUsername("ghost")).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(UsernameNotFoundException.class, () -> ordersService.create(new OrderDTO(), "ghost"));
+        assertThrows(UsernameNotFoundException.class, () -> ordersService.create(EMPTY_ORDER, "ghost"));
         verify(ordersDao, never()).save(any(Order.class));
     }
 
@@ -96,7 +99,7 @@ class OrdersServiceTest {
                 .withLastname("Doe")
                 .withUsername(username)
                 .build();
-        OrderDTO inputOrder = new OrderDTO();
+        OrderDTO inputOrder = EMPTY_ORDER;
 
         when(employeesDao.findByUsername(username)).thenReturn(Optional.of(mockEmployee));
         when(ordersDao.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -106,8 +109,8 @@ class OrdersServiceTest {
 
         // Assert
         assertNotNull(createdOrder);
-        assertEquals(7, createdOrder.getEmployeeId());
-        assertEquals("John Doe", createdOrder.getEmployeeName());
+        assertEquals(7, createdOrder.employeeId());
+        assertEquals("John Doe", createdOrder.employeeName());
         verify(employeesDao).findByUsername(username);
         verify(ordersDao).save(any(Order.class));
     }
@@ -130,12 +133,12 @@ class OrdersServiceTest {
         when(ordersDao.save(any(Order.class))).thenReturn(orderUpdated);
 
         // Act
-        OrderDTO createdOrder = ordersService.update(orderId, new OrderDTO());
+        OrderDTO createdOrder = ordersService.update(orderId, EMPTY_ORDER);
 
         // Assert
         assertNotNull(createdOrder);
-        assertEquals(orderId, createdOrder.getOrderId());
-        assertEquals(freight, createdOrder.getFreight());
+        assertEquals(orderId, createdOrder.orderId());
+        assertEquals(freight, createdOrder.freight());
         verify(ordersDao).save(any(Order.class));
         verify(ordersDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
@@ -149,10 +152,7 @@ class OrdersServiceTest {
                 .withUnitPrice(25.50)
                 .build();
 
-        OrderDetailsDTO inputDetail = new OrderDetailsDTOBuilder()
-                .withOrderId(1)
-                .withProductId(50)
-                .build();
+        OrderDetailsDTO inputDetail = new OrderDetailsDTO(1, 50, null, null, null, null, null, null);
 
         when(ordersDao.existsById(1)).thenReturn(true);
         when(productsDao.findById(50)).thenReturn(Optional.of(mockProduct));
@@ -162,18 +162,15 @@ class OrdersServiceTest {
         OrderDetailsDTO createdDetail = ordersService.create(1, inputDetail);
 
         // Assert
-        assertEquals(25.50, createdDetail.getUnitPrice());
-        assertEquals("Chai", createdDetail.getProductName());
+        assertEquals(25.50, createdDetail.unitPrice());
+        assertEquals("Chai", createdDetail.productName());
         verify(orderDetailsDao).save(any(OrderDetail.class));
     }
 
     @Test
     void saveOrderDetail_WhenProductNotFound_ShouldThrowException() {
         // Arrange
-        OrderDetailsDTO detail = new OrderDetailsDTOBuilder()
-                .withOrderId(1)
-                .withProductId(99)
-                .build();
+        OrderDetailsDTO detail = new OrderDetailsDTO(1, 99, null, null, null, null, null, null);
 
         when(ordersDao.existsById(1)).thenReturn(true);
         when(productsDao.findById(99)).thenReturn(Optional.empty());
@@ -185,10 +182,7 @@ class OrdersServiceTest {
     @Test
     void createOrderDetail_WhenOrderNotFound_ShouldThrowNotFound() {
         // Arrange
-        OrderDetailsDTO detail = new OrderDetailsDTOBuilder()
-                .withOrderId(999)
-                .withProductId(50)
-                .build();
+        OrderDetailsDTO detail = new OrderDetailsDTO(999, 50, null, null, null, null, null, null);
 
         when(ordersDao.existsById(999)).thenReturn(false);
 
@@ -200,10 +194,7 @@ class OrdersServiceTest {
     @Test
     void createOrderDetail_WhenOrderIdMismatch_ShouldThrowBadRequest() {
         // Arrange
-        OrderDetailsDTO detail = new OrderDetailsDTOBuilder()
-                .withOrderId(7)
-                .withProductId(50)
-                .build();
+        OrderDetailsDTO detail = new OrderDetailsDTO(7, 50, null, null, null, null, null, null);
 
         // Act & Assert
         assertThrows(BadRequestException.class, () -> ordersService.create(5, detail));
@@ -274,7 +265,7 @@ class OrdersServiceTest {
         when(ordersDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> ordersService.update(1, new OrderDTO()));
+        assertThrows(ResourceNotFoundException.class, () -> ordersService.update(1, EMPTY_ORDER));
         verify(ordersDao, never()).save(any(Order.class));
     }
 

@@ -1,32 +1,31 @@
 package com.github.alessiobianchi.erp.converter;
 
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
-import com.github.alessiobianchi.erp.dto.EmployeeDTOBuilder;
 import com.github.alessiobianchi.erp.model.Employee;
 
 public class EmployeeBeanToDtoConverter {
 
     public static EmployeeDTO convert(Employee employee) {
-        return new EmployeeDTOBuilder()
-                .withEmployeeId(employee.getEmployeeId())
-                .withLastname(employee.getLastName())
-                .withFirstname(employee.getFirstName())
-                .withTitle(employee.getTitle())
-                .withTitleOfCourtesy(employee.getTitleOfCourtesy())
-                .withBirthDate(employee.getBirthDate())
-                .withHireDate(employee.getHireDate())
-                .withAddress(employee.getAddress())
-                .withCity(employee.getCity())
-                .withRegion(employee.getRegion())
-                .withPostalCode(employee.getPostalCode())
-                .withCountry(employee.getCountry())
-                .withHomePhone(employee.getHomePhone())
-                .withExtension(employee.getExtension())
-                .withNotes(employee.getNotes())
-                .withReportsTo(employee.getReportsTo() != null ? convert(employee.getReportsTo()) : null)
-                .withUsername(employee.getUsername())
-                .withCreatedAt(employee.getCreatedAt())
-                .withUpdatedAt(employee.getUpdatedAt())
-                .build();
+        return new EmployeeDTO(
+                employee.getEmployeeId(),
+                employee.getLastName(),
+                employee.getFirstName(),
+                employee.getTitle(),
+                employee.getTitleOfCourtesy(),
+                employee.getBirthDate(),
+                employee.getHireDate(),
+                employee.getAddress(),
+                employee.getCity(),
+                employee.getRegion(),
+                employee.getPostalCode(),
+                employee.getCountry(),
+                employee.getHomePhone(),
+                employee.getExtension(),
+                employee.getNotes(),
+                employee.getReportsTo() != null ? convert(employee.getReportsTo()) : null,
+                employee.getUsername(),
+                null,
+                employee.getCreatedAt(),
+                employee.getUpdatedAt());
     }
 }

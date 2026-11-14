@@ -92,7 +92,7 @@ class EmployeesControllerSecurityTest {
                         .content("{\"firstName\":\"John\",\"lastName\":\"Doe\",\"username\":\"jdoe\",\"password\":\"password123\"}"))
                 .andExpect(status().isCreated());
 
-        verify(employeesService).create(argThat(employee -> employee.getEmployeeId() == null));
+        verify(employeesService).create(argThat(employee -> employee.employeeId() == null));
     }
 
     @Test

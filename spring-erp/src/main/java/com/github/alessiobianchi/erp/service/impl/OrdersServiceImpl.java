@@ -114,7 +114,7 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     @Transactional
     public OrderDetailsDTO create(int orderId, OrderDetailsDTO orderDetailDto) {
-        if (!Objects.equals(orderDetailDto.getOrderId(), orderId)) {
+        if (!Objects.equals(orderDetailDto.orderId(), orderId)) {
             throw new BadRequestException("orderId in body does not match the path.");
         }
         if (!ordersDao.existsById(orderId)) {

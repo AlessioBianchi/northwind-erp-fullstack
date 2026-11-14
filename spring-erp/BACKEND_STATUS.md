@@ -99,12 +99,9 @@ spring-erp/
     │   │   │   ├── OrderBeanToDtoConverter.java / OrderDtoToBeanConverter.java
     │   │   │   └── OrderDetailsBeanToDtoConverter.java / OrderDetailsDtoToBeanConverter.java
     │   │   ├── dto/
-    │   │   │   ├── CategoryDTO, CustomerDTO, ProductDTO, ShipperDTO, SupplierDTO, ChangePasswordDTO  # records
-    │   │   │   ├── DashboardDTO.java + DashboardDTOBuilder.java
-    │   │   │   ├── EmployeeDTO.java + EmployeeDTOBuilder.java
-    │   │   │   ├── OrderDTO.java + OrderDTOBuilder.java
-    │   │   │   ├── OrderDetailsDTO.java + OrderDetailsDTOBuilder.java
-    │   │   │   └── ErrorMessage.java           # Error envelope { status, message, timestamp }
+    │   │   │   ├── CategoryDTO, ChangePasswordDTO, CustomerDTO, DashboardDTO, EmployeeDTO  # all records
+    │   │   │   ├── OrderDTO, OrderDetailsDTO, ProductDTO, ShipperDTO, SupplierDTO
+    │   │   │   └── ErrorMessage.java           # Error envelope { status, message, timestamp } (record)
     │   │   ├── exception/
     │   │   │   ├── BadRequestException.java    # → 400
     │   │   │   ├── GlobalExceptionHandler.java # @RestControllerAdvice
@@ -227,7 +224,7 @@ controller/   @RestController — HTTP only, no logic
 service/      Service interfaces; service/impl/ holds the @Service *ServiceImpl classes (business rules, delete guards, aggregations)
 dao/          Spring Data JPA interfaces (CrudRepository + @Query)
 model/        JPA entities + Builder companions
-dto/          API DTOs: records (Category, Customer, Product, Shipper, Supplier, ChangePassword) and classes + builders (Dashboard, Employee, Order, OrderDetails)
+dto/          API DTOs and the error envelope, all Java records
 converter/    Static bean ↔ DTO converters, called from services
 config/       Security and CORS (AppConfig.java), OpenAPI (OpenApiConfig.java)
 ```
@@ -242,12 +239,12 @@ Every `*ServiceImpl` and `UsersDetailsService` is `@Transactional(readOnly = tru
 All 8 entities extend `model/Auditable` (`@MappedSuperclass`, `@EntityListeners(AuditingEntityListener.class)`): `@CreatedDate createdAt` (`updatable = false`) and `@LastModifiedDate updatedAt`, both `Instant` → `timestamptz`, `@JsonProperty(READ_ONLY)` so clients can't set them. Enabled by `config/JpaAuditingConfig` (kept off the main class so `@WebMvcTest` slices still start). Updates rebuild the entity from the request body, so each service `update` loads the row with `findById` and passes `withCreatedAt(existing.getCreatedAt())` to the builder; otherwise the PUT response would show `createdAt: null`. Builders copy `createdAt` and set it through `Auditable`'s package-private setter. `EmployeeDTO`, `OrderDTO`, `OrderDetailsDTO` expose both fields (read-only) via the bean→DTO converters.
 
 ### Builder pattern
-Every entity has a hand-written `*Builder` companion (fluent API). Used in service layer for partial updates — the service loads the existing entity, applies changes via the builder, then saves.
+Every entity has a hand-written `*Builder` companion (fluent API); DTOs have none (they are records). Used in service layer for partial updates — the service loads the existing entity, applies changes via the builder, then saves.
 
 ### DTOs & converters
 Every request and response body is a DTO; no controller uses a JPA entity. Conversion happens in the **service** layer via static `converter/<Name>BeanToDtoConverter` / `<Name>DtoToBeanConverter` `convert(...)` methods (no Spring beans); service interfaces take and return DTOs.
 
-- **Style:** new DTOs are Java **records** (`CategoryDTO`, `CustomerDTO`, `ProductDTO`, `ShipperDTO`, `SupplierDTO`, like the earlier `ChangePasswordDTO`); the older `EmployeeDTO`, `OrderDTO`, `OrderDetailsDTO`, `DashboardDTO` stay classes + builders. Use records for new DTOs.
+- **Style:** every class in `dto/` is a Java **record** (no builders, no setters; accessors are `x()`, not `getX()`). Converters call the canonical constructor with one argument per line in component order; components a converter doesn't fill are `null` (e.g. `EmployeeDTO.password` on responses). New DTOs follow the same pattern.
 - **JSON shape:** the record DTOs mirror their entity's fields, so the JSON is the same as when entities were exposed (the frontend didn't change). `ProductDTO` nests `CategoryDTO` / `SupplierDTO` (no `@Valid` on them: the client sends partial objects, only the id matters).
 - **Validation:** Bean Validation constraints live on the request DTOs (→ 400); the entities keep theirs too, to protect the DB (a violation there is a 500).
 - **IDs and nullable inputs:** IDs are `Integer` (a create body has none) and `ProductDTO.discontinued` is `Boolean` (`null` → `false` in the converter).
@@ -476,7 +473,7 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 
 ### DTO
 
-**`DashboardDTO`** (built via `DashboardDTOBuilder`):
+**`DashboardDTO`**:
 
 | Field | Type |
 |---|---|
@@ -539,6 +536,14 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-14] — Remaining DTOs converted to records
+- `dto/EmployeeDTO`, `OrderDTO`, `OrderDetailsDTO`, `DashboardDTO`, `ErrorMessage`: classes → records, same components in the same order, annotations kept on the components (`WRITE_ONLY` password, `READ_ONLY` audit fields, `@JsonFormat` dates, validation). `ErrorMessage` keeps a `(status, message)` constructor that sets `timestamp`.
+- Deleted `EmployeeDTOBuilder`, `OrderDTOBuilder`, `OrderDetailsDTOBuilder`, `DashboardDTOBuilder`. `converter/EmployeeBeanToDtoConverter`, `OrderBeanToDtoConverter`, `OrderDetailsBeanToDtoConverter` and `DashboardServiceImpl` call the record constructors; `getX()` → `x()` in the DTO → bean converters, services and tests.
+- Tests: `OrdersServiceTest` uses an `EMPTY_ORDER` constant instead of `new OrderDTO()`; `EmployeesServiceTest.toDto` builds the record with the password. 210 passing.
+- JSON unchanged: the employees, orders, order-details, dashboard and 404 responses and the whole `/v3/api-docs` spec are byte-identical to `main` (timestamps masked).
 
 ---
 
