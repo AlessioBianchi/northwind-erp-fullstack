@@ -62,16 +62,16 @@ class DashboardServiceTest {
 
         // Assert
         assertNotNull(stats);
-        assertEquals(totalOrders, stats.getTotalOrdersCount());
-        assertEquals(totalRevenue, stats.getTotalRevenue());
-        assertEquals(lastMonthOrders, stats.getLastMonthOrdersCount());
-        assertEquals(lastMonthRevenue, stats.getLastMonthRevenue());
+        assertEquals(totalOrders, stats.totalOrdersCount());
+        assertEquals(totalRevenue, stats.totalRevenue());
+        assertEquals(lastMonthOrders, stats.lastMonthOrdersCount());
+        assertEquals(lastMonthRevenue, stats.lastMonthRevenue());
 
-        assertNotNull(stats.getOrdersByCategory());
-        assertEquals(5, stats.getOrdersByCategory().get("Beverage"));
+        assertNotNull(stats.ordersByCategory());
+        assertEquals(5, stats.ordersByCategory().get("Beverage"));
 
-        assertNotNull(stats.getProductStock());
-        assertFalse(stats.getProductStock().isEmpty());
+        assertNotNull(stats.productStock());
+        assertFalse(stats.productStock().isEmpty());
 
         verify(ordersDao).countAllOrders();
         verify(orderDetailsDao).calculateTotalRevenue();
@@ -90,7 +90,7 @@ class DashboardServiceTest {
         // Assert
         verify(ordersDao).countLastMonthOrders(startOfMonth);
         verify(orderDetailsDao).calculateMonthlyRevenue(startOfMonth);
-        assertTrue(stats.getOrdersByCategory().isEmpty());
-        assertTrue(stats.getLastTenOrders().isEmpty());
+        assertTrue(stats.ordersByCategory().isEmpty());
+        assertTrue(stats.lastTenOrders().isEmpty());
     }
 }

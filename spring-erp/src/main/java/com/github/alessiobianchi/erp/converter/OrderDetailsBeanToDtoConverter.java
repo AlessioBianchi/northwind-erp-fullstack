@@ -1,7 +1,6 @@
 package com.github.alessiobianchi.erp.converter;
 
 import com.github.alessiobianchi.erp.dto.OrderDetailsDTO;
-import com.github.alessiobianchi.erp.dto.OrderDetailsDTOBuilder;
 import com.github.alessiobianchi.erp.model.Order;
 import com.github.alessiobianchi.erp.model.OrderDetail;
 import com.github.alessiobianchi.erp.model.Product;
@@ -12,15 +11,14 @@ public class OrderDetailsBeanToDtoConverter {
         Order order = orderDetail.getOrder();
         Product product = orderDetail.getProduct();
 
-        return new OrderDetailsDTOBuilder()
-                .withOrderId(order != null ? order.getOrderId() : null)
-                .withProductId(product != null ? product.getProductId() : null)
-                .withProductName(product != null ? product.getProductName() : null)
-                .withUnitPrice(orderDetail.getUnitPrice())
-                .withQuantity(orderDetail.getQuantity())
-                .withDiscount(orderDetail.getDiscount())
-                .withCreatedAt(orderDetail.getCreatedAt())
-                .withUpdatedAt(orderDetail.getUpdatedAt())
-                .build();
+        return new OrderDetailsDTO(
+                order != null ? order.getOrderId() : null,
+                product != null ? product.getProductId() : null,
+                product != null ? product.getProductName() : null,
+                orderDetail.getUnitPrice(),
+                orderDetail.getQuantity(),
+                orderDetail.getDiscount(),
+                orderDetail.getCreatedAt(),
+                orderDetail.getUpdatedAt());
     }
 }

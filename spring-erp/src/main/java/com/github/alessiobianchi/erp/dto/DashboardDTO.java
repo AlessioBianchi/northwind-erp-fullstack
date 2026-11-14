@@ -3,59 +3,12 @@ package com.github.alessiobianchi.erp.dto;
 import java.util.List;
 import java.util.Map;
 
-public class DashboardDTO {
-
-    private Long totalOrdersCount;
-    private Double totalRevenue;
-    private Long lastMonthOrdersCount;
-    private Double lastMonthRevenue;
-    private List<OrderDTO> lastTenOrders;
-    private Map<String, Integer> ordersByCategory;
-    private List<ProductDTO> productStock;
-
-    public DashboardDTO() {}
-
-    public DashboardDTO(Long totalOrdersCount,
-                        Double totalRevenue,
-                        Long lastMonthOrdersCount,
-                        Double lastMonthRevenue,
-                        List<OrderDTO> lastTenOrders,
-                        Map<String, Integer> ordersByCategory,
-                        List<ProductDTO> productStock) {
-        this.totalOrdersCount = totalOrdersCount;
-        this.totalRevenue = totalRevenue;
-        this.lastMonthOrdersCount = lastMonthOrdersCount;
-        this.lastMonthRevenue = lastMonthRevenue;
-        this.lastTenOrders = lastTenOrders;
-        this.ordersByCategory = ordersByCategory;
-        this.productStock = productStock;
-    }
-
-    public Long getTotalOrdersCount() {
-        return totalOrdersCount;
-    }
-
-    public Double getTotalRevenue() {
-        return totalRevenue;
-    }
-
-    public Long getLastMonthOrdersCount() {
-        return lastMonthOrdersCount;
-    }
-
-    public Double getLastMonthRevenue() {
-        return lastMonthRevenue;
-    }
-
-    public List<OrderDTO> getLastTenOrders() {
-        return lastTenOrders;
-    }
-
-    public Map<String, Integer> getOrdersByCategory() {
-        return ordersByCategory;
-    }
-
-    public List<ProductDTO> getProductStock() {
-        return productStock;
-    }
+public record DashboardDTO(
+        Long totalOrdersCount,
+        Double totalRevenue,
+        Long lastMonthOrdersCount,
+        Double lastMonthRevenue,
+        List<OrderDTO> lastTenOrders,
+        Map<String, Integer> ordersByCategory,
+        List<ProductDTO> productStock) {
 }

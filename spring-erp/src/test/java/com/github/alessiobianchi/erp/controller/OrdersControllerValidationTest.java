@@ -69,7 +69,7 @@ class OrdersControllerValidationTest {
         String body = """
                 { "orderId": 1, "productId": 50, "quantity": 2, "discount": 0.1 }
                 """;
-        when(ordersService.create(eq(1), any(OrderDetailsDTO.class))).thenReturn(new OrderDetailsDTO());
+        when(ordersService.create(eq(1), any(OrderDetailsDTO.class))).thenReturn(new OrderDetailsDTO(null, null, null, null, null, null, null, null));
 
         mockMvc.perform(post("/api/v1/orders/1/details")
                         .contentType(MediaType.APPLICATION_JSON)
