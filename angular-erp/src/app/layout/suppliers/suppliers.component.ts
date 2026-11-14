@@ -9,6 +9,8 @@ import { SuppliersService } from '../../service/suppliers.service';
 import { ShippersService } from '../../service/shippers.service';
 import { Shipper } from './shipper.model';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
+import { ErrorNotificationService } from '../../service/error-notification.service';
+import { ConfirmDialogService } from '../../service/confirm-dialog.service';
 
 @Component({
   selector: 'app-suppliers',
@@ -21,6 +23,8 @@ export class SuppliersComponent implements OnInit {
   private suppliersService = inject(SuppliersService);
   private shippersService = inject(ShippersService);
   private destroyRef = inject(DestroyRef);
+  private notifications = inject(ErrorNotificationService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   currentPage = 1;
   pageSize = 50;
@@ -134,7 +138,7 @@ export class SuppliersComponent implements OnInit {
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedResult) => {
-          alert('Supplier saved successfully.');
+          this.notifications.success('Supplier saved successfully.');
           this.loadPaginatedSuppliers();
           this.cancelSupplierWorkspaceEdit();
         },
@@ -142,14 +146,14 @@ export class SuppliersComponent implements OnInit {
     });
   }
 
-  deleteActiveSupplier(): void {
+  async deleteActiveSupplier(): Promise<void> {
     if (!this.selectedSupplierId || this.isDeleting) return;
 
-    if (confirm('Are you sure you want to delete this supplier?')) {
+    if (await this.confirmDialog.confirm('Are you sure you want to delete this supplier?')) {
       this.isDeleting = true;
       this.suppliersService.deleteSupplier(this.selectedSupplierId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          alert('Supplier deleted.');
+          this.notifications.success('Supplier deleted.');
           this.loadPaginatedSuppliers();
           this.cancelSupplierWorkspaceEdit();
         },
@@ -181,7 +185,7 @@ export class SuppliersComponent implements OnInit {
     
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (savedShip) => {
-          alert('Shipper saved successfully.');
+          this.notifications.success('Shipper saved successfully.');
           this.preloadDropdownRelationshipDependencies(); 
           this.cancelShipperWorkspaceEdit();
           this.loadPaginatedSuppliers(); 
@@ -190,15 +194,15 @@ export class SuppliersComponent implements OnInit {
     });
   }
 
-  deleteActiveShipper(): void {
+  async deleteActiveShipper(): Promise<void> {
     const targetId = this.activeShipperForm.shipperId;
     if (!targetId || this.isDeleting) return;
 
-    if (confirm('Are you sure you want to delete this shipper?')) {
+    if (await this.confirmDialog.confirm('Are you sure you want to delete this shipper?')) {
       this.isDeleting = true;
       this.shippersService.deleteShipper(targetId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          alert('Shipper deleted.');
+          this.notifications.success('Shipper deleted.');
           this.preloadDropdownRelationshipDependencies();
           this.cancelShipperWorkspaceEdit();
           this.loadPaginatedSuppliers();

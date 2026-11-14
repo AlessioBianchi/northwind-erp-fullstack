@@ -66,7 +66,8 @@ angular-erp/
 │       ├── auth.guard.ts                # CanActivateFn: logged in, else /login
 │       ├── manager.guard.ts             # CanActivateFn: manager, else /404
 │       ├── not-found/                   # 404 page (wildcard + /404 routes)
-│       ├── error-banner/                # Global error alert (ErrorNotificationService)
+│       ├── error-banner/                # Global error/success alert (ErrorNotificationService)
+│       ├── confirm-dialog/              # Global delete-confirmation modal (ConfirmDialogService)
 │       ├── loading-spinner/             # Reusable list spinner
 │       │
 │       ├── login/
@@ -94,7 +95,8 @@ angular-erp/
 │           ├── shippers.service.ts
 │           ├── csrf.interceptor.ts      # Functional interceptor — adds X-XSRF-TOKEN header
 │           ├── error.interceptor.ts     # Error banner; 401 → logout + /login?sessionExpired=true
-│           └── error-notification.service.ts # Signal holding the current error message
+│           ├── error-notification.service.ts # Signals for the banner message + type (error/success)
+│           └── confirm-dialog.service.ts # confirm(message): Promise<boolean> for the confirm modal
 ├── src/environments/
 │   ├── environment.ts                   # Dev config — apiBaseUrl: http://localhost:8080
 │   └── environment.prod.ts              # Prod config — apiBaseUrl: '' (same-origin), swapped in via angular.json fileReplacements
@@ -225,7 +227,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 
 ### Endpoint map
 
-All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /{id}` = update (200), `DELETE /{id}` = delete (204, no body). Paginated lists use the collection path with `?pageNumber=&pageSize=`. A blocked delete returns 409 and a missing id 404; their `message` is shown by `errorInterceptor`, so components only alert on success.
+All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /{id}` = update (200), `DELETE /{id}` = delete (204, no body). Paginated lists use the collection path with `?pageNumber=&pageSize=`. A blocked delete returns 409 and a missing id 404; their `message` is shown by `errorInterceptor`, so components only show a success message.
 
 | Feature | Method | Endpoint |
 |---|---|---|
@@ -293,14 +295,15 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
   - Tables with `table-hover`, `table-striped`, sticky headers
   - Bootstrap modals for sub-forms (e.g., add order detail)
   - Badges for status (discontinued, low stock)
-  - Alerts for feedback messages
+  - Feedback: one fixed top-right banner (`ErrorBannerComponent`, mounted in `app.html`) driven by `ErrorNotificationService`. `show(msg)` = red error (interceptor errors + client-side validation), `success(msg)` = green. Auto-dismissed after 3 s.
+  - Delete confirmations: `await confirmDialog.confirm(msg)` opens `ConfirmDialogComponent` (mounted in `app.html`) — a Bootstrap modal with Cancel / Confirm; Escape and backdrop click cancel. No `alert()` / `confirm()` in the app.
   - Sidebar with collapse toggle
 
 ---
 
 ## Known Gaps & TODOs
 
-None open. (`ng test --watch=false` is fully green: 23/23.)
+None open. (`ng test --watch=false` is fully green: 34/34.)
 
 ---
 
@@ -312,6 +315,15 @@ None open. (`ng test --watch=false` is fully green: 23/23.)
 > - What was added / changed / fixed
 > - Include component/service/file paths for precision
 > ```
+
+---
+
+### [2026-11-14] — Replace alert() and confirm() popups
+- Replaced all 27 `alert()` / `confirm()` calls in `layout/{orders,products,suppliers,employees,customers}/*.component.ts`.
+- `service/error-notification.service.ts`: new `type` signal (`'error' | 'success'`), `show(msg, type = 'error')` and a `success(msg)` shortcut. `error-banner/error-banner.component.html` turns green for success.
+- Success messages use `notifications.success(...)`. Validation messages (no customer selected, negative freight, password under 8 characters) use `notifications.show(...)` as errors.
+- New `service/confirm-dialog.service.ts` + `confirm-dialog/confirm-dialog.component.ts/html`: `confirm(message, title = 'Confirm deletion')` returns `Promise<boolean>`. Mounted in `app.html`. Delete methods are now `async` and `await` the choice.
+- New specs: `service/error-notification.service.spec.ts` (types, auto-dismiss, timer restart) and `confirm-dialog/confirm-dialog.component.spec.ts` (render, Confirm/Cancel/Escape/backdrop, superseded request). 34/34 pass.
 
 ---
 

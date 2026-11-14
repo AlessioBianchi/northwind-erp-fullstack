@@ -6,6 +6,8 @@ import { finalize } from 'rxjs';
 import { CustomersService } from '../../service/customers.service';
 import { Customer } from './customer.model';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
+import { ErrorNotificationService } from '../../service/error-notification.service';
+import { ConfirmDialogService } from '../../service/confirm-dialog.service';
 
 @Component({
   selector: 'app-customers',
@@ -17,6 +19,8 @@ import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.c
 export class CustomersComponent implements OnInit {
   private customersService = inject(CustomersService);
   private destroyRef = inject(DestroyRef);
+  private notifications = inject(ErrorNotificationService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   currentPage = 1;
   pageSize = 50;
@@ -109,7 +113,7 @@ export class CustomersComponent implements OnInit {
     
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-          alert('Customer saved successfully.');
+          this.notifications.success('Customer saved successfully.');
           this.loadPaginatedCustomers();
           this.cancelCustomerEdit();
         },
@@ -117,13 +121,13 @@ export class CustomersComponent implements OnInit {
     });
   }
 
-  deleteCustomer(): void {
+  async deleteCustomer(): Promise<void> {
     if (!this.selectedCustomerId || this.isDeleting) return;
-    if (confirm('Are you sure you want to delete this customer?')) {
+    if (await this.confirmDialog.confirm('Are you sure you want to delete this customer?')) {
       this.isDeleting = true;
       this.customersService.deleteCustomer(this.selectedCustomerId).pipe(finalize(() => this.isDeleting = false), takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          alert('Customer deleted.');
+          this.notifications.success('Customer deleted.');
           this.loadPaginatedCustomers();
           this.cancelCustomerEdit();
         },
