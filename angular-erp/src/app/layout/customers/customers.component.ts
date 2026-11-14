@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, Subject, Subscription } from 'rxjs';
 import { CustomersService } from '../../service/customers.service';
 import { Customer } from './customer.model';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
@@ -35,16 +35,25 @@ export class CustomersComponent implements OnInit {
   
   activeCustomerForm: Partial<Customer> = {};
   searchQuery = '';
+  private searchInput$ = new Subject<string>();
+  private listSubscription?: Subscription;
 
   ngOnInit(): void {
+    this.searchInput$.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(query => {
+        this.searchQuery = query;
+        this.currentPage = 1;
+        this.loadPaginatedCustomers();
+      });
     this.loadPaginatedCustomers();
   }
 
   loadPaginatedCustomers(): void {
     const apiPageIdx = this.currentPage - 1;
 
+    this.listSubscription?.unsubscribe();
     this.isLoading = true;
-    this.customersService.getPaginatedCustomers(apiPageIdx, this.pageSize)
+    this.listSubscription = this.customersService.getPaginatedCustomers(apiPageIdx, this.pageSize, this.searchQuery)
       .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
@@ -57,18 +66,7 @@ export class CustomersComponent implements OnInit {
   }
 
   onSearchInput(event: Event): void {
-    this.searchQuery = (event.target as HTMLInputElement).value.toLowerCase().trim();
-  }
-  
-  get filteredCustomers(): Customer[] {
-    if (!this.searchQuery) return this.customersList;
-
-    return this.customersList.filter(c => {
-      const matchesCode = c.customerCode?.toLowerCase().includes(this.searchQuery) ?? false;
-      const matchesCompany = c.companyName?.toLowerCase().includes(this.searchQuery) ?? false;
-
-      return matchesCode || matchesCompany;
-    });
+    this.searchInput$.next((event.target as HTMLInputElement).value.trim());
   }
 
   onPageChange(newPage: number): void {

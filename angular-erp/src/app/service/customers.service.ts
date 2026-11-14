@@ -17,10 +17,13 @@ export class CustomersService {
     return this.http.get<Customer[]>(this.apiBaseUrl, this.httpOptions);
   }
 
-  getPaginatedCustomers(pageNumber: number, pageSize: number): Observable<PageResponse<Customer>> {
-    const params = new HttpParams()
+  getPaginatedCustomers(pageNumber: number, pageSize: number, search?: string): Observable<PageResponse<Customer>> {
+    let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
+    if (search) {
+      params = params.set('search', search);
+    }
 
     return this.http.get<PageResponse<Customer>>(this.apiBaseUrl, {
       ...this.httpOptions,

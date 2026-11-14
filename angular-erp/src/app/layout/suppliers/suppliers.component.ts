@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, Subject, Subscription } from 'rxjs';
 
 import { Supplier } from './supplier.model';
 import { SuppliersService } from '../../service/suppliers.service';
@@ -45,8 +45,16 @@ export class SuppliersComponent implements OnInit {
   selectedShipperDropdownTarget: any = undefined;
   
   searchQuery = '';
+  private searchInput$ = new Subject<string>();
+  private listSubscription?: Subscription;
 
   ngOnInit(): void {
+    this.searchInput$.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(query => {
+        this.searchQuery = query;
+        this.currentPage = 1;
+        this.loadPaginatedSuppliers();
+      });
     this.loadPaginatedSuppliers();
     this.preloadDropdownRelationshipDependencies();
   }
@@ -54,8 +62,9 @@ export class SuppliersComponent implements OnInit {
   loadPaginatedSuppliers(): void {
     const apiIndex = this.currentPage - 1;
 
+    this.listSubscription?.unsubscribe();
     this.isLoading = true;
-    this.suppliersService.getPaginatedSuppliers(apiIndex, this.pageSize)
+    this.listSubscription = this.suppliersService.getPaginatedSuppliers(apiIndex, this.pageSize, this.searchQuery)
       .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
@@ -75,18 +84,7 @@ export class SuppliersComponent implements OnInit {
   }
   
   onSearchInput(event: Event): void {
-    this.searchQuery = (event.target as HTMLInputElement).value.toLowerCase();
-  }
-  
-  get filteredSuppliers() {
-    if (!this.searchQuery) return this.suppliersList;
-
-    return this.suppliersList.filter(s => {
-      const matchesCompany = s.companyName?.toLowerCase().includes(this.searchQuery) ?? false;
-      const matchesContact = s.contactName?.toLowerCase().includes(this.searchQuery) ?? false;
-
-      return matchesCompany || matchesContact;
-    });
+    this.searchInput$.next((event.target as HTMLInputElement).value.trim());
   }
 
   onPageChange(targetPage: number): void {

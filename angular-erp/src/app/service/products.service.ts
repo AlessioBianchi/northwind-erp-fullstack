@@ -18,10 +18,13 @@ export class ProductsService {
     return this.http.get<Product[]>(this.apiBaseUrl, this.httpOptions);
   }
   
-  getPaginatedProducts(pageNumber: number, pageSize: number): Observable<PageResponse<Product>> {
-    const params = new HttpParams()
+  getPaginatedProducts(pageNumber: number, pageSize: number, search?: string): Observable<PageResponse<Product>> {
+    let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
+    if (search) {
+      params = params.set('search', search);
+    }
 
     return this.http.get<PageResponse<Product>>(this.apiBaseUrl, {
       ...this.httpOptions,

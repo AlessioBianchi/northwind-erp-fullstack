@@ -177,7 +177,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 - **Status: complete.**
 
 ### Products — `src/app/layout/products/`
-- Left panel: paginated list with search (name, category, supplier). Discontinued badge.
+- Left panel: paginated list with server-side search across all pages (name, category, supplier). Discontinued badge.
 - Right panel tab 1 — Product form:
   - Name, category dropdown, supplier dropdown, quantity per unit, unit price (EUR), stock, on-order, reorder level, discontinued checkbox.
 - Right panel tab 2 — Category form:
@@ -186,14 +186,14 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 - **Status: complete.**
 
 ### Customers — `src/app/layout/customers/`
-- Left panel: paginated list with search (customer code or company name).
+- Left panel: paginated list with server-side search across all pages (customer code or company name).
 - Right panel: full contact + address form (code, company, contact name/title, address, phone, fax).
 - New, Save, Cancel, Delete actions.
 - **API:** paginated list, all, save, delete.
 - **Status: complete.**
 
 ### Suppliers — `src/app/layout/suppliers/`
-- Left panel: paginated supplier list with search (company name, contact).
+- Left panel: paginated supplier list with server-side search across all pages (company name, contact).
 - Right panel tab 1 — Supplier form: company, contact title/name, address, phone, fax, homepage URL.
 - Right panel tab 2 — Shippers: dropdown to select shipper, company name, phone. Save/delete.
 - **API:** suppliers (paginated + all + save + delete), shippers (all + save + delete).
@@ -201,7 +201,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 
 ### Employees — `src/app/layout/employees/`
 - **Manager-only section** (hidden in nav if not manager).
-- Left panel: paginated list with search (firstname, lastname, title). Shows "reports to" manager.
+- Left panel: paginated list with server-side search across all pages (firstname, lastname, title). Shows "reports to" manager.
 - Right panel: employee form — lastname, firstname, title, reports-to dropdown, birthdate, hire date, address, phone, extension, username, password.
 - Password: min 8 characters (checked on save), required only for new employees; blank on edit keeps the stored password.
 - **API:** employees (paginated + all + save + delete).
@@ -227,7 +227,7 @@ List+detail components (orders, products, customers, suppliers, employees) use a
 
 ### Endpoint map
 
-All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /{id}` = update (200), `DELETE /{id}` = delete (204, no body). Paginated lists use the collection path with `?pageNumber=&pageSize=`. A blocked delete returns 409 and a missing id 404; their `message` is shown by `errorInterceptor`, so components only show a success message.
+All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /{id}` = update (200), `DELETE /{id}` = delete (204, no body). Paginated lists use the collection path with `?pageNumber=&pageSize=`; Products, Customers, Suppliers and Employees also take an optional `&search=` (case-insensitive, blank = no filter). The search box waits 300 ms after typing stops, goes back to page 1 and reloads. A new list request cancels the one still in flight, so an older response can't overwrite a newer one. A blocked delete returns 409 and a missing id 404; their `message` is shown by `errorInterceptor`, so components only show a success message.
 
 | Feature | Method | Endpoint |
 |---|---|---|
@@ -240,7 +240,7 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 | Order Details | GET | `/api/v1/orders/{orderId}/details` |
 | Order Details | POST | `/api/v1/orders/{orderId}/details` |
 | Order Details | DELETE | `/api/v1/orders/{orderId}/details/{productId}` |
-| Products | GET | `/api/v1/products`, `/api/v1/products?pageNumber=&pageSize=` |
+| Products | GET | `/api/v1/products`, `/api/v1/products?pageNumber=&pageSize=&search=` |
 | Products | POST | `/api/v1/products` |
 | Products | PUT | `/api/v1/products/{productId}` |
 | Products | DELETE | `/api/v1/products/{productId}` |
@@ -248,11 +248,11 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 | Categories | POST | `/api/v1/categories` |
 | Categories | PUT | `/api/v1/categories/{categoryId}` |
 | Categories | DELETE | `/api/v1/categories/{categoryId}` |
-| Customers | GET | `/api/v1/customers`, `/api/v1/customers?pageNumber=&pageSize=` |
+| Customers | GET | `/api/v1/customers`, `/api/v1/customers?pageNumber=&pageSize=&search=` |
 | Customers | POST | `/api/v1/customers` |
 | Customers | PUT | `/api/v1/customers/{customerId}` |
 | Customers | DELETE | `/api/v1/customers/{customerId}` |
-| Suppliers | GET | `/api/v1/suppliers`, `/api/v1/suppliers?pageNumber=&pageSize=` |
+| Suppliers | GET | `/api/v1/suppliers`, `/api/v1/suppliers?pageNumber=&pageSize=&search=` |
 | Suppliers | POST | `/api/v1/suppliers` |
 | Suppliers | PUT | `/api/v1/suppliers/{supplierId}` |
 | Suppliers | DELETE | `/api/v1/suppliers/{supplierId}` |
@@ -260,7 +260,7 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 | Shippers | POST | `/api/v1/shippers` |
 | Shippers | PUT | `/api/v1/shippers/{shipperId}` |
 | Shippers | DELETE | `/api/v1/shippers/{shipperId}` |
-| Employees | GET | `/api/v1/employees`, `/api/v1/employees?pageNumber=&pageSize=` |
+| Employees | GET | `/api/v1/employees`, `/api/v1/employees?pageNumber=&pageSize=&search=` |
 | Employees | POST | `/api/v1/employees` |
 | Employees | PUT | `/api/v1/employees/{employeeId}` |
 | Employees | DELETE | `/api/v1/employees/{employeeId}` |
@@ -303,7 +303,7 @@ All endpoints are under `/api/v1/`. `POST` = create (201, no ID in body), `PUT /
 
 ## Known Gaps & TODOs
 
-None open. (`ng test --watch=false` is fully green: 34/34.)
+None open. (`ng test --watch=false` is fully green: 42/42.)
 
 ---
 
@@ -315,6 +315,14 @@ None open. (`ng test --watch=false` is fully green: 34/34.)
 > - What was added / changed / fixed
 > - Include component/service/file paths for precision
 > ```
+
+---
+
+### [2026-11-14] — Search across all pages
+- Fixed: the search boxes on Products, Customers, Suppliers and Employees only filtered the 50 loaded rows, so rows on other pages couldn't be found. The search now runs on the backend (`?search=`, added in backend commit `7064496`).
+- `service/{products,customers,suppliers,employees}.service.ts`: `getPaginated*(pageNumber, pageSize, search?)` sends `search` only when it isn't empty.
+- `layout/{products,customers,suppliers,employees}/*.component.ts`: removed the client-side `filtered*` getters (the templates bind to `*List`). Typing goes through a `Subject` with `debounceTime(300)` + `distinctUntilChanged()`, then resets to page 1 and reloads with `searchQuery`. Pagination keeps the active search, and total pages come from the backend. `loadPaginated*()` unsubscribes the previous list request first.
+- Specs: search-param cases in `service/products.service.spec.ts` and `service/employees.service.spec.ts`; new `service/customers.service.spec.ts` and `service/suppliers.service.spec.ts`. 42/42 pass.
 
 ---
 

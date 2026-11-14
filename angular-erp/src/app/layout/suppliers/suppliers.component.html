@@ -38,7 +38,7 @@
                                     <td colspan="2"><app-loading-spinner></app-loading-spinner></td>
                                 </tr>
                             } @else {
-                                @for (s of filteredSuppliers; track s.supplierId) {
+                                @for (s of suppliersList; track s.supplierId) {
                                     <tr [class.table-primary]="selectedSupplierId === s.supplierId"
                                         (click)="selectSupplier(s)"
                                         style="cursor: pointer;">
