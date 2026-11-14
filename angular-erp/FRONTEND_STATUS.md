@@ -315,6 +315,11 @@ None open. (`ng test --watch=false` is fully green: 23/23.)
 
 ---
 
+### [2026-11-14] — Remove the unused `title` signal in App
+- `src/app/app.ts`: removed `title = signal('northwind-erp')`, left over from the CLI scaffold and never read. Also removed the `signal` import, which nothing else in the file used.
+
+---
+
 ### [2026-11-14] — Lock file sync verified
 - `package-lock.json` is in sync with `package.json` (synced in the 2026-11-12 security-updates commit): `rm -rf node_modules && npm ci` works on a clean install, and the lock file doesn't change.
 - `ng build` and `ng test --watch=false` (23/23) pass on the installed versions.
