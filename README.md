@@ -1,6 +1,16 @@
 # ERP Replica
 This project is a full stack web application that replicates an ERP system: role-based login, orders, the product life cycle and employee management. It's built with Spring Boot and Angular. The database is PostgreSQL, running in Docker, loaded with the Northwind dataset.
 
+![Dashboard](docs/screenshots/dashboard.png)
+
+# Screenshots
+
+| Orders: edit form | Orders: order lines |
+|---|---|
+| ![Order form](docs/screenshots/order-form.png) | ![Order details](docs/screenshots/order-details.png) |
+
+<img src="docs/screenshots/login.png" alt="Login" width="49%">
+
 # Tech Stack
 
 | Area | Layer | Technology | Version |

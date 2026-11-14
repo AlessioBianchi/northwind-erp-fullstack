@@ -7,7 +7,7 @@
                 <div class="card-body">
                     <h6 class="card-title">Orders (Current Month)</h6>
                     <h2>{{ stats?.lastMonthOrdersCount ?? 0 }}</h2>
-                    <h2>{{ stats?.lastMonthRevenue ?? 0 }} €</h2>
+                    <h2>{{ stats?.lastMonthRevenue ?? 0 | currency:'EUR' }}</h2>
                 </div>
             </div>
         </div>
@@ -17,7 +17,7 @@
                 <div class="card-body">
                     <h6 class="card-title">Total Orders</h6>
                     <h2>{{ stats?.totalOrdersCount ?? 0 }}</h2>
-                    <h2>{{ stats?.totalRevenue ?? 0 }} €</h2>
+                    <h2>{{ stats?.totalRevenue ?? 0 | currency:'EUR' }}</h2>
                 </div>
             </div>
         </div>
