@@ -1,8 +1,10 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.EmployeeBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
+import com.github.alessiobianchi.erp.dto.EmployeeDTOBuilder;
 import com.github.alessiobianchi.erp.exception.BadRequestException;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
@@ -120,7 +122,7 @@ class EmployeesServiceTest {
         when(employeesDao.save(any(Employee.class))).thenReturn(sampleEmployee);
 
         // Act
-        EmployeeDTO created = employeesService.create(new EmployeeBuilder().withPassword("secret123").build());
+        EmployeeDTO created = employeesService.create(toDto(new EmployeeBuilder().withPassword("secret123").build()));
 
         // Assert
         assertNotNull(created);
@@ -161,7 +163,7 @@ class EmployeesServiceTest {
         ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
 
         // Act
-        employeesService.create(new EmployeeBuilder().withPassword("secret123").build());
+        employeesService.create(toDto(new EmployeeBuilder().withPassword("secret123").build()));
 
         // Assert
         verify(employeesDao).save(captor.capture());
@@ -171,7 +173,7 @@ class EmployeesServiceTest {
     @Test
     void create_WhenPasswordIsNull_ShouldThrow() {
         // Act & Assert
-        assertThrows(BadRequestException.class, () -> employeesService.create(sampleEmployee));
+        assertThrows(BadRequestException.class, () -> employeesService.create(toDto(sampleEmployee)));
         verify(employeesDao, never()).save(any(Employee.class));
         verifyNoInteractions(passwordEncoder);
     }
@@ -184,7 +186,7 @@ class EmployeesServiceTest {
                 .build();
 
         // Act & Assert
-        assertThrows(BadRequestException.class, () -> employeesService.create(incoming));
+        assertThrows(BadRequestException.class, () -> employeesService.create(toDto(incoming)));
         verify(employeesDao, never()).save(any(Employee.class));
     }
 
@@ -196,7 +198,7 @@ class EmployeesServiceTest {
                 .build();
 
         // Act & Assert
-        BadRequestException ex = assertThrows(BadRequestException.class, () -> employeesService.create(incoming));
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> employeesService.create(toDto(incoming)));
         assertEquals("Password must be at least 8 characters.", ex.getMessage());
         verify(employeesDao, never()).save(any(Employee.class));
         verifyNoInteractions(passwordEncoder);
@@ -210,7 +212,7 @@ class EmployeesServiceTest {
                 .build();
 
         // Act & Assert
-        assertThrows(BadRequestException.class, () -> employeesService.create(incoming));
+        assertThrows(BadRequestException.class, () -> employeesService.create(toDto(incoming)));
         verify(employeesDao, never()).save(any(Employee.class));
         verifyNoInteractions(passwordEncoder);
     }
@@ -228,7 +230,7 @@ class EmployeesServiceTest {
         when(employeesDao.save(any(Employee.class))).thenReturn(employeeUpdated);
 
         // Act
-        EmployeeDTO updated = employeesService.update(employeeId, new Employee());
+        EmployeeDTO updated = employeesService.update(employeeId, toDto(new Employee()));
 
         // Assert
         assertNotNull(updated);
@@ -251,7 +253,7 @@ class EmployeesServiceTest {
         when(employeesDao.save(any(Employee.class))).thenReturn(existing);
 
         // Act
-        employeesService.update(employeeId, incoming);
+        employeesService.update(employeeId, toDto(incoming));
 
         // Assert
         ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
@@ -275,7 +277,7 @@ class EmployeesServiceTest {
         when(employeesDao.save(any(Employee.class))).thenReturn(existing);
 
         // Act
-        employeesService.update(employeeId, incoming);
+        employeesService.update(employeeId, toDto(incoming));
 
         // Assert
         ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
@@ -293,7 +295,7 @@ class EmployeesServiceTest {
         when(employeesDao.findById(employeeId)).thenReturn(Optional.of(sampleEmployee));
 
         // Act & Assert
-        assertThrows(BadRequestException.class, () -> employeesService.update(employeeId, incoming));
+        assertThrows(BadRequestException.class, () -> employeesService.update(employeeId, toDto(incoming)));
         verify(employeesDao, never()).save(any(Employee.class));
         verifyNoInteractions(passwordEncoder);
     }
@@ -305,7 +307,7 @@ class EmployeesServiceTest {
         when(employeesDao.findById(employeeId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> employeesService.update(employeeId, new Employee()));
+        assertThrows(ResourceNotFoundException.class, () -> employeesService.update(employeeId, toDto(new Employee())));
         verify(employeesDao, never()).save(any(Employee.class));
     }
 
@@ -410,5 +412,11 @@ class EmployeesServiceTest {
         assertThrows(ResourceNotFoundException.class,
                 () -> employeesService.changeOwnPassword("ghost", "oldPassword1", "newPassword1"));
         verify(employeesDao, never()).save(any(Employee.class));
+    }
+
+    private static EmployeeDTO toDto(Employee employee) {
+        return new EmployeeDTOBuilder(EmployeeBeanToDtoConverter.convert(employee))
+                .withPassword(employee.getPassword())
+                .build();
     }
 }

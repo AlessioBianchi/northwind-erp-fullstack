@@ -1,30 +1,62 @@
 package com.github.alessiobianchi.erp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 import java.time.LocalDate;
 
 public class EmployeeDTO {
 
-    private int employeeId;
+    private Integer employeeId;
+
+    @NotBlank
+    @Size(max = 20)
     private String lastName;
+
+    @NotBlank
+    @Size(max = 10)
     private String firstName;
+
+    @Size(max = 30)
     private String title;
+
+    @Size(max = 25)
     private String titleOfCourtesy;
+
     private LocalDate birthDate;
     private LocalDate hireDate;
+
+    @Size(max = 60)
     private String address;
+
+    @Size(max = 15)
     private String city;
+
+    @Size(max = 15)
     private String region;
+
+    @Size(max = 10)
     private String postalCode;
+
+    @Size(max = 15)
     private String country;
+
+    @Size(max = 24)
     private String homePhone;
+
+    @Size(max = 4)
     private String extension;
+
     private String notes;
     private EmployeeDTO reportsTo;
+
+    @Size(max = 50)
     private String username;
 
+    // BCrypt only uses the first 72 bytes of the raw password.
+    @Size(max = 72)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
@@ -36,7 +68,7 @@ public class EmployeeDTO {
 
     public EmployeeDTO() {}
 
-    public EmployeeDTO(int employeeId,
+    public EmployeeDTO(Integer employeeId,
                        String lastName,
                        String firstName,
                        String title,
@@ -78,7 +110,7 @@ public class EmployeeDTO {
         this.updatedAt = updatedAt;
     }
 
-    public int getEmployeeId() {
+    public Integer getEmployeeId() {
         return employeeId;
     }
 

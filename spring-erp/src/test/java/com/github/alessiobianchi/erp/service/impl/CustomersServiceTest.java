@@ -1,7 +1,9 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.CustomerBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.CustomersDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
+import com.github.alessiobianchi.erp.dto.CustomerDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Customer;
@@ -54,7 +56,7 @@ class CustomersServiceTest {
         when(customersDao.findAllByOrderByCustomerIdDesc()).thenReturn(List.of(sampleCustomer));
 
         // Act
-        List<Customer> result = customersService.findAllByOrderByCustomerIdDesc();
+        List<CustomerDTO> result = customersService.findAllByOrderByCustomerIdDesc();
 
         // Assert
         assertNotNull(result);
@@ -71,7 +73,7 @@ class CustomersServiceTest {
         when(customersDao.findAllByOrderByCustomerIdDesc(any(Pageable.class))).thenReturn(page);
 
         // Act
-        Page<Customer> result = customersService.findAllByOrderByCustomerIdDesc(pageNum, pageSize, null);
+        Page<CustomerDTO> result = customersService.findAllByOrderByCustomerIdDesc(pageNum, pageSize, null);
 
         // Assert
         assertNotNull(result);
@@ -85,7 +87,7 @@ class CustomersServiceTest {
         when(customersDao.findAllByOrderByCustomerIdDesc(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleCustomer)));
 
         // Act
-        Page<Customer> result = customersService.findAllByOrderByCustomerIdDesc(0, 5, "   ");
+        Page<CustomerDTO> result = customersService.findAllByOrderByCustomerIdDesc(0, 5, "   ");
 
         // Assert
         assertEquals(1, result.getTotalElements());
@@ -99,7 +101,7 @@ class CustomersServiceTest {
         when(customersDao.search(eq("chai"), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleCustomer)));
 
         // Act
-        Page<Customer> result = customersService.findAllByOrderByCustomerIdDesc(0, 5, "  chai ");
+        Page<CustomerDTO> result = customersService.findAllByOrderByCustomerIdDesc(0, 5, "  chai ");
 
         // Assert
         assertEquals(1, result.getTotalElements());
@@ -113,11 +115,11 @@ class CustomersServiceTest {
         when(customersDao.save(any(Customer.class))).thenReturn(sampleCustomer);
 
         // Act
-        Customer created = customersService.create(new Customer());
+        CustomerDTO created = customersService.create(CustomerBeanToDtoConverter.convert(new Customer()));
 
         // Assert
         assertNotNull(created);
-        assertEquals(1, created.getCustomerId());
+        assertEquals(1, created.customerId());
         verify(customersDao).save(any(Customer.class));
     }
 
@@ -138,12 +140,12 @@ class CustomersServiceTest {
         when(customersDao.save(any(Customer.class))).thenReturn(customerUpdated);
 
         // Act
-        Customer updated = customersService.update(customerId, new Customer());
+        CustomerDTO updated = customersService.update(customerId, CustomerBeanToDtoConverter.convert(new Customer()));
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1, updated.getCustomerId());
-        assertEquals("Test", updated.getCompanyName());
+        assertEquals(1, updated.customerId());
+        assertEquals("Test", updated.companyName());
         verify(customersDao).save(any(Customer.class));
         verify(customersDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
@@ -154,7 +156,7 @@ class CustomersServiceTest {
         when(customersDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> customersService.update(1, new Customer()));
+        assertThrows(ResourceNotFoundException.class, () -> customersService.update(1, CustomerBeanToDtoConverter.convert(new Customer())));
         verify(customersDao, never()).save(any(Customer.class));
     }
 

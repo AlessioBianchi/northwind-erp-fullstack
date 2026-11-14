@@ -1,6 +1,7 @@
 package com.github.alessiobianchi.erp.service.impl;
 
 import com.github.alessiobianchi.erp.converter.OrderBeanToDtoConverter;
+import com.github.alessiobianchi.erp.converter.ProductBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
@@ -47,7 +48,9 @@ public class DashboardServiceImpl implements DashboardService {
                                         row -> (String) row[0],
                                         row -> ((Long) row[1]).intValue()
                                 )))
-                .withProductStock(productsDao.findByUnitsInStockLessThan(10))
+                .withProductStock(productsDao.findByUnitsInStockLessThan(10).stream()
+                        .map(ProductBeanToDtoConverter::convert)
+                        .toList())
                 .build();
     }
 }

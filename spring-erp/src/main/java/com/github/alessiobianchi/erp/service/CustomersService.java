@@ -1,19 +1,19 @@
 package com.github.alessiobianchi.erp.service;
 
-import com.github.alessiobianchi.erp.model.Customer;
+import com.github.alessiobianchi.erp.dto.CustomerDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface CustomersService {
 
-    List<Customer> findAllByOrderByCustomerIdDesc();
+    List<CustomerDTO> findAllByOrderByCustomerIdDesc();
 
-    Page<Customer> findAllByOrderByCustomerIdDesc(int pageNumber, int pageSize, String search);
+    Page<CustomerDTO> findAllByOrderByCustomerIdDesc(int pageNumber, int pageSize, String search);
 
-    Customer create(Customer customer);
+    CustomerDTO create(CustomerDTO customerDto);
 
-    Customer update(int customerId, Customer customer);
+    CustomerDTO update(int customerId, CustomerDTO customerDto);
 
     void delete(int customerId);
 }

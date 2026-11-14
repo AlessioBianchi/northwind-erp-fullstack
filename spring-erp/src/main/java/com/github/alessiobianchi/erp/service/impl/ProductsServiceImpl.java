@@ -1,7 +1,10 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.ProductBeanToDtoConverter;
+import com.github.alessiobianchi.erp.converter.ProductDtoToBeanConverter;
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.dto.ProductDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Product;
@@ -29,36 +32,39 @@ public class ProductsServiceImpl implements ProductsService {
     }
 
     @Override
-    public Page<Product> findAllByOrderByProductIdDesc(int pageNumber, int pageSize, String search) {
+    public Page<ProductDTO> findAllByOrderByProductIdDesc(int pageNumber, int pageSize, String search) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return StringUtils.hasText(search)
+        Page<Product> page = StringUtils.hasText(search)
                 ? productsDao.search(search.trim(), pageable)
                 : productsDao.findAllByOrderByProductIdDesc(pageable);
+        return page.map(ProductBeanToDtoConverter::convert);
     }
 
     @Override
-    public List<Product> findAllByOrderByProductIdDesc() {
-        return productsDao.findAllByOrderByProductIdDesc();
+    public List<ProductDTO> findAllByOrderByProductIdDesc() {
+        return productsDao.findAllByOrderByProductIdDesc().stream()
+                .map(ProductBeanToDtoConverter::convert)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Product create(Product product) {
-        return productsDao.save(product);
+    public ProductDTO create(ProductDTO productDto) {
+        return ProductBeanToDtoConverter.convert(productsDao.save(ProductDtoToBeanConverter.convert(productDto)));
     }
 
     @Override
     @Transactional
-    public Product update(int productId, Product product) {
+    public ProductDTO update(int productId, ProductDTO productDto) {
         Product existing = productsDao.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        Product productToUpdate = new ProductBuilder(product)
+        Product productToUpdate = new ProductBuilder(ProductDtoToBeanConverter.convert(productDto))
                 .withProductId(productId)
                 .withCreatedAt(existing.getCreatedAt())
                 .build();
 
-        return productsDao.save(productToUpdate);
+        return ProductBeanToDtoConverter.convert(productsDao.save(productToUpdate));
     }
 
     @Override

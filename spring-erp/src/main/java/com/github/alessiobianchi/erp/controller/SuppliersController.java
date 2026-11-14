@@ -1,7 +1,7 @@
 package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.config.OpenApiConfig;
-import com.github.alessiobianchi.erp.model.Supplier;
+import com.github.alessiobianchi.erp.dto.SupplierDTO;
 import com.github.alessiobianchi.erp.service.SuppliersService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,12 +37,12 @@ public class SuppliersController {
     @ApiResponse(responseCode = "200", description = "Supplier list, or a page of suppliers when paginated")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @GetMapping
-    public List<Supplier> findAllByOrderBySupplierIdDesc() {
+    public List<SupplierDTO> findAllByOrderBySupplierIdDesc() {
         return service.findAllByOrderBySupplierIdDesc();
     }
 
     @GetMapping(params = {"pageNumber", "pageSize"})
-    public Page<Supplier> findAllByOrderBySupplierIdDesc(
+    public Page<SupplierDTO> findAllByOrderBySupplierIdDesc(
             @Parameter(description = "0-based page index (0 or greater); send together with pageSize")
             @RequestParam @Min(value = 0, message = "must be 0 or greater") int pageNumber,
             @Parameter(description = "Page size (1 to " + MAX_PAGE_SIZE + "); send together with pageNumber")
@@ -57,8 +57,8 @@ public class SuppliersController {
     @ApiResponse(responseCode = "201", description = "Supplier created")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @PostMapping()
-    public ResponseEntity<Supplier> create(@Valid @RequestBody Supplier supplier) {
-        Supplier supplierSaved = service.create(supplier);
+    public ResponseEntity<SupplierDTO> create(@Valid @RequestBody SupplierDTO supplierDto) {
+        SupplierDTO supplierSaved = service.create(supplierDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(supplierSaved);
     }
 
@@ -67,8 +67,8 @@ public class SuppliersController {
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)
     @PutMapping("/{supplierId}")
-    public ResponseEntity<Supplier> update(@PathVariable int supplierId, @Valid @RequestBody Supplier supplier) {
-        Supplier supplierSaved = service.update(supplierId, supplier);
+    public ResponseEntity<SupplierDTO> update(@PathVariable int supplierId, @Valid @RequestBody SupplierDTO supplierDto) {
+        SupplierDTO supplierSaved = service.update(supplierId, supplierDto);
         return ResponseEntity.ok(supplierSaved);
     }
 

@@ -1,7 +1,7 @@
 package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.config.OpenApiConfig;
-import com.github.alessiobianchi.erp.model.Shipper;
+import com.github.alessiobianchi.erp.dto.ShipperDTO;
 import com.github.alessiobianchi.erp.service.ShippersService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,7 +27,7 @@ public class ShippersController {
     @Operation(summary = "List shippers", description = "Returns all shippers, newest first.")
     @ApiResponse(responseCode = "200", description = "Shipper list")
     @GetMapping
-    public List<Shipper> findAllByOrderByShipperIdDesc() {
+    public List<ShipperDTO> findAllByOrderByShipperIdDesc() {
         return service.findAllByOrderByShipperIdDesc();
     }
 
@@ -35,8 +35,8 @@ public class ShippersController {
     @ApiResponse(responseCode = "201", description = "Shipper created")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @PostMapping()
-    public ResponseEntity<Shipper> create(@Valid @RequestBody Shipper shipper) {
-        Shipper shipperSaved = service.create(shipper);
+    public ResponseEntity<ShipperDTO> create(@Valid @RequestBody ShipperDTO shipperDto) {
+        ShipperDTO shipperSaved = service.create(shipperDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(shipperSaved);
     }
 
@@ -45,8 +45,8 @@ public class ShippersController {
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)
     @PutMapping("/{shipperId}")
-    public ResponseEntity<Shipper> update(@PathVariable int shipperId, @Valid @RequestBody Shipper shipper) {
-        Shipper shipperSaved = service.update(shipperId, shipper);
+    public ResponseEntity<ShipperDTO> update(@PathVariable int shipperId, @Valid @RequestBody ShipperDTO shipperDto) {
+        ShipperDTO shipperSaved = service.update(shipperId, shipperDto);
         return ResponseEntity.ok(shipperSaved);
     }
 

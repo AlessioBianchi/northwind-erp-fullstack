@@ -1,6 +1,7 @@
 package com.github.alessiobianchi.erp.service.impl;
 
 import com.github.alessiobianchi.erp.converter.EmployeeBeanToDtoConverter;
+import com.github.alessiobianchi.erp.converter.EmployeeDtoToBeanConverter;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.EmployeesDAO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
@@ -64,7 +65,8 @@ public class EmployeesServiceImpl implements EmployeesService {
 
     @Override
     @Transactional
-    public EmployeeDTO create(Employee employee) {
+    public EmployeeDTO create(EmployeeDTO employeeDto) {
+        Employee employee = EmployeeDtoToBeanConverter.convert(employeeDto);
         if (!StringUtils.hasText(employee.getPassword())) {
             throw new BadRequestException("Password is required.");
         }
@@ -79,8 +81,9 @@ public class EmployeesServiceImpl implements EmployeesService {
 
     @Override
     @Transactional
-    public EmployeeDTO update(int employeeId, Employee employee) {
+    public EmployeeDTO update(int employeeId, EmployeeDTO employeeDto) {
         Employee existing = getEmployee(employeeId);
+        Employee employee = EmployeeDtoToBeanConverter.convert(employeeDto);
         String newPassword = employee.getPassword();
         if (StringUtils.hasText(newPassword)) {
             validatePassword(newPassword);

@@ -93,11 +93,13 @@ spring-erp/
     │   │   │   ├── ProductsDAO.java
     │   │   │   ├── ShippersDAO.java
     │   │   │   └── SuppliersDAO.java
-    │   │   ├── converter/                      # Static bean ↔ DTO converters
+    │   │   ├── converter/                      # Static bean ↔ DTO converters, <Name>BeanToDtoConverter / <Name>DtoToBeanConverter
+    │   │   │   ├── Category / Customer / Product / Shipper / Supplier  # one pair each
     │   │   │   ├── EmployeeBeanToDtoConverter.java / EmployeeDtoToBeanConverter.java
     │   │   │   ├── OrderBeanToDtoConverter.java / OrderDtoToBeanConverter.java
     │   │   │   └── OrderDetailsBeanToDtoConverter.java / OrderDetailsDtoToBeanConverter.java
     │   │   ├── dto/
+    │   │   │   ├── CategoryDTO, CustomerDTO, ProductDTO, ShipperDTO, SupplierDTO, ChangePasswordDTO  # records
     │   │   │   ├── DashboardDTO.java + DashboardDTOBuilder.java
     │   │   │   ├── EmployeeDTO.java + EmployeeDTOBuilder.java
     │   │   │   ├── OrderDTO.java + OrderDTOBuilder.java
@@ -225,7 +227,7 @@ controller/   @RestController — HTTP only, no logic
 service/      Service interfaces; service/impl/ holds the @Service *ServiceImpl classes (business rules, delete guards, aggregations)
 dao/          Spring Data JPA interfaces (CrudRepository + @Query)
 model/        JPA entities + Builder companions
-dto/          API DTOs + builders (Dashboard, Employee, Order, OrderDetails)
+dto/          API DTOs: records (Category, Customer, Product, Shipper, Supplier, ChangePassword) and classes + builders (Dashboard, Employee, Order, OrderDetails)
 converter/    Static bean ↔ DTO converters, called from services
 config/       Security and CORS (AppConfig.java), OpenAPI (OpenApiConfig.java)
 ```
@@ -243,7 +245,14 @@ All 8 entities extend `model/Auditable` (`@MappedSuperclass`, `@EntityListeners(
 Every entity has a hand-written `*Builder` companion (fluent API). Used in service layer for partial updates — the service loads the existing entity, applies changes via the builder, then saves.
 
 ### DTOs & converters
-Employees, Orders, Order Details and the Dashboard's `lastTenOrders` go through DTOs; Categories, Customers, Products, Suppliers and Shippers still expose entities directly. Conversion happens in the **service** layer via static `converter/*Converter.convert(...)` methods (no Spring beans). Controllers only see DTOs for these modules. Order/OrderDetail DTOs are flat: associations become `xxxId` + `xxxName`, and DTO → bean builds id-only association stubs for JPA.
+Every request and response body is a DTO; no controller uses a JPA entity. Conversion happens in the **service** layer via static `converter/<Name>BeanToDtoConverter` / `<Name>DtoToBeanConverter` `convert(...)` methods (no Spring beans); service interfaces take and return DTOs.
+
+- **Style:** new DTOs are Java **records** (`CategoryDTO`, `CustomerDTO`, `ProductDTO`, `ShipperDTO`, `SupplierDTO`, like the earlier `ChangePasswordDTO`); the older `EmployeeDTO`, `OrderDTO`, `OrderDetailsDTO`, `DashboardDTO` stay classes + builders. Use records for new DTOs.
+- **JSON shape:** the record DTOs mirror their entity's fields, so the JSON is the same as when entities were exposed (the frontend didn't change). `ProductDTO` nests `CategoryDTO` / `SupplierDTO` (no `@Valid` on them: the client sends partial objects, only the id matters).
+- **Validation:** Bean Validation constraints live on the request DTOs (→ 400); the entities keep theirs too, to protect the DB (a violation there is a 500).
+- **IDs and nullable inputs:** IDs are `Integer` (a create body has none) and `ProductDTO.discontinued` is `Boolean` (`null` → `false` in the converter).
+- **Audit fields:** `createdAt` / `updatedAt` are `READ_ONLY` on every DTO; DTO → bean converters never copy them, and `update` keeps the stored `createdAt`.
+- Order/OrderDetail DTOs are flat: associations become `xxxId` + `xxxName`, and DTO → bean builds id-only association stubs for JPA.
 
 ### Data access
 Spring Data JPA with derived query methods (`findAllByOrderBy…`) and custom `@Query` for aggregations (revenue sums, category counts). Pagination uses Spring Data `Page` + `Pageable`; serialization mode: `VIA_DTO` (Spring 6.1+).
@@ -325,18 +334,18 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 ### CategoriesController (`/api/v1/categories`)
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/v1/categories` | `List<Category>` |
-| POST | `/api/v1/categories` | `201` + `Category` |
-| PUT | `/api/v1/categories/{categoryId}` | `ResponseEntity<Category>` |
+| GET | `/api/v1/categories` | `List<CategoryDTO>` |
+| POST | `/api/v1/categories` | `201` + `CategoryDTO` (body: `CategoryDTO`) |
+| PUT | `/api/v1/categories/{categoryId}` | Body/response `CategoryDTO` |
 | DELETE | `/api/v1/categories/{categoryId}` | `204`; `404` if missing, `409` if referenced |
 
 ### CustomersController (`/api/v1/customers`)
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/v1/customers` | `List<Customer>` |
-| GET | `/api/v1/customers?pageNumber=&pageSize=[&search=]` | `Page<Customer>`; optional `search` (see below) |
-| POST | `/api/v1/customers` | `201` + `Customer` |
-| PUT | `/api/v1/customers/{customerId}` | `ResponseEntity<Customer>` |
+| GET | `/api/v1/customers` | `List<CustomerDTO>` |
+| GET | `/api/v1/customers?pageNumber=&pageSize=[&search=]` | `Page<CustomerDTO>`; optional `search` (see below) |
+| POST | `/api/v1/customers` | `201` + `CustomerDTO` (body: `CustomerDTO`) |
+| PUT | `/api/v1/customers/{customerId}` | Body/response `CustomerDTO` |
 | DELETE | `/api/v1/customers/{customerId}` | `204`; `404` if missing, `409` if referenced |
 
 ### EmployeesController (`/api/v1/employees`) — same pattern as Customers
@@ -344,35 +353,35 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 |---|---|---|
 | GET | `/api/v1/employees` | `List<EmployeeDTO>` |
 | GET | `/api/v1/employees?pageNumber=&pageSize=[&search=]` | `Page<EmployeeDTO>`; optional `search` (see below) |
-| POST | `/api/v1/employees` | **Manager only.** `201` + `EmployeeDTO` (body: `Employee`); `400` if password missing/invalid |
-| PUT | `/api/v1/employees/{employeeId}` | **Manager only.** `ResponseEntity<EmployeeDTO>` (body: `Employee`; blank password keeps the stored hash, otherwise reset without the old one) |
+| POST | `/api/v1/employees` | **Manager only.** `201` + `EmployeeDTO` (body: `EmployeeDTO`); `400` if password missing/invalid |
+| PUT | `/api/v1/employees/{employeeId}` | **Manager only.** `ResponseEntity<EmployeeDTO>` (body: `EmployeeDTO`; blank password keeps the stored hash, otherwise reset without the old one) |
 | DELETE | `/api/v1/employees/{employeeId}` | **Manager only.** `204`; `404` if missing, `409` if referenced |
 | PUT | `/api/v1/employees/me/password` | Any logged-in employee. Body `ChangePasswordDTO { currentPassword, newPassword }`; `204`; `400` if current password wrong or new one invalid |
 
 ### ProductsController (`/api/v1/products`) — same pattern as Customers
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/v1/products` | `List<Product>` |
-| GET | `/api/v1/products?pageNumber=&pageSize=[&search=]` | `Page<Product>`; optional `search` (see below) |
-| POST | `/api/v1/products` | `201` + `Product` |
-| PUT | `/api/v1/products/{productId}` | `ResponseEntity<Product>` |
+| GET | `/api/v1/products` | `List<ProductDTO>` |
+| GET | `/api/v1/products?pageNumber=&pageSize=[&search=]` | `Page<ProductDTO>`; optional `search` (see below) |
+| POST | `/api/v1/products` | `201` + `ProductDTO` (body: `ProductDTO`) |
+| PUT | `/api/v1/products/{productId}` | Body/response `ProductDTO` |
 | DELETE | `/api/v1/products/{productId}` | `204`; `404` if missing, `409` if referenced |
 
 ### SuppliersController (`/api/v1/suppliers`) — same pattern as Customers
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/v1/suppliers` | `List<Supplier>` |
-| GET | `/api/v1/suppliers?pageNumber=&pageSize=[&search=]` | `Page<Supplier>`; optional `search` (see below) |
-| POST | `/api/v1/suppliers` | `201` + `Supplier` |
-| PUT | `/api/v1/suppliers/{supplierId}` | `ResponseEntity<Supplier>` |
+| GET | `/api/v1/suppliers` | `List<SupplierDTO>` |
+| GET | `/api/v1/suppliers?pageNumber=&pageSize=[&search=]` | `Page<SupplierDTO>`; optional `search` (see below) |
+| POST | `/api/v1/suppliers` | `201` + `SupplierDTO` (body: `SupplierDTO`) |
+| PUT | `/api/v1/suppliers/{supplierId}` | Body/response `SupplierDTO` |
 | DELETE | `/api/v1/suppliers/{supplierId}` | `204`; `404` if missing, `409` if referenced |
 
 ### ShippersController (`/api/v1/shippers`)
 | Method | Path | Response |
 |---|---|---|
-| GET | `/api/v1/shippers` | `List<Shipper>` |
-| POST | `/api/v1/shippers` | `201` + `Shipper` |
-| PUT | `/api/v1/shippers/{shipperId}` | `ResponseEntity<Shipper>` |
+| GET | `/api/v1/shippers` | `List<ShipperDTO>` |
+| POST | `/api/v1/shippers` | `201` + `ShipperDTO` (body: `ShipperDTO`) |
+| PUT | `/api/v1/shippers/{shipperId}` | Body/response `ShipperDTO` |
 | DELETE | `/api/v1/shippers/{shipperId}` | `204`; `404` if missing, `409` if referenced |
 
 ### OrdersController (`/api/v1/orders`) — `@RestController`
@@ -477,9 +486,11 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 | lastMonthRevenue | Double |
 | lastTenOrders | List\<OrderDTO\> |
 | ordersByCategory | Map\<String, Integer\> |
-| productStock | List\<Product\> (low-stock items) |
+| productStock | List\<ProductDTO\> (low-stock items) |
 
-**`EmployeeDTO`**: every `Employee` field; `reportsTo` is a nested `EmployeeDTO`. `password` is `@JsonProperty(WRITE_ONLY)` — accepted in requests, never serialized.
+**`EmployeeDTO`**: every `Employee` field; `reportsTo` is a nested `EmployeeDTO`. Also the create/update request body: same constraints as the entity, `employeeId` is `Integer`. `password` is `@JsonProperty(WRITE_ONLY)` — accepted in requests, never serialized.
+
+**Record DTOs** (`CategoryDTO`, `CustomerDTO`, `ProductDTO`, `ShipperDTO`, `SupplierDTO`): the entity's fields + read-only `createdAt` / `updatedAt`; `ProductDTO.category` / `.supplier` are nested `CategoryDTO` / `SupplierDTO`.
 
 **`OrderDTO`**: `Order` scalar fields + `customerId`/`customerName` (company name), `employeeId`/`employeeName` (first + last), `shipperId`/`shipperName`. Names are ignored on input. `customerId` is `@NotNull` (every order must have a customer).
 
@@ -493,17 +504,18 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 - `controller/OrdersControllerValidationTest` — standalone MockMvc: bean validation, status codes.
 - `controller/EmployeesControllerSecurityTest` — `@WebMvcTest` + `AppConfig`, `@WithMockUser`: manager-only writes (403), create without `employeeId` (201), `/me/password` (204 / 401 / 400).
 - `model/UserTest` — `ROLE_MANAGER` only when `reportsTo == null`.
-- `model/EntityJsonBindingTest` — create bodies without an ID deserialize with a `null` ID (6 entities); `Product` without `discontinued` → `false`.
+- `dto/DtoJsonBindingTest` — create bodies without an ID deserialize with a `null` ID (6 request DTOs); `ProductDTO` without `discontinued` → stored as `false`; nested category/supplier bind; `createdAt` / `updatedAt` in a body are ignored.
 - `integration/` — `@SpringBootTest` + `@AutoConfigureMockMvc` against a throwaway PostgreSQL from Testcontainers (`TestcontainersConfiguration`, `@ServiceConnection`); Flyway V1–V5 + seed data run on it. Real form login (`AbstractIntegrationTest.login` → `MockHttpSession`), real CSRF (`.with(csrf())`), real services and DB. No `@Transactional` rollback on purpose (requests commit like production); each test creates the rows it changes.
   - `AuthIntegrationTest` (9): login ok / manager flag / wrong password / JSON body → 401, no session → 401, logout invalidates session, write without CSRF → 403.
   - `OrdersIntegrationTest` (10): employee set from the logged-in user, missing customer → 400, update keeps `createdAt`, detail unit price from product, missing order → 404, orderId mismatch → 400, delete with details → 409, PDF report, pagination.
   - `EmployeesIntegrationTest` (9): employee writes → 403 (incl. trying to reset the manager's password), manager create without ID → new employee can log in, password rules, blank password keeps the old one, change own password.
   - `PaginationIntegrationTest` (26): all 5 paginated endpoints reject `pageNumber=-1`, `pageSize=0`, `pageSize=101` with 400 and accept 50 and 100.
   - `SearchIntegrationTest` (24): `search=chai` finds Chai (last row, not on page 0 unfiltered) case-insensitively and trimmed; category / supplier name match on products, paged newest first; every searched field of the other 3 resources; blank search = same total as none; no match → empty page; page limits still → 400.
+  - `DtoBodiesIntegrationTest` (12): for Categories, Customers, Products, Shippers, Suppliers — create without ID → 201, audit fields in the body ignored, update keeps `createdAt` and returns a new `updatedAt`, delete; invalid body → 400 naming the field; product keeps nested `category` / `supplier`; dashboard `productStock` items are `ProductDTO`s.
   - Checked by breaking the code on purpose: removing the manager rule fails 6 tests; removing the order-exists check fails the 404 test (500).
 - `ErpSpringApplicationTests` — context smoke test, also on Testcontainers.
 - **Tests need Docker running**, not the dev `erp-postgres` container or `.env` (they never touch the dev DB).
-- 196 tests total, all passing (2026-11-14).
+- 210 tests total, all passing (2026-11-14).
 
 ---
 
@@ -527,6 +539,16 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-14] — DTOs for all request and response bodies
+- New records `dto/CategoryDTO`, `CustomerDTO`, `ProductDTO` (nests `CategoryDTO` / `SupplierDTO`), `ShipperDTO`, `SupplierDTO`: entity fields + validation constraints copied from the entity, read-only `createdAt` / `updatedAt`. New `converter/<Name>BeanToDtoConverter` + `<Name>DtoToBeanConverter` for each (10 classes).
+- `CategoriesController`, `CustomersController`, `ProductsController`, `ShippersController`, `SuppliersController` and their `*Service` / `*ServiceImpl`: take and return DTOs; conversion in the service. JSON shape unchanged.
+- `EmployeesController.create/update` take `@Valid EmployeeDTO` (was the `Employee` entity); `EmployeesService.create/update` convert with `EmployeeDtoToBeanConverter`. `EmployeeDTO`: entity constraints added, `employeeId` (+ `EmployeeDTOBuilder.withEmployeeId`) `int` → `Integer`.
+- `DashboardDTO.productStock` (+ builder): `List<Product>` → `List<ProductDTO>`.
+- Tests: service unit tests call the services with DTOs; `model/EntityJsonBindingTest` → `dto/DtoJsonBindingTest` (+ nested binding, audit fields ignored); new `integration/DtoBodiesIntegrationTest` (12). 210 passing. Checked by removing `@NotBlank` from `ShipperDTO.companyName`: the blank-shipper test fails (entity constraint → 500 instead of 400).
+- Swagger: only `*DTO` schemas left (request bodies of the 5 resources and Employees reference them; audit fields marked read-only).
 
 ---
 

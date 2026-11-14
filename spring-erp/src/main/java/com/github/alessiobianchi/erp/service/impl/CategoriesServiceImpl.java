@@ -1,7 +1,10 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.CategoryBeanToDtoConverter;
+import com.github.alessiobianchi.erp.converter.CategoryDtoToBeanConverter;
 import com.github.alessiobianchi.erp.dao.CategoriesDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.dto.CategoryDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Category;
@@ -25,28 +28,30 @@ public class CategoriesServiceImpl implements CategoriesService {
     }
 
     @Override
-    public List<Category> findAllByOrderByCategoryIdDesc() {
-        return categoriesDao.findAllByOrderByCategoryIdDesc();
+    public List<CategoryDTO> findAllByOrderByCategoryIdDesc() {
+        return categoriesDao.findAllByOrderByCategoryIdDesc().stream()
+                .map(CategoryBeanToDtoConverter::convert)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Category create(Category category) {
-        return categoriesDao.save(category);
+    public CategoryDTO create(CategoryDTO categoryDto) {
+        return CategoryBeanToDtoConverter.convert(categoriesDao.save(CategoryDtoToBeanConverter.convert(categoryDto)));
     }
 
     @Override
     @Transactional
-    public Category update(int categoryId, Category category) {
+    public CategoryDTO update(int categoryId, CategoryDTO categoryDto) {
         Category existing = categoriesDao.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        Category categoryToUpdate = new CategoryBuilder(category)
+        Category categoryToUpdate = new CategoryBuilder(CategoryDtoToBeanConverter.convert(categoryDto))
                 .withCategoryId(categoryId)
                 .withCreatedAt(existing.getCreatedAt())
                 .build();
 
-        return categoriesDao.save(categoryToUpdate);
+        return CategoryBeanToDtoConverter.convert(categoriesDao.save(categoryToUpdate));
     }
 
     @Override

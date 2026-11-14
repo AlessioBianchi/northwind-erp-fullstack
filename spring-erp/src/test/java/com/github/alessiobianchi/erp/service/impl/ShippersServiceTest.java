@@ -1,7 +1,9 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.ShipperBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ShippersDAO;
+import com.github.alessiobianchi.erp.dto.ShipperDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Order;
@@ -51,12 +53,12 @@ class ShippersServiceTest {
         when(shippersDao.findAllByOrderByShipperIdDesc()).thenReturn(List.of(sampleShipper));
 
         // Act
-        List<Shipper> result = shippersService.findAllByOrderByShipperIdDesc();
+        List<ShipperDTO> result = shippersService.findAllByOrderByShipperIdDesc();
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Speedy Express", result.get(0).getCompanyName());
+        assertEquals("Speedy Express", result.get(0).companyName());
         verify(shippersDao, times(1)).findAllByOrderByShipperIdDesc();
     }
 
@@ -66,11 +68,11 @@ class ShippersServiceTest {
         when(shippersDao.save(any(Shipper.class))).thenReturn(sampleShipper);
 
         // Act
-        Shipper created = shippersService.create(new Shipper());
+        ShipperDTO created = shippersService.create(ShipperBeanToDtoConverter.convert(new Shipper()));
 
         // Assert
         assertNotNull(created);
-        assertEquals(1, created.getShipperId());
+        assertEquals(1, created.shipperId());
         verify(shippersDao).save(any(Shipper.class));
     }
 
@@ -89,12 +91,12 @@ class ShippersServiceTest {
         when(shippersDao.save(any(Shipper.class))).thenReturn(shipperUpdated);
 
         // Act
-        Shipper updated = shippersService.update(1, new Shipper());
+        ShipperDTO updated = shippersService.update(1, ShipperBeanToDtoConverter.convert(new Shipper()));
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1, updated.getShipperId());
-        assertEquals("Test", updated.getCompanyName());
+        assertEquals(1, updated.shipperId());
+        assertEquals("Test", updated.companyName());
         verify(shippersDao).save(any(Shipper.class));
         verify(shippersDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
@@ -105,7 +107,7 @@ class ShippersServiceTest {
         when(shippersDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> shippersService.update(1, new Shipper()));
+        assertThrows(ResourceNotFoundException.class, () -> shippersService.update(1, ShipperBeanToDtoConverter.convert(new Shipper())));
         verify(shippersDao, never()).save(any(Shipper.class));
     }
 

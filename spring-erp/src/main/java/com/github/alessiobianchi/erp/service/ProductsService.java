@@ -1,19 +1,19 @@
 package com.github.alessiobianchi.erp.service;
 
-import com.github.alessiobianchi.erp.model.Product;
+import com.github.alessiobianchi.erp.dto.ProductDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface ProductsService {
 
-    Page<Product> findAllByOrderByProductIdDesc(int pageNumber, int pageSize, String search);
+    Page<ProductDTO> findAllByOrderByProductIdDesc(int pageNumber, int pageSize, String search);
 
-    List<Product> findAllByOrderByProductIdDesc();
+    List<ProductDTO> findAllByOrderByProductIdDesc();
 
-    Product create(Product product);
+    ProductDTO create(ProductDTO productDto);
 
-    Product update(int productId, Product product);
+    ProductDTO update(int productId, ProductDTO productDto);
 
     void delete(int productId);
 }
