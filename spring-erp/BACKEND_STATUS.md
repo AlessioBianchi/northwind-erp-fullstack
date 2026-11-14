@@ -47,7 +47,6 @@ Spring Boot REST backend that exposes the classic Northwind ERP dataset as a JSO
 | Security | Spring Security 7 | 7.0.4 (inherited) |
 | Validation | Bean Validation (Hibernate Validator via `spring-boot-starter-validation`) | (inherited) |
 | PDF Generation | OpenPDF | 1.3.30 |
-| (unused) | Apache FOP | 2.9 — still in `pom.xml`, not used by the code |
 | Build | Maven + spring-boot-maven-plugin | — |
 | Dev Tools | spring-boot-devtools | runtime |
 | API Docs | springdoc-openapi (`springdoc-openapi-starter-webmvc-ui`) | 3.0.3 (built on Boot 4.0.5; 3.1+ target Boot 4.1) |
@@ -536,6 +535,13 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-14] — Unused Apache FOP dependency removed
+- `pom.xml`: removed `org.apache.xmlgraphics:fop` 2.9 (and its `xml-apis` exclusion). No code used it; PDFs are made with OpenPDF.
+- `dependency:tree`: 27 artifacts gone (FOP, Batik, `xmlgraphics-commons`, `fontbox`, `xml-apis-ext`, `qdox`), none added. Executable jar 79.3 MB → 68.6 MB, bundled libraries 123 → 95.
+- Tech Stack: "(unused) Apache FOP" row removed. 210 tests passing, incl. `OrdersIntegrationTest.report_ShouldReturnPdf`.
 
 ---
 
