@@ -36,13 +36,13 @@ Angular 21 frontend for a Northwind ERP replica. Connected to a Spring Boot back
 | Layer | Technology | Version |
 |---|---|---|
 | Framework | Angular | 21.2.26 |
-| Language | TypeScript | ~5.9.2 |
-| UI Framework | Bootstrap | 5.3.8 |
-| Icons | Bootstrap Icons | 1.13.1 |
-| Charts | Chart.js | 4.5.1 |
-| Reactive | RxJS | ~7.8.0 |
-| Testing | Vitest + jsdom | 4.0.8 |
-| Formatter | Prettier | 3.5.3 |
+| Language | TypeScript | 5.9.3 |
+| UI Framework | Bootstrap | 5.3.9 |
+| Icons | Bootstrap Icons | 1.13.2 |
+| Charts | Chart.js | 4.6.1 |
+| Reactive | RxJS | 7.8.2 |
+| Testing | Vitest + jsdom | 4.1.12 + 28.1.0 |
+| Formatter | Prettier | 3.10.1 |
 | Build | Angular CLI / @angular/build | 21.2.30 |
 
 **Angular style:** Standalone components (no NgModules). Dependency injection via `inject()` function (not constructor params).
@@ -312,6 +312,13 @@ None open. (`ng test --watch=false` is fully green: 23/23.)
 > - What was added / changed / fixed
 > - Include component/service/file paths for precision
 > ```
+
+---
+
+### [2026-11-14] — Lock file sync verified
+- `package-lock.json` is in sync with `package.json` (synced in the 2026-11-12 security-updates commit): `rm -rf node_modules && npm ci` works on a clean install, and the lock file doesn't change.
+- `ng build` and `ng test --watch=false` (23/23) pass on the installed versions.
+- Tech Stack table: all versions are now the installed ones from `npm ls`. Before, only the Angular rows were updated.
 
 ---
 
