@@ -35,7 +35,8 @@ public class EmployeesController {
 
     @Operation(summary = "List employees",
             description = "Returns all employees, newest first." +
-                    "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array.")
+                    "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array; " +
+                    "add `search` to filter it by the first name, last name or title.")
     @ApiResponse(responseCode = "200", description = "Employee list, or a page of employees when paginated")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @GetMapping
@@ -49,8 +50,10 @@ public class EmployeesController {
             @RequestParam @Min(value = 0, message = "must be 0 or greater") int pageNumber,
             @Parameter(description = "Page size (1 to " + MAX_PAGE_SIZE + "); send together with pageNumber")
             @RequestParam @Min(value = 1, message = "must be at least 1")
-            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize) {
-        return service.findAllByOrderByEmployeeIdDesc(pageNumber, pageSize);
+            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize,
+            @Parameter(description = "Case-insensitive text to look for in the first name, last name or title, across all pages; missing or blank returns every row")
+            @RequestParam(required = false) String search) {
+        return service.findAllByOrderByEmployeeIdDesc(pageNumber, pageSize, search);
     }
 
     @Operation(summary = "Create an employee",

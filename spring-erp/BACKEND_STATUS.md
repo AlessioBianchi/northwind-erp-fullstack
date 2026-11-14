@@ -261,12 +261,12 @@ Every controller has `@Tag`; every endpoint has `@Operation(summary, description
 - **Status: complete.**
 
 ### Customers — `controller/`, `service/`, `dao/`, `model/`
-- Full CRUD + pagination.
+- Full CRUD + pagination with optional `search` (code, company name).
 - Delete blocked if customer has orders.
 - **Status: complete.**
 
 ### Employees — `controller/`, `service/`, `dao/`, `model/`
-- Full CRUD + pagination.
+- Full CRUD + pagination with optional `search` (first name, last name, title).
 - Self-referencing `reportsTo` relationship.
 - Carries `username`/`password` fields — doubles as the auth user model.
 - Create/update/delete are manager-only (403 otherwise); every employee can change their own password via `PUT /me/password` (current password checked).
@@ -275,13 +275,13 @@ Every controller has `@Tag`; every endpoint has `@Operation(summary, description
 - **Status: complete.**
 
 ### Products — `controller/`, `service/`, `dao/`, `model/`
-- Full CRUD + pagination.
+- Full CRUD + pagination with optional `search` (product, category, supplier name).
 - DAO queries by category, by supplier, and by low-stock threshold.
 - Delete blocked if product appears in order details.
 - **Status: complete.**
 
 ### Suppliers — `controller/`, `service/`, `dao/`, `model/`
-- Full CRUD + pagination.
+- Full CRUD + pagination with optional `search` (company, contact name).
 - Delete blocked if supplier has products.
 - **Status: complete.**
 
@@ -317,6 +317,8 @@ Every controller has `@Tag`; every endpoint has `@Operation(summary, description
 
 All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200, `POST` → 201 (no `Location`: there is no `GET /{id}`), `DELETE` → 204; `PUT`/`DELETE` on a missing id → 404; `DELETE` blocked by referencing rows → 409 (`ConflictException`); validation/bad input → 400. Errors use the `{ status, message, timestamp }` envelope. `POST` = create, `PUT /{id}` = update, `DELETE /{id}` = delete (ID comes from path, not body). Paginated lists are the same collection path selected by `pageNumber` + `pageSize` query params (`@GetMapping(params = ...)`). Limits: `pageNumber` ≥ 0, `pageSize` 1–100 (`Paging.MAX_PAGE_SIZE`), checked with `@Min`/`@Max` on the `@RequestParam`s; a violation → 400 via `HandlerMethodValidationException` (message e.g. `pageSize: must be at most 100`).
 
+**Search** (Customers, Employees, Products, Suppliers paginated GETs): optional `search` query param, case-insensitive substring match done in the DB (`lower(...) like lower(concat('%', :search, '%'))` in each DAO's `search` `@Query`), so it covers all pages; still newest first; trimmed; missing/blank → unfiltered page. Fields: Customers `customerCode`, `companyName`; Employees `firstName`, `lastName`, `title`; Products `productName`, `category.categoryName`, `supplier.companyName` (left joins, so products without a category/supplier still match by name); Suppliers `companyName`, `contactName`. `%` / `_` in the text are not escaped (they act as wildcards).
+
 ### CategoriesController (`/api/v1/categories`)
 | Method | Path | Response |
 |---|---|---|
@@ -329,7 +331,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/customers` | `List<Customer>` |
-| GET | `/api/v1/customers?pageNumber=&pageSize=` | `Page<Customer>` |
+| GET | `/api/v1/customers?pageNumber=&pageSize=[&search=]` | `Page<Customer>`; optional `search` (see below) |
 | POST | `/api/v1/customers` | `201` + `Customer` |
 | PUT | `/api/v1/customers/{customerId}` | `ResponseEntity<Customer>` |
 | DELETE | `/api/v1/customers/{customerId}` | `204`; `404` if missing, `409` if referenced |
@@ -338,7 +340,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/employees` | `List<EmployeeDTO>` |
-| GET | `/api/v1/employees?pageNumber=&pageSize=` | `Page<EmployeeDTO>` |
+| GET | `/api/v1/employees?pageNumber=&pageSize=[&search=]` | `Page<EmployeeDTO>`; optional `search` (see below) |
 | POST | `/api/v1/employees` | **Manager only.** `201` + `EmployeeDTO` (body: `Employee`); `400` if password missing/invalid |
 | PUT | `/api/v1/employees/{employeeId}` | **Manager only.** `ResponseEntity<EmployeeDTO>` (body: `Employee`; blank password keeps the stored hash, otherwise reset without the old one) |
 | DELETE | `/api/v1/employees/{employeeId}` | **Manager only.** `204`; `404` if missing, `409` if referenced |
@@ -348,7 +350,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/products` | `List<Product>` |
-| GET | `/api/v1/products?pageNumber=&pageSize=` | `Page<Product>` |
+| GET | `/api/v1/products?pageNumber=&pageSize=[&search=]` | `Page<Product>`; optional `search` (see below) |
 | POST | `/api/v1/products` | `201` + `Product` |
 | PUT | `/api/v1/products/{productId}` | `ResponseEntity<Product>` |
 | DELETE | `/api/v1/products/{productId}` | `204`; `404` if missing, `409` if referenced |
@@ -357,7 +359,7 @@ All resource controllers are under `/api/v1/`. Status codes: `GET`/`PUT` → 200
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/v1/suppliers` | `List<Supplier>` |
-| GET | `/api/v1/suppliers?pageNumber=&pageSize=` | `Page<Supplier>` |
+| GET | `/api/v1/suppliers?pageNumber=&pageSize=[&search=]` | `Page<Supplier>`; optional `search` (see below) |
 | POST | `/api/v1/suppliers` | `201` + `Supplier` |
 | PUT | `/api/v1/suppliers/{supplierId}` | `ResponseEntity<Supplier>` |
 | DELETE | `/api/v1/suppliers/{supplierId}` | `204`; `404` if missing, `409` if referenced |
@@ -438,10 +440,10 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 | DAO | Notable Methods |
 |---|---|
 | `CategoriesDAO` | `findAllByOrderByCategoryIdDesc()` |
-| `CustomersDAO` | findAll…Desc(), findAll…Desc(Pageable) |
-| `EmployeesDAO` | `findByUsername(String)`, findAll…Desc(), findAll…Desc(Pageable) |
-| `ProductsDAO` | findAll…Desc(Pageable), `findAllByCategory()`, `findAllBySupplier()`, `findByUnitsInStockLessThan(threshold)` |
-| `SuppliersDAO` | findAll…Desc(), findAll…Desc(Pageable) |
+| `CustomersDAO` | findAll…Desc(), findAll…Desc(Pageable), `search(String, Pageable)` |
+| `EmployeesDAO` | `findByUsername(String)`, findAll…Desc(), findAll…Desc(Pageable), `search(String, Pageable)` |
+| `ProductsDAO` | findAll…Desc(Pageable), `search(String, Pageable)`, `findAllByCategory()`, `findAllBySupplier()`, `findByUnitsInStockLessThan(threshold)` |
+| `SuppliersDAO` | findAll…Desc(), findAll…Desc(Pageable), `search(String, Pageable)` |
 | `ShippersDAO` | findAll…Desc() |
 | `OrdersDAO` | findAll…Desc(Pageable), findAllByCustomer/Shipper/Employee(), `countAllOrders()`, `countLastMonthOrders(date)`, `findFirst10…Desc()` |
 | `OrderDetailsDAO` | findAllByOrder/Product(), `calculateTotalRevenue()`, `calculateMonthlyRevenue(date)`, `findOrdersCountByCategory()` |
@@ -451,10 +453,10 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 | Service | Key Business Logic |
 |---|---|
 | `CategoriesService` | CRUD; delete blocked if products reference the category |
-| `CustomersService` | CRUD + pagination; delete blocked if customer has orders |
-| `EmployeesService` | CRUD + pagination; delete blocked if employee has orders; password rules on create/update; `changeOwnPassword(username, current, new)` checks the current password |
-| `ProductsService` | CRUD + pagination; delete blocked if product appears in order details |
-| `SuppliersService` | CRUD + pagination; delete blocked if supplier has products |
+| `CustomersService` | CRUD + pagination (+ optional search); delete blocked if customer has orders |
+| `EmployeesService` | CRUD + pagination (+ optional search); delete blocked if employee has orders; password rules on create/update; `changeOwnPassword(username, current, new)` checks the current password |
+| `ProductsService` | CRUD + pagination (+ optional search); delete blocked if product appears in order details |
+| `SuppliersService` | CRUD + pagination (+ optional search); delete blocked if supplier has products |
 | `ShippersService` | CRUD; delete blocked if shipper has orders |
 | `OrdersService` | CRUD + pagination; `save(order, username)` auto-sets employee from auth principal; detail create checks path `orderId` matches body (400 otherwise), that the order exists (404) and auto-sets unitPrice from product; PDF report via OpenPDF (EUR) |
 | `DashboardService` | Aggregates: total/monthly orders & revenue, last 10 orders, orders-by-category map, low-stock products |
@@ -484,7 +486,7 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 
 ## Tests
 
-- `service/impl/` — 8 unit test classes, one per `*ServiceImpl`; `service/UsersDetailsServiceTest`. 9 classes in total. JUnit 6 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
+- `service/impl/` — 8 unit test classes, one per `*ServiceImpl` (paginated finds: blank search → unfiltered DAO method, text → `search` with trimmed text); `service/UsersDetailsServiceTest`. 9 classes in total. JUnit 6 + `@ExtendWith(MockitoExtension.class)`, DAOs/`PasswordEncoder` mocked, Arrange/Act/Assert. Every public service method is covered, including the not-found (404), conflict (409) and bad-request (400) paths.
 - `controller/OrdersControllerValidationTest` — standalone MockMvc: bean validation, status codes.
 - `controller/EmployeesControllerSecurityTest` — `@WebMvcTest` + `AppConfig`, `@WithMockUser`: manager-only writes (403), create without `employeeId` (201), `/me/password` (204 / 401 / 400).
 - `model/UserTest` — `ROLE_MANAGER` only when `reportsTo == null`.
@@ -494,10 +496,11 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
   - `OrdersIntegrationTest` (10): employee set from the logged-in user, missing customer → 400, update keeps `createdAt`, detail unit price from product, missing order → 404, orderId mismatch → 400, delete with details → 409, PDF report, pagination.
   - `EmployeesIntegrationTest` (9): employee writes → 403 (incl. trying to reset the manager's password), manager create without ID → new employee can log in, password rules, blank password keeps the old one, change own password.
   - `PaginationIntegrationTest` (26): all 5 paginated endpoints reject `pageNumber=-1`, `pageSize=0`, `pageSize=101` with 400 and accept 50 and 100.
+  - `SearchIntegrationTest` (24): `search=chai` finds Chai (last row, not on page 0 unfiltered) case-insensitively and trimmed; category / supplier name match on products, paged newest first; every searched field of the other 3 resources; blank search = same total as none; no match → empty page; page limits still → 400.
   - Checked by breaking the code on purpose: removing the manager rule fails 6 tests; removing the order-exists check fails the 404 test (500).
 - `ErpSpringApplicationTests` — context smoke test, also on Testcontainers.
 - **Tests need Docker running**, not the dev `erp-postgres` container or `.env` (they never touch the dev DB).
-- 164 tests total, all passing, ~20 s (2026-11-12).
+- 196 tests total, all passing (2026-11-14).
 
 ---
 
@@ -521,6 +524,15 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-14] — Search parameter on paginated endpoints
+- `CustomersController`, `EmployeesController`, `ProductsController`, `SuppliersController`: paginated GET takes optional `@RequestParam(required = false) String search` (page limits unchanged); Swagger `@Parameter` lists the searched fields, list `@Operation` description mentions it.
+- `CustomersService`, `EmployeesService`, `ProductsService`, `SuppliersService` (+ `service/impl/*ServiceImpl`): paginated find takes `search`; `StringUtils.hasText` → DAO `search(search.trim(), pageable)`, else the existing `findAll…Desc(pageable)`.
+- `CustomersDAO`, `EmployeesDAO`, `ProductsDAO`, `SuppliersDAO`: new JPQL `search(String, Pageable)` — case-insensitive `like` on the fields the frontend filters, `order by <id> desc`. Products left-join category and supplier.
+- Tests: 8 new service unit tests (blank / trimmed search), new `integration/SearchIntegrationTest` (24). 196 passing. Checked by removing the category clause from `ProductsDAO.search`: exactly the category test fails.
+- Unblocks the frontend "Search across all pages" task.
 
 ---
 

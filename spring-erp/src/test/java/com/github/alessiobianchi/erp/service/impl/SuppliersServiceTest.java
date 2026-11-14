@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,12 +72,40 @@ class SuppliersServiceTest {
         when(suppliersDao.findAllByOrderBySupplierIdDesc(any(Pageable.class))).thenReturn(supplierPage);
 
         // Act
-        Page<Supplier> result = suppliersService.findAllByOrderBySupplierIdDesc(page, size);
+        Page<Supplier> result = suppliersService.findAllByOrderBySupplierIdDesc(page, size, null);
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         verify(suppliersDao).findAllByOrderBySupplierIdDesc(PageRequest.of(page, size));
+    }
+
+    @Test
+    void findAllByOrderBySupplierIdDesc_WithBlankSearch_ShouldReturnUnfilteredPage() {
+        // Arrange
+        when(suppliersDao.findAllByOrderBySupplierIdDesc(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleSupplier)));
+
+        // Act
+        Page<Supplier> result = suppliersService.findAllByOrderBySupplierIdDesc(0, 5, "   ");
+
+        // Assert
+        assertEquals(1, result.getTotalElements());
+        verify(suppliersDao).findAllByOrderBySupplierIdDesc(PageRequest.of(0, 5));
+        verify(suppliersDao, never()).search(any(), any());
+    }
+
+    @Test
+    void findAllByOrderBySupplierIdDesc_WithSearch_ShouldSearchWithTrimmedText() {
+        // Arrange
+        when(suppliersDao.search(eq("chai"), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleSupplier)));
+
+        // Act
+        Page<Supplier> result = suppliersService.findAllByOrderBySupplierIdDesc(0, 5, "  chai ");
+
+        // Assert
+        assertEquals(1, result.getTotalElements());
+        verify(suppliersDao).search("chai", PageRequest.of(0, 5));
+        verify(suppliersDao, never()).findAllByOrderBySupplierIdDesc(any(Pageable.class));
     }
 
     @Test

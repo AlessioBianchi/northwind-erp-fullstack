@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ProductsService {
 
-    Page<Product> findAllByOrderByProductIdDesc(int pageNumber, int pageSize);
+    Page<Product> findAllByOrderByProductIdDesc(int pageNumber, int pageSize, String search);
 
     List<Product> findAllByOrderByProductIdDesc();
 

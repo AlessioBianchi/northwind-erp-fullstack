@@ -9,7 +9,7 @@ public interface CustomersService {
 
     List<Customer> findAllByOrderByCustomerIdDesc();
 
-    Page<Customer> findAllByOrderByCustomerIdDesc(int pageNumber, int pageSize);
+    Page<Customer> findAllByOrderByCustomerIdDesc(int pageNumber, int pageSize, String search);
 
     Customer create(Customer customer);
 

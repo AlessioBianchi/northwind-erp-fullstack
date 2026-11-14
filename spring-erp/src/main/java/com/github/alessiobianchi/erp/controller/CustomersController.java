@@ -32,7 +32,8 @@ public class CustomersController {
 
     @Operation(summary = "List customers",
             description = "Returns all customers, newest first." +
-                    "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array.")
+                    "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array; " +
+                    "add `search` to filter it by the customer code or company name.")
     @ApiResponse(responseCode = "200", description = "Customer list, or a page of customers when paginated")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @GetMapping
@@ -46,8 +47,10 @@ public class CustomersController {
             @RequestParam @Min(value = 0, message = "must be 0 or greater") int pageNumber,
             @Parameter(description = "Page size (1 to " + MAX_PAGE_SIZE + "); send together with pageNumber")
             @RequestParam @Min(value = 1, message = "must be at least 1")
-            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize) {
-        return service.findAllByOrderByCustomerIdDesc(pageNumber, pageSize);
+            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize,
+            @Parameter(description = "Case-insensitive text to look for in the customer code or company name, across all pages; missing or blank returns every row")
+            @RequestParam(required = false) String search) {
+        return service.findAllByOrderByCustomerIdDesc(pageNumber, pageSize, search);
     }
 
     @Operation(summary = "Create a customer", description = "Creates a new customer.")

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -31,9 +32,11 @@ public class SuppliersServiceImpl implements SuppliersService {
     }
 
     @Override
-    public Page<Supplier> findAllByOrderBySupplierIdDesc(int pageNumber, int pageSize) {
+    public Page<Supplier> findAllByOrderBySupplierIdDesc(int pageNumber, int pageSize, String search) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return suppliersDao.findAllByOrderBySupplierIdDesc(pageable);
+        return StringUtils.hasText(search)
+                ? suppliersDao.search(search.trim(), pageable)
+                : suppliersDao.findAllByOrderBySupplierIdDesc(pageable);
     }
 
     @Override

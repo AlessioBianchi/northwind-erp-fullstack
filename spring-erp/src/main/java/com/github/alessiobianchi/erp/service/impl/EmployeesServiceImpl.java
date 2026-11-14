@@ -52,10 +52,12 @@ public class EmployeesServiceImpl implements EmployeesService {
     }
 
     @Override
-    public Page<EmployeeDTO> findAllByOrderByEmployeeIdDesc(int pageNumber, int pageSize) {
+    public Page<EmployeeDTO> findAllByOrderByEmployeeIdDesc(int pageNumber, int pageSize, String search) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return employeesDao.findAllByOrderByEmployeeIdDesc(pageable)
-                .map(EmployeeBeanToDtoConverter::convert);
+        Page<Employee> page = StringUtils.hasText(search)
+                ? employeesDao.search(search.trim(), pageable)
+                : employeesDao.findAllByOrderByEmployeeIdDesc(pageable);
+        return page.map(EmployeeBeanToDtoConverter::convert);
     }
 
     @Override

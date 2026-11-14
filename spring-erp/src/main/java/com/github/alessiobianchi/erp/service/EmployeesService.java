@@ -12,7 +12,7 @@ public interface EmployeesService {
 
     List<EmployeeDTO> findAllByOrderByEmployeeIdDesc();
 
-    Page<EmployeeDTO> findAllByOrderByEmployeeIdDesc(int pageNumber, int pageSize);
+    Page<EmployeeDTO> findAllByOrderByEmployeeIdDesc(int pageNumber, int pageSize, String search);
 
     EmployeeDTO create(Employee employee);
 

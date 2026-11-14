@@ -32,7 +32,8 @@ public class SuppliersController {
 
     @Operation(summary = "List suppliers",
             description = "Returns all suppliers, newest first." +
-                    "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array.")
+                    "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array; " +
+                    "add `search` to filter it by the company name or contact name.")
     @ApiResponse(responseCode = "200", description = "Supplier list, or a page of suppliers when paginated")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @GetMapping
@@ -46,8 +47,10 @@ public class SuppliersController {
             @RequestParam @Min(value = 0, message = "must be 0 or greater") int pageNumber,
             @Parameter(description = "Page size (1 to " + MAX_PAGE_SIZE + "); send together with pageNumber")
             @RequestParam @Min(value = 1, message = "must be at least 1")
-            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize) {
-        return service.findAllByOrderBySupplierIdDesc(pageNumber, pageSize);
+            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize,
+            @Parameter(description = "Case-insensitive text to look for in the company name or contact name, across all pages; missing or blank returns every row")
+            @RequestParam(required = false) String search) {
+        return service.findAllByOrderBySupplierIdDesc(pageNumber, pageSize, search);
     }
 
     @Operation(summary = "Create a supplier", description = "Creates a new supplier.")
