@@ -233,6 +233,9 @@ config/       Security and CORS (AppConfig.java), OpenAPI (OpenApiConfig.java)
 ### Service interfaces
 Each service is an interface in `service/` with one `@Service` implementation `service/impl/<Name>ServiceImpl`. Controllers and `@MockitoBean`/`@Mock` in tests depend on the interface; service unit tests (`test/.../service/impl/`) `@InjectMocks` the `Impl`. Names stay plural (`ProductsService`) to match the rest of the code. `UsersDetailsService` is the exception: it already implements Spring's `UserDetailsService`.
 
+### Transactions
+Every `*ServiceImpl` and `UsersDetailsService` is `@Transactional(readOnly = true)` at class level (Hibernate skips dirty checking on reads; lazy associations load inside the service even with `open-in-view=false`). Methods that write (`create`, `update`, `delete`, `changeOwnPassword`, and the Orders detail `create`/`delete` overloads) override it with `@Transactional`, so "check, then write" (404/409 guards in `update`/`delete`, order/product checks on detail create, current-password check) runs in one transaction. Annotations live on the implementations, not the interfaces. A new public method that writes needs `@Transactional`, or it fails in a read-only transaction.
+
 ### Auditing (createdAt / updatedAt)
 All 8 entities extend `model/Auditable` (`@MappedSuperclass`, `@EntityListeners(AuditingEntityListener.class)`): `@CreatedDate createdAt` (`updatable = false`) and `@LastModifiedDate updatedAt`, both `Instant` → `timestamptz`, `@JsonProperty(READ_ONLY)` so clients can't set them. Enabled by `config/JpaAuditingConfig` (kept off the main class so `@WebMvcTest` slices still start). Updates rebuild the entity from the request body, so each service `update` loads the row with `findById` and passes `withCreatedAt(existing.getCreatedAt())` to the builder; otherwise the PUT response would show `createdAt: null`. Builders copy `createdAt` and set it through `Auditable`'s package-private setter. `EmployeeDTO`, `OrderDTO`, `OrderDetailsDTO` expose both fields (read-only) via the bean→DTO converters.
 
@@ -524,6 +527,12 @@ All entities also have `createdAt` / `updatedAt` (from `Auditable`).
 > - What was added / changed / fixed
 > - Include class/file paths for precision
 > ```
+
+---
+
+### [2026-11-14] — `@Transactional` on the services
+- All 8 `service/impl/*ServiceImpl` classes and `service/UsersDetailsService`: class-level `@Transactional(readOnly = true)`; the 24 write methods (`create` / `update` / `delete` on each CRUD service, Orders detail `create` / `delete`, `EmployeesServiceImpl.changeOwnPassword`) annotated `@Transactional`. Previously no `@Transactional` anywhere, so each repository call ran in its own transaction and the check-then-write steps weren't atomic.
+- 196 tests passing. Checked with `JpaTransactionManager` debug logs during the integration tests: reads open `readOnly` transactions, writes read-write ones, one per service call.
 
 ---
 

@@ -11,11 +11,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class ProductsServiceImpl implements ProductsService {
 
     private final ProductsDAO productsDao;
@@ -40,11 +42,13 @@ public class ProductsServiceImpl implements ProductsService {
     }
 
     @Override
+    @Transactional
     public Product create(Product product) {
         return productsDao.save(product);
     }
 
     @Override
+    @Transactional
     public Product update(int productId, Product product) {
         Product existing = productsDao.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -58,6 +62,7 @@ public class ProductsServiceImpl implements ProductsService {
     }
 
     @Override
+    @Transactional
     public void delete(int productId) {
         Product productToDelete = productsDao.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
