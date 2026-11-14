@@ -1,16 +1,16 @@
 package com.github.alessiobianchi.erp.service;
 
-import com.github.alessiobianchi.erp.model.Shipper;
+import com.github.alessiobianchi.erp.dto.ShipperDTO;
 
 import java.util.List;
 
 public interface ShippersService {
 
-    List<Shipper> findAllByOrderByShipperIdDesc();
+    List<ShipperDTO> findAllByOrderByShipperIdDesc();
 
-    Shipper create(Shipper shipper);
+    ShipperDTO create(ShipperDTO shipperDto);
 
-    Shipper update(int shipperId, Shipper shipper);
+    ShipperDTO update(int shipperId, ShipperDTO shipperDto);
 
     void delete(int shipperId);
 }

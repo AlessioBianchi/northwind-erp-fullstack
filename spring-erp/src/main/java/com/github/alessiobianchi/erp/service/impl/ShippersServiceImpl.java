@@ -1,7 +1,10 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.ShipperBeanToDtoConverter;
+import com.github.alessiobianchi.erp.converter.ShipperDtoToBeanConverter;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
 import com.github.alessiobianchi.erp.dao.ShippersDAO;
+import com.github.alessiobianchi.erp.dto.ShipperDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Shipper;
@@ -25,28 +28,30 @@ public class ShippersServiceImpl implements ShippersService {
     }
 
     @Override
-    public List<Shipper> findAllByOrderByShipperIdDesc() {
-        return shippersDao.findAllByOrderByShipperIdDesc();
+    public List<ShipperDTO> findAllByOrderByShipperIdDesc() {
+        return shippersDao.findAllByOrderByShipperIdDesc().stream()
+                .map(ShipperBeanToDtoConverter::convert)
+                .toList();
     }
 
     @Override
     @Transactional
-    public Shipper create(Shipper shipper) {
-        return shippersDao.save(shipper);
+    public ShipperDTO create(ShipperDTO shipperDto) {
+        return ShipperBeanToDtoConverter.convert(shippersDao.save(ShipperDtoToBeanConverter.convert(shipperDto)));
     }
 
     @Override
     @Transactional
-    public Shipper update(int shipperId, Shipper shipper) {
+    public ShipperDTO update(int shipperId, ShipperDTO shipperDto) {
         Shipper existing = shippersDao.findById(shipperId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipper not found"));
 
-        Shipper shipperToUpdate = new ShipperBuilder(shipper)
+        Shipper shipperToUpdate = new ShipperBuilder(ShipperDtoToBeanConverter.convert(shipperDto))
                 .withShipperId(shipperId)
                 .withCreatedAt(existing.getCreatedAt())
                 .build();
 
-        return shippersDao.save(shipperToUpdate);
+        return ShipperBeanToDtoConverter.convert(shippersDao.save(shipperToUpdate));
     }
 
     @Override

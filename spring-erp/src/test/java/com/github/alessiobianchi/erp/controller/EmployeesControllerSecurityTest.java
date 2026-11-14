@@ -2,8 +2,8 @@ package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.config.AppConfig;
 import com.github.alessiobianchi.erp.config.PasswordConfig;
+import com.github.alessiobianchi.erp.dto.EmployeeDTO;
 import com.github.alessiobianchi.erp.exception.BadRequestException;
-import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.service.EmployeesService;
 import com.github.alessiobianchi.erp.service.UsersDetailsService;
 import org.junit.jupiter.api.Test;
@@ -81,7 +81,7 @@ class EmployeesControllerSecurityTest {
                         .contentType(MediaType.APPLICATION_JSON).content(EMPLOYEE_JSON))
                 .andExpect(status().isOk());
 
-        verify(employeesService).update(eq(1), any(Employee.class));
+        verify(employeesService).update(eq(1), any(EmployeeDTO.class));
     }
 
     @Test

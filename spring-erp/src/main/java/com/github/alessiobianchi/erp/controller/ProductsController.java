@@ -1,7 +1,7 @@
 package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.config.OpenApiConfig;
-import com.github.alessiobianchi.erp.model.Product;
+import com.github.alessiobianchi.erp.dto.ProductDTO;
 import com.github.alessiobianchi.erp.service.ProductsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,12 +37,12 @@ public class ProductsController {
     @ApiResponse(responseCode = "200", description = "Product list, or a page of products when paginated")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @GetMapping
-    public List<Product> findAllByOrderByProductIdDesc() {
+    public List<ProductDTO> findAllByOrderByProductIdDesc() {
         return service.findAllByOrderByProductIdDesc();
     }
 
     @GetMapping(params = {"pageNumber", "pageSize"})
-    public Page<Product> findAllByOrderByProductIdDesc(
+    public Page<ProductDTO> findAllByOrderByProductIdDesc(
             @Parameter(description = "0-based page index (0 or greater); send together with pageSize")
             @RequestParam @Min(value = 0, message = "must be 0 or greater") int pageNumber,
             @Parameter(description = "Page size (1 to " + MAX_PAGE_SIZE + "); send together with pageNumber")
@@ -57,8 +57,8 @@ public class ProductsController {
     @ApiResponse(responseCode = "201", description = "Product created")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @PostMapping()
-    public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
-        Product productSaved = service.create(product);
+    public ResponseEntity<ProductDTO> create(@Valid @RequestBody ProductDTO productDto) {
+        ProductDTO productSaved = service.create(productDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(productSaved);
     }
 
@@ -67,8 +67,8 @@ public class ProductsController {
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)
     @PutMapping("/{productId}")
-    public ResponseEntity<Product> update(@PathVariable int productId, @Valid @RequestBody Product product) {
-        Product productSaved = service.update(productId, product);
+    public ResponseEntity<ProductDTO> update(@PathVariable int productId, @Valid @RequestBody ProductDTO productDto) {
+        ProductDTO productSaved = service.update(productId, productDto);
         return ResponseEntity.ok(productSaved);
     }
 

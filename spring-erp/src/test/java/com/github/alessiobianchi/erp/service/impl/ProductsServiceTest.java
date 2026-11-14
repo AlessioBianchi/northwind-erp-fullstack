@@ -1,7 +1,9 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.ProductBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.OrderDetailsDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.dto.ProductDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.OrderDetail;
@@ -59,7 +61,7 @@ class ProductsServiceTest {
         when(productsDao.findAllByOrderByProductIdDesc(any(Pageable.class))).thenReturn(productPage);
 
         // Act
-        Page<Product> result = productsService.findAllByOrderByProductIdDesc(pageNum, pageSize, null);
+        Page<ProductDTO> result = productsService.findAllByOrderByProductIdDesc(pageNum, pageSize, null);
 
         // Assert
         assertNotNull(result);
@@ -73,7 +75,7 @@ class ProductsServiceTest {
         when(productsDao.findAllByOrderByProductIdDesc(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleProduct)));
 
         // Act
-        Page<Product> result = productsService.findAllByOrderByProductIdDesc(0, 5, "   ");
+        Page<ProductDTO> result = productsService.findAllByOrderByProductIdDesc(0, 5, "   ");
 
         // Assert
         assertEquals(1, result.getTotalElements());
@@ -87,7 +89,7 @@ class ProductsServiceTest {
         when(productsDao.search(eq("chai"), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleProduct)));
 
         // Act
-        Page<Product> result = productsService.findAllByOrderByProductIdDesc(0, 5, "  chai ");
+        Page<ProductDTO> result = productsService.findAllByOrderByProductIdDesc(0, 5, "  chai ");
 
         // Assert
         assertEquals(1, result.getTotalElements());
@@ -101,7 +103,7 @@ class ProductsServiceTest {
         when(productsDao.findAllByOrderByProductIdDesc()).thenReturn(List.of(sampleProduct));
 
         // Act
-        List<Product> result = productsService.findAllByOrderByProductIdDesc();
+        List<ProductDTO> result = productsService.findAllByOrderByProductIdDesc();
 
         // Assert
         assertFalse(result.isEmpty());
@@ -114,11 +116,11 @@ class ProductsServiceTest {
         when(productsDao.save(any(Product.class))).thenReturn(sampleProduct);
 
         // Act
-        Product created = productsService.create(new Product());
+        ProductDTO created = productsService.create(ProductBeanToDtoConverter.convert(new Product()));
 
         // Assert
         assertNotNull(created);
-        assertEquals(10, created.getProductId());
+        assertEquals(10, created.productId());
         verify(productsDao).save(any(Product.class));
     }
 
@@ -139,12 +141,12 @@ class ProductsServiceTest {
         when(productsDao.save(any(Product.class))).thenReturn(productUpdated);
 
         // Act
-        Product updated = productsService.update(productId, new Product());
+        ProductDTO updated = productsService.update(productId, ProductBeanToDtoConverter.convert(new Product()));
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1, updated.getProductId());
-        assertEquals("Test", updated.getProductName());
+        assertEquals(1, updated.productId());
+        assertEquals("Test", updated.productName());
         verify(productsDao).save(any(Product.class));
         verify(productsDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
@@ -155,7 +157,7 @@ class ProductsServiceTest {
         when(productsDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> productsService.update(1, new Product()));
+        assertThrows(ResourceNotFoundException.class, () -> productsService.update(1, ProductBeanToDtoConverter.convert(new Product())));
         verify(productsDao, never()).save(any(Product.class));
     }
 

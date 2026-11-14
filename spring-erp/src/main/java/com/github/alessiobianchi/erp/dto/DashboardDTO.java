@@ -1,7 +1,5 @@
 package com.github.alessiobianchi.erp.dto;
 
-import com.github.alessiobianchi.erp.model.Product;
-
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +11,7 @@ public class DashboardDTO {
     private Double lastMonthRevenue;
     private List<OrderDTO> lastTenOrders;
     private Map<String, Integer> ordersByCategory;
-    private List<Product> productStock;
+    private List<ProductDTO> productStock;
 
     public DashboardDTO() {}
 
@@ -23,7 +21,7 @@ public class DashboardDTO {
                         Double lastMonthRevenue,
                         List<OrderDTO> lastTenOrders,
                         Map<String, Integer> ordersByCategory,
-                        List<Product> productStock) {
+                        List<ProductDTO> productStock) {
         this.totalOrdersCount = totalOrdersCount;
         this.totalRevenue = totalRevenue;
         this.lastMonthOrdersCount = lastMonthOrdersCount;
@@ -57,7 +55,7 @@ public class DashboardDTO {
         return ordersByCategory;
     }
 
-    public List<Product> getProductStock() {
+    public List<ProductDTO> getProductStock() {
         return productStock;
     }
 }

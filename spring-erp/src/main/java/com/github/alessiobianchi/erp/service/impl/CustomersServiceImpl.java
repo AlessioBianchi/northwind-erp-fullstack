@@ -1,7 +1,10 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.CustomerBeanToDtoConverter;
+import com.github.alessiobianchi.erp.converter.CustomerDtoToBeanConverter;
 import com.github.alessiobianchi.erp.dao.CustomersDAO;
 import com.github.alessiobianchi.erp.dao.OrdersDAO;
+import com.github.alessiobianchi.erp.dto.CustomerDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Customer;
@@ -29,36 +32,39 @@ public class CustomersServiceImpl implements CustomersService {
     }
 
     @Override
-    public List<Customer> findAllByOrderByCustomerIdDesc() {
-        return customersDao.findAllByOrderByCustomerIdDesc();
+    public List<CustomerDTO> findAllByOrderByCustomerIdDesc() {
+        return customersDao.findAllByOrderByCustomerIdDesc().stream()
+                .map(CustomerBeanToDtoConverter::convert)
+                .toList();
     }
 
     @Override
-    public Page<Customer> findAllByOrderByCustomerIdDesc(int pageNumber, int pageSize, String search) {
+    public Page<CustomerDTO> findAllByOrderByCustomerIdDesc(int pageNumber, int pageSize, String search) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return StringUtils.hasText(search)
+        Page<Customer> page = StringUtils.hasText(search)
                 ? customersDao.search(search.trim(), pageable)
                 : customersDao.findAllByOrderByCustomerIdDesc(pageable);
+        return page.map(CustomerBeanToDtoConverter::convert);
     }
 
     @Override
     @Transactional
-    public Customer create(Customer customer) {
-        return customersDao.save(customer);
+    public CustomerDTO create(CustomerDTO customerDto) {
+        return CustomerBeanToDtoConverter.convert(customersDao.save(CustomerDtoToBeanConverter.convert(customerDto)));
     }
 
     @Override
     @Transactional
-    public Customer update(int customerId, Customer customer) {
+    public CustomerDTO update(int customerId, CustomerDTO customerDto) {
         Customer existing = customersDao.findById(customerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
-        Customer customerToUpdate = new CustomerBuilder(customer)
+        Customer customerToUpdate = new CustomerBuilder(CustomerDtoToBeanConverter.convert(customerDto))
                 .withCustomerId(customerId)
                 .withCreatedAt(existing.getCreatedAt())
                 .build();
 
-        return customersDao.save(customerToUpdate);
+        return CustomerBeanToDtoConverter.convert(customersDao.save(customerToUpdate));
     }
 
     @Override

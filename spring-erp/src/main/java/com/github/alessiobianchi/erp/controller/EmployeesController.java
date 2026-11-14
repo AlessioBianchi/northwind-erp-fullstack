@@ -3,7 +3,6 @@ package com.github.alessiobianchi.erp.controller;
 import com.github.alessiobianchi.erp.config.OpenApiConfig;
 import com.github.alessiobianchi.erp.dto.ChangePasswordDTO;
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
-import com.github.alessiobianchi.erp.model.Employee;
 import com.github.alessiobianchi.erp.service.EmployeesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -64,8 +63,8 @@ public class EmployeesController {
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @ApiResponse(responseCode = "403", ref = OpenApiConfig.MANAGER_ONLY)
     @PostMapping()
-    public ResponseEntity<EmployeeDTO> create(@Valid @RequestBody Employee employee) {
-        EmployeeDTO employeeSaved = service.create(employee);
+    public ResponseEntity<EmployeeDTO> create(@Valid @RequestBody EmployeeDTO employeeDto) {
+        EmployeeDTO employeeSaved = service.create(employeeDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeSaved);
     }
 
@@ -80,8 +79,8 @@ public class EmployeesController {
     @ApiResponse(responseCode = "403", ref = OpenApiConfig.MANAGER_ONLY)
     @ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)
     @PutMapping("/{employeeId}")
-    public ResponseEntity<EmployeeDTO> update(@PathVariable int employeeId, @Valid @RequestBody Employee employee) {
-        EmployeeDTO employeeSaved = service.update(employeeId, employee);
+    public ResponseEntity<EmployeeDTO> update(@PathVariable int employeeId, @Valid @RequestBody EmployeeDTO employeeDto) {
+        EmployeeDTO employeeSaved = service.update(employeeId, employeeDto);
         return ResponseEntity.ok(employeeSaved);
     }
 

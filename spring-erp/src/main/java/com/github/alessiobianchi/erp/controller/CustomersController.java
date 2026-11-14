@@ -1,7 +1,7 @@
 package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.config.OpenApiConfig;
-import com.github.alessiobianchi.erp.model.Customer;
+import com.github.alessiobianchi.erp.dto.CustomerDTO;
 import com.github.alessiobianchi.erp.service.CustomersService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,12 +37,12 @@ public class CustomersController {
     @ApiResponse(responseCode = "200", description = "Customer list, or a page of customers when paginated")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @GetMapping
-    public List<Customer> findAllByOrderByCustomerIdDesc() {
+    public List<CustomerDTO> findAllByOrderByCustomerIdDesc() {
         return service.findAllByOrderByCustomerIdDesc();
     }
 
     @GetMapping(params = {"pageNumber", "pageSize"})
-    public Page<Customer> findAllByOrderByCustomerIdDesc(
+    public Page<CustomerDTO> findAllByOrderByCustomerIdDesc(
             @Parameter(description = "0-based page index (0 or greater); send together with pageSize")
             @RequestParam @Min(value = 0, message = "must be 0 or greater") int pageNumber,
             @Parameter(description = "Page size (1 to " + MAX_PAGE_SIZE + "); send together with pageNumber")
@@ -57,8 +57,8 @@ public class CustomersController {
     @ApiResponse(responseCode = "201", description = "Customer created")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @PostMapping()
-    public ResponseEntity<Customer> create(@Valid @RequestBody Customer customer) {
-        Customer customerSaved = service.create(customer);
+    public ResponseEntity<CustomerDTO> create(@Valid @RequestBody CustomerDTO customerDto) {
+        CustomerDTO customerSaved = service.create(customerDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(customerSaved);
     }
 
@@ -67,8 +67,8 @@ public class CustomersController {
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)
     @PutMapping("/{customerId}")
-    public ResponseEntity<Customer> update(@PathVariable int customerId, @Valid @RequestBody Customer customer) {
-        Customer customerSaved = service.update(customerId, customer);
+    public ResponseEntity<CustomerDTO> update(@PathVariable int customerId, @Valid @RequestBody CustomerDTO customerDto) {
+        CustomerDTO customerSaved = service.update(customerId, customerDto);
         return ResponseEntity.ok(customerSaved);
     }
 

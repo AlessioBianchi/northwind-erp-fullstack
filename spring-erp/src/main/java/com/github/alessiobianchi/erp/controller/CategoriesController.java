@@ -1,7 +1,7 @@
 package com.github.alessiobianchi.erp.controller;
 
 import com.github.alessiobianchi.erp.config.OpenApiConfig;
-import com.github.alessiobianchi.erp.model.Category;
+import com.github.alessiobianchi.erp.dto.CategoryDTO;
 import com.github.alessiobianchi.erp.service.CategoriesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,7 +27,7 @@ public class CategoriesController {
     @Operation(summary = "List categories", description = "Returns all categories, newest first.")
     @ApiResponse(responseCode = "200", description = "Category list")
     @GetMapping
-    public List<Category> findAllByOrderByCategoryIdDesc() {
+    public List<CategoryDTO> findAllByOrderByCategoryIdDesc() {
         return service.findAllByOrderByCategoryIdDesc();
     }
 
@@ -35,8 +35,8 @@ public class CategoriesController {
     @ApiResponse(responseCode = "201", description = "Category created")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @PostMapping()
-    public ResponseEntity<Category> create(@Valid @RequestBody Category category) {
-        Category categorySaved = service.create(category);
+    public ResponseEntity<CategoryDTO> create(@Valid @RequestBody CategoryDTO categoryDto) {
+        CategoryDTO categorySaved = service.create(categoryDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(categorySaved);
     }
 
@@ -45,8 +45,8 @@ public class CategoriesController {
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @ApiResponse(responseCode = "404", ref = OpenApiConfig.NOT_FOUND)
     @PutMapping("/{categoryId}")
-    public ResponseEntity<Category> update(@PathVariable int categoryId, @Valid @RequestBody Category category) {
-        Category categorySaved = service.update(categoryId, category);
+    public ResponseEntity<CategoryDTO> update(@PathVariable int categoryId, @Valid @RequestBody CategoryDTO categoryDto) {
+        CategoryDTO categorySaved = service.update(categoryId, categoryDto);
         return ResponseEntity.ok(categorySaved);
     }
 

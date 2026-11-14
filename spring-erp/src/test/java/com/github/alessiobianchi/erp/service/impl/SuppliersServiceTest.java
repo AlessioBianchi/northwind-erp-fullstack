@@ -1,7 +1,9 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.SupplierBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dao.SuppliersDAO;
+import com.github.alessiobianchi.erp.dto.SupplierDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Product;
@@ -55,7 +57,7 @@ class SuppliersServiceTest {
         when(suppliersDao.findAllByOrderBySupplierIdDesc()).thenReturn(List.of(sampleSupplier));
 
         // Act
-        List<Supplier> result = suppliersService.findAllByOrderBySupplierIdDesc();
+        List<SupplierDTO> result = suppliersService.findAllByOrderBySupplierIdDesc();
 
         // Assert
         assertNotNull(result);
@@ -72,7 +74,7 @@ class SuppliersServiceTest {
         when(suppliersDao.findAllByOrderBySupplierIdDesc(any(Pageable.class))).thenReturn(supplierPage);
 
         // Act
-        Page<Supplier> result = suppliersService.findAllByOrderBySupplierIdDesc(page, size, null);
+        Page<SupplierDTO> result = suppliersService.findAllByOrderBySupplierIdDesc(page, size, null);
 
         // Assert
         assertNotNull(result);
@@ -86,7 +88,7 @@ class SuppliersServiceTest {
         when(suppliersDao.findAllByOrderBySupplierIdDesc(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleSupplier)));
 
         // Act
-        Page<Supplier> result = suppliersService.findAllByOrderBySupplierIdDesc(0, 5, "   ");
+        Page<SupplierDTO> result = suppliersService.findAllByOrderBySupplierIdDesc(0, 5, "   ");
 
         // Assert
         assertEquals(1, result.getTotalElements());
@@ -100,7 +102,7 @@ class SuppliersServiceTest {
         when(suppliersDao.search(eq("chai"), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleSupplier)));
 
         // Act
-        Page<Supplier> result = suppliersService.findAllByOrderBySupplierIdDesc(0, 5, "  chai ");
+        Page<SupplierDTO> result = suppliersService.findAllByOrderBySupplierIdDesc(0, 5, "  chai ");
 
         // Assert
         assertEquals(1, result.getTotalElements());
@@ -114,11 +116,11 @@ class SuppliersServiceTest {
         when(suppliersDao.save(any(Supplier.class))).thenReturn(sampleSupplier);
 
         // Act
-        Supplier created = suppliersService.create(new Supplier());
+        SupplierDTO created = suppliersService.create(SupplierBeanToDtoConverter.convert(new Supplier()));
 
         // Assert
         assertNotNull(created);
-        assertEquals(1, created.getSupplierId());
+        assertEquals(1, created.supplierId());
         verify(suppliersDao).save(any(Supplier.class));
     }
 
@@ -137,12 +139,12 @@ class SuppliersServiceTest {
         when(suppliersDao.save(any(Supplier.class))).thenReturn(supplierUpdated);
 
         // Act
-        Supplier updated = suppliersService.update(1, new Supplier());
+        SupplierDTO updated = suppliersService.update(1, SupplierBeanToDtoConverter.convert(new Supplier()));
 
         // Assert
         assertNotNull(updated);
-        assertEquals(1, updated.getSupplierId());
-        assertEquals("Test", updated.getCompanyName());
+        assertEquals(1, updated.supplierId());
+        assertEquals("Test", updated.companyName());
         verify(suppliersDao).save(any(Supplier.class));
         verify(suppliersDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
@@ -153,7 +155,7 @@ class SuppliersServiceTest {
         when(suppliersDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> suppliersService.update(1, new Supplier()));
+        assertThrows(ResourceNotFoundException.class, () -> suppliersService.update(1, SupplierBeanToDtoConverter.convert(new Supplier())));
         verify(suppliersDao, never()).save(any(Supplier.class));
     }
 

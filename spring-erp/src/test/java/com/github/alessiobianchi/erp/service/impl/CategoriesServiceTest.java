@@ -1,7 +1,9 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.CategoryBeanToDtoConverter;
 import com.github.alessiobianchi.erp.dao.CategoriesDAO;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
+import com.github.alessiobianchi.erp.dto.CategoryDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Category;
@@ -49,7 +51,7 @@ class CategoriesServiceTest {
         when(categoriesDao.findAllByOrderByCategoryIdDesc()).thenReturn(List.of(sampleCategory));
 
         // Act
-        List<Category> result = categoriesService.findAllByOrderByCategoryIdDesc();
+        List<CategoryDTO> result = categoriesService.findAllByOrderByCategoryIdDesc();
 
         // Assert
         assertNotNull(result);
@@ -63,10 +65,10 @@ class CategoriesServiceTest {
         when(categoriesDao.save(any(Category.class))).thenReturn(sampleCategory);
 
         // Act
-        Category created = categoriesService.create(new Category());
+        CategoryDTO created = categoriesService.create(CategoryBeanToDtoConverter.convert(new Category()));
 
         // Assert
-        assertEquals(1, created.getCategoryId());
+        assertEquals(1, created.categoryId());
         verify(categoriesDao, times(1)).save(any(Category.class));
     }
 
@@ -87,11 +89,11 @@ class CategoriesServiceTest {
         when(categoriesDao.save(any(Category.class))).thenReturn(categoryUpdated);
 
         // Act
-        Category updated = categoriesService.update(categoryId, new Category());
+        CategoryDTO updated = categoriesService.update(categoryId, CategoryBeanToDtoConverter.convert(new Category()));
 
         // Assert
-        assertEquals(1, updated.getCategoryId());
-        assertEquals("Test", updated.getCategoryName());
+        assertEquals(1, updated.categoryId());
+        assertEquals("Test", updated.categoryName());
         verify(categoriesDao, times(1)).save(any(Category.class));
         verify(categoriesDao).save(argThat(saved -> createdAt.equals(saved.getCreatedAt())));
     }
@@ -102,7 +104,7 @@ class CategoriesServiceTest {
         when(categoriesDao.findById(1)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> categoriesService.update(1, new Category()));
+        assertThrows(ResourceNotFoundException.class, () -> categoriesService.update(1, CategoryBeanToDtoConverter.convert(new Category())));
         verify(categoriesDao, never()).save(any(Category.class));
     }
 

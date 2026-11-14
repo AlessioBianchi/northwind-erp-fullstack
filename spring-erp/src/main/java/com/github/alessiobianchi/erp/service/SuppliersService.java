@@ -1,19 +1,19 @@
 package com.github.alessiobianchi.erp.service;
 
-import com.github.alessiobianchi.erp.model.Supplier;
+import com.github.alessiobianchi.erp.dto.SupplierDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface SuppliersService {
 
-    List<Supplier> findAllByOrderBySupplierIdDesc();
+    List<SupplierDTO> findAllByOrderBySupplierIdDesc();
 
-    Page<Supplier> findAllByOrderBySupplierIdDesc(int pageNumber, int pageSize, String search);
+    Page<SupplierDTO> findAllByOrderBySupplierIdDesc(int pageNumber, int pageSize, String search);
 
-    Supplier create(Supplier supplier);
+    SupplierDTO create(SupplierDTO supplierDto);
 
-    Supplier update(int supplierId, Supplier supplier);
+    SupplierDTO update(int supplierId, SupplierDTO supplierDto);
 
     void delete(int supplierId);
 }

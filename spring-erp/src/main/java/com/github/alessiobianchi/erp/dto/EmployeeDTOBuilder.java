@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 public class EmployeeDTOBuilder {
 
-    private int employeeId;
+    private Integer employeeId;
     private String lastName;
     private String firstName;
     private String title;
@@ -52,7 +52,7 @@ public class EmployeeDTOBuilder {
         this.updatedAt = dto.getUpdatedAt();
     }
 
-    public EmployeeDTOBuilder withEmployeeId(int employeeId) {
+    public EmployeeDTOBuilder withEmployeeId(Integer employeeId) {
         this.employeeId = employeeId;
         return this;
     }

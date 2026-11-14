@@ -1,7 +1,10 @@
 package com.github.alessiobianchi.erp.service.impl;
 
+import com.github.alessiobianchi.erp.converter.SupplierBeanToDtoConverter;
+import com.github.alessiobianchi.erp.converter.SupplierDtoToBeanConverter;
 import com.github.alessiobianchi.erp.dao.ProductsDAO;
 import com.github.alessiobianchi.erp.dao.SuppliersDAO;
+import com.github.alessiobianchi.erp.dto.SupplierDTO;
 import com.github.alessiobianchi.erp.exception.ConflictException;
 import com.github.alessiobianchi.erp.exception.ResourceNotFoundException;
 import com.github.alessiobianchi.erp.model.Supplier;
@@ -29,36 +32,39 @@ public class SuppliersServiceImpl implements SuppliersService {
     }
 
     @Override
-    public List<Supplier> findAllByOrderBySupplierIdDesc() {
-        return suppliersDao.findAllByOrderBySupplierIdDesc();
+    public List<SupplierDTO> findAllByOrderBySupplierIdDesc() {
+        return suppliersDao.findAllByOrderBySupplierIdDesc().stream()
+                .map(SupplierBeanToDtoConverter::convert)
+                .toList();
     }
 
     @Override
-    public Page<Supplier> findAllByOrderBySupplierIdDesc(int pageNumber, int pageSize, String search) {
+    public Page<SupplierDTO> findAllByOrderBySupplierIdDesc(int pageNumber, int pageSize, String search) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return StringUtils.hasText(search)
+        Page<Supplier> page = StringUtils.hasText(search)
                 ? suppliersDao.search(search.trim(), pageable)
                 : suppliersDao.findAllByOrderBySupplierIdDesc(pageable);
+        return page.map(SupplierBeanToDtoConverter::convert);
     }
 
     @Override
     @Transactional
-    public Supplier create(Supplier supplier) {
-        return suppliersDao.save(supplier);
+    public SupplierDTO create(SupplierDTO supplierDto) {
+        return SupplierBeanToDtoConverter.convert(suppliersDao.save(SupplierDtoToBeanConverter.convert(supplierDto)));
     }
 
     @Override
     @Transactional
-    public Supplier update(int supplierId, Supplier supplier) {
+    public SupplierDTO update(int supplierId, SupplierDTO supplierDto) {
         Supplier existing = suppliersDao.findById(supplierId)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier not found"));
 
-        Supplier supplierToUpdate = new SupplierBuilder(supplier)
+        Supplier supplierToUpdate = new SupplierBuilder(SupplierDtoToBeanConverter.convert(supplierDto))
                 .withSupplierId(supplierId)
                 .withCreatedAt(existing.getCreatedAt())
                 .build();
 
-        return suppliersDao.save(supplierToUpdate);
+        return SupplierBeanToDtoConverter.convert(suppliersDao.save(supplierToUpdate));
     }
 
     @Override

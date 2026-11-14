@@ -1,7 +1,6 @@
 package com.github.alessiobianchi.erp.service;
 
 import com.github.alessiobianchi.erp.dto.EmployeeDTO;
-import com.github.alessiobianchi.erp.model.Employee;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -14,9 +13,9 @@ public interface EmployeesService {
 
     Page<EmployeeDTO> findAllByOrderByEmployeeIdDesc(int pageNumber, int pageSize, String search);
 
-    EmployeeDTO create(Employee employee);
+    EmployeeDTO create(EmployeeDTO employeeDto);
 
-    EmployeeDTO update(int employeeId, Employee employee);
+    EmployeeDTO update(int employeeId, EmployeeDTO employeeDto);
 
     void delete(int employeeId);
 
