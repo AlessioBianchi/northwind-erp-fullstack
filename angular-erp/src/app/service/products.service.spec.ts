@@ -52,6 +52,23 @@ describe('ProductsService', () => {
     expect(req.request.method).toBe('GET');
     expect(req.request.params.get('pageNumber')).toBe('2');
     expect(req.request.params.get('pageSize')).toBe('10');
+    expect(req.request.params.has('search')).toBe(false);
+    req.flush({ content: [] });
+  });
+
+  it('getPaginatedProducts sends the search param when given', () => {
+    service.getPaginatedProducts(0, 50, 'chai').subscribe();
+
+    const req = httpMock.expectOne(r => r.url === 'http://localhost:8080/api/v1/products');
+    expect(req.request.params.get('search')).toBe('chai');
+    req.flush({ content: [] });
+  });
+
+  it('getPaginatedProducts omits an empty search param', () => {
+    service.getPaginatedProducts(0, 50, '').subscribe();
+
+    const req = httpMock.expectOne(r => r.url === 'http://localhost:8080/api/v1/products');
+    expect(req.request.params.has('search')).toBe(false);
     req.flush({ content: [] });
   });
 

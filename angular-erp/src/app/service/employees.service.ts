@@ -18,10 +18,13 @@ export class EmployeesService {
         return this.http.get<Employee[]>(this.apiBaseUrl, this.httpOptions);
     }
     
-    getPaginatedEmployees(pageNumber: number, pageSize: number): Observable<PageResponse<Employee>> {
-        const params = new HttpParams()
+    getPaginatedEmployees(pageNumber: number, pageSize: number, search?: string): Observable<PageResponse<Employee>> {
+        let params = new HttpParams()
             .set('pageNumber', pageNumber.toString())
             .set('pageSize', pageSize.toString());
+        if (search) {
+            params = params.set('search', search);
+        }
 
         return this.http.get<PageResponse<Employee>>(this.apiBaseUrl, { 
             ...this.httpOptions, 

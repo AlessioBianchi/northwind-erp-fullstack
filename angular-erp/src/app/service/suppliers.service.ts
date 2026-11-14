@@ -18,10 +18,13 @@ export class SuppliersService {
     return this.http.get<Supplier[]>(this.apiBaseUrl, this.httpOptions);
   }
   
-  getPaginatedSuppliers(pageNumber: number, pageSize: number): Observable<PageResponse<Supplier>> {
-    const params = new HttpParams()
+  getPaginatedSuppliers(pageNumber: number, pageSize: number, search?: string): Observable<PageResponse<Supplier>> {
+    let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
+    if (search) {
+      params = params.set('search', search);
+    }
 
     return this.http.get<PageResponse<Supplier>>(this.apiBaseUrl, {
       ...this.httpOptions,

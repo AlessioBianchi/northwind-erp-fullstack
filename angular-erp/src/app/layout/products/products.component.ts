@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, Subject, Subscription } from 'rxjs';
 
 import { Product } from './product.model';
 import { Category } from './category.model';
@@ -48,8 +48,16 @@ export class ProductsComponent implements OnInit {
   selectedCategoryDropdownTarget: Category | undefined = undefined;
   
   searchQuery = '';
+  private searchInput$ = new Subject<string>();
+  private listSubscription?: Subscription;
 
   ngOnInit(): void {
+    this.searchInput$.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(query => {
+        this.searchQuery = query;
+        this.currentPage = 1;
+        this.loadPaginatedProducts();
+      });
     this.loadPaginatedProducts();
     this.preloadDropdownRelationshipDependencies();
   }
@@ -57,8 +65,9 @@ export class ProductsComponent implements OnInit {
   loadPaginatedProducts(): void {
     const apiIndex = this.currentPage - 1;
 
+    this.listSubscription?.unsubscribe();
     this.isLoading = true;
-    this.productsService.getPaginatedProducts(apiIndex, this.pageSize)
+    this.listSubscription = this.productsService.getPaginatedProducts(apiIndex, this.pageSize, this.searchQuery)
       .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
@@ -83,19 +92,7 @@ export class ProductsComponent implements OnInit {
   }
   
   onSearchInput(event: Event): void {
-    this.searchQuery = (event.target as HTMLInputElement).value.toLowerCase();
-  }
-  
-  get filteredProducts() {
-    if (!this.searchQuery) return this.productsList;
-
-    return this.productsList.filter(p => {
-      const matchesName = p.productName?.toLowerCase().includes(this.searchQuery) ?? false;
-      const matchesCategory = p.category?.categoryName?.toLowerCase().includes(this.searchQuery) ?? false;
-      const matchesSupplier = p.supplier?.companyName?.toLowerCase().includes(this.searchQuery) ?? false;
-
-      return matchesName || matchesCategory || matchesSupplier;
-    });
+    this.searchInput$.next((event.target as HTMLInputElement).value.trim());
   }
 
   onPageChange(targetPage: number): void {

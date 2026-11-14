@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, Subject, Subscription } from 'rxjs';
 import { Employee } from './employee.model';
 import { EmployeesService } from '../../service/employees.service';
 import { LoadingSpinnerComponent } from '../../loading-spinner/loading-spinner.component';
@@ -40,8 +40,16 @@ export class EmployeesComponent implements OnInit {
   
   activeEmployeeForm: Partial<Employee> = {};
   searchQuery = '';
+  private searchInput$ = new Subject<string>();
+  private listSubscription?: Subscription;
 
   ngOnInit(): void {
+    this.searchInput$.pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(query => {
+        this.searchQuery = query;
+        this.currentPage = 1;
+        this.loadPaginatedEmployees();
+      });
     this.loadPaginatedEmployees();
     this.preloadDropdownRelationshipDependencies();
   }
@@ -49,8 +57,9 @@ export class EmployeesComponent implements OnInit {
   loadPaginatedEmployees(): void {
     const apiIndex = this.currentPage - 1;
 
+    this.listSubscription?.unsubscribe();
     this.isLoading = true;
-    this.employeesService.getPaginatedEmployees(apiIndex, this.pageSize)
+    this.listSubscription = this.employeesService.getPaginatedEmployees(apiIndex, this.pageSize, this.searchQuery)
       .pipe(finalize(() => this.isLoading = false), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
@@ -71,19 +80,7 @@ export class EmployeesComponent implements OnInit {
   }
 
   onSearchInput(event: Event): void {
-    this.searchQuery = (event.target as HTMLInputElement).value.toLowerCase();
-  }
-
-  get filteredEmployees() {
-    if (!this.searchQuery) return this.employeesList;
-
-    return this.employeesList.filter(e => {
-      const matchesFirstName = e.firstName?.toLowerCase().includes(this.searchQuery) ?? false;
-      const matchesLastName = e.lastName?.toLowerCase().includes(this.searchQuery) ?? false;
-      const matchesTitle = e.title?.toLowerCase().includes(this.searchQuery) ?? false;
-
-      return matchesFirstName || matchesLastName || matchesTitle;
-    });
+    this.searchInput$.next((event.target as HTMLInputElement).value.trim());
   }
 
   onPageChange(newPage: number): void {
