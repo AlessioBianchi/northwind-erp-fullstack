@@ -16,12 +16,6 @@
                 <button class="btn btn-sm btn-danger" title="Delete order" [disabled]="!selectedOrderId || isDeleting" (click)="deleteActiveOrder()">
                     <i class="bi bi-trash3"></i>
                 </button>
-                <button class="btn btn-sm btn-success" title="Export Excel">
-                    <i class="bi bi-file-earmark-arrow-down"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-primary" title="Send PDF email" [disabled]="!selectedOrderId">
-                    <i class="bi bi-send"></i>
-                </button>
             </div>
         </div>
     </nav>
