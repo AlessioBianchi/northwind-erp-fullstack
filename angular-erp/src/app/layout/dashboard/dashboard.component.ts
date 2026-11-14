@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Chart, registerables } from 'chart.js';
 import { type DashboardData } from './dashboard.model';
@@ -8,7 +9,7 @@ Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [CurrencyPipe],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
