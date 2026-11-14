@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,12 +59,40 @@ class ProductsServiceTest {
         when(productsDao.findAllByOrderByProductIdDesc(any(Pageable.class))).thenReturn(productPage);
 
         // Act
-        Page<Product> result = productsService.findAllByOrderByProductIdDesc(pageNum, pageSize);
+        Page<Product> result = productsService.findAllByOrderByProductIdDesc(pageNum, pageSize, null);
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
         verify(productsDao).findAllByOrderByProductIdDesc(PageRequest.of(pageNum, pageSize));
+    }
+
+    @Test
+    void findAllByOrderByProductIdDesc_WithBlankSearch_ShouldReturnUnfilteredPage() {
+        // Arrange
+        when(productsDao.findAllByOrderByProductIdDesc(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleProduct)));
+
+        // Act
+        Page<Product> result = productsService.findAllByOrderByProductIdDesc(0, 5, "   ");
+
+        // Assert
+        assertEquals(1, result.getTotalElements());
+        verify(productsDao).findAllByOrderByProductIdDesc(PageRequest.of(0, 5));
+        verify(productsDao, never()).search(any(), any());
+    }
+
+    @Test
+    void findAllByOrderByProductIdDesc_WithSearch_ShouldSearchWithTrimmedText() {
+        // Arrange
+        when(productsDao.search(eq("chai"), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleProduct)));
+
+        // Act
+        Page<Product> result = productsService.findAllByOrderByProductIdDesc(0, 5, "  chai ");
+
+        // Assert
+        assertEquals(1, result.getTotalElements());
+        verify(productsDao).search("chai", PageRequest.of(0, 5));
+        verify(productsDao, never()).findAllByOrderByProductIdDesc(any(Pageable.class));
     }
 
     @Test

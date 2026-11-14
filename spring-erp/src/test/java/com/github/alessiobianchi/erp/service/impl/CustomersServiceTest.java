@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,12 +71,40 @@ class CustomersServiceTest {
         when(customersDao.findAllByOrderByCustomerIdDesc(any(Pageable.class))).thenReturn(page);
 
         // Act
-        Page<Customer> result = customersService.findAllByOrderByCustomerIdDesc(pageNum, pageSize);
+        Page<Customer> result = customersService.findAllByOrderByCustomerIdDesc(pageNum, pageSize, null);
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         verify(customersDao).findAllByOrderByCustomerIdDesc(PageRequest.of(pageNum, pageSize));
+    }
+
+    @Test
+    void findAllByOrderByCustomerIdDesc_WithBlankSearch_ShouldReturnUnfilteredPage() {
+        // Arrange
+        when(customersDao.findAllByOrderByCustomerIdDesc(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleCustomer)));
+
+        // Act
+        Page<Customer> result = customersService.findAllByOrderByCustomerIdDesc(0, 5, "   ");
+
+        // Assert
+        assertEquals(1, result.getTotalElements());
+        verify(customersDao).findAllByOrderByCustomerIdDesc(PageRequest.of(0, 5));
+        verify(customersDao, never()).search(any(), any());
+    }
+
+    @Test
+    void findAllByOrderByCustomerIdDesc_WithSearch_ShouldSearchWithTrimmedText() {
+        // Arrange
+        when(customersDao.search(eq("chai"), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleCustomer)));
+
+        // Act
+        Page<Customer> result = customersService.findAllByOrderByCustomerIdDesc(0, 5, "  chai ");
+
+        // Assert
+        assertEquals(1, result.getTotalElements());
+        verify(customersDao).search("chai", PageRequest.of(0, 5));
+        verify(customersDao, never()).findAllByOrderByCustomerIdDesc(any(Pageable.class));
     }
 
     @Test

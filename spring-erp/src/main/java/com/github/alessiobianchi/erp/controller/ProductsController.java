@@ -32,7 +32,8 @@ public class ProductsController {
 
     @Operation(summary = "List products",
             description = "Returns all products, newest first." +
-                    "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array.")
+                    "\n\nWith `pageNumber` and `pageSize` it returns a page object instead of an array; " +
+                    "add `search` to filter it by the product name, category name or supplier company name.")
     @ApiResponse(responseCode = "200", description = "Product list, or a page of products when paginated")
     @ApiResponse(responseCode = "400", ref = OpenApiConfig.BAD_REQUEST)
     @GetMapping
@@ -46,8 +47,10 @@ public class ProductsController {
             @RequestParam @Min(value = 0, message = "must be 0 or greater") int pageNumber,
             @Parameter(description = "Page size (1 to " + MAX_PAGE_SIZE + "); send together with pageNumber")
             @RequestParam @Min(value = 1, message = "must be at least 1")
-            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize) {
-        return service.findAllByOrderByProductIdDesc(pageNumber, pageSize);
+            @Max(value = MAX_PAGE_SIZE, message = "must be at most {value}") int pageSize,
+            @Parameter(description = "Case-insensitive text to look for in the product name, category name or supplier company name, across all pages; missing or blank returns every row")
+            @RequestParam(required = false) String search) {
+        return service.findAllByOrderByProductIdDesc(pageNumber, pageSize, search);
     }
 
     @Operation(summary = "Create a product", description = "Creates a new product.")

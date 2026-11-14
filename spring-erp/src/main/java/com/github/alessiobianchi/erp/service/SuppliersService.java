@@ -9,7 +9,7 @@ public interface SuppliersService {
 
     List<Supplier> findAllByOrderBySupplierIdDesc();
 
-    Page<Supplier> findAllByOrderBySupplierIdDesc(int pageNumber, int pageSize);
+    Page<Supplier> findAllByOrderBySupplierIdDesc(int pageNumber, int pageSize, String search);
 
     Supplier create(Supplier supplier);
 

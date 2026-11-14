@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,12 +77,40 @@ class EmployeesServiceTest {
         when(employeesDao.findAllByOrderByEmployeeIdDesc(any(Pageable.class))).thenReturn(employeePage);
 
         // Act
-        Page<EmployeeDTO> result = employeesService.findAllByOrderByEmployeeIdDesc(pageNum, pageSize);
+        Page<EmployeeDTO> result = employeesService.findAllByOrderByEmployeeIdDesc(pageNum, pageSize, null);
 
         // Assert
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
         verify(employeesDao).findAllByOrderByEmployeeIdDesc(PageRequest.of(pageNum, pageSize));
+    }
+
+    @Test
+    void findAllByOrderByEmployeeIdDesc_WithBlankSearch_ShouldReturnUnfilteredPage() {
+        // Arrange
+        when(employeesDao.findAllByOrderByEmployeeIdDesc(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleEmployee)));
+
+        // Act
+        Page<EmployeeDTO> result = employeesService.findAllByOrderByEmployeeIdDesc(0, 5, "   ");
+
+        // Assert
+        assertEquals(1, result.getTotalElements());
+        verify(employeesDao).findAllByOrderByEmployeeIdDesc(PageRequest.of(0, 5));
+        verify(employeesDao, never()).search(any(), any());
+    }
+
+    @Test
+    void findAllByOrderByEmployeeIdDesc_WithSearch_ShouldSearchWithTrimmedText() {
+        // Arrange
+        when(employeesDao.search(eq("chai"), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(sampleEmployee)));
+
+        // Act
+        Page<EmployeeDTO> result = employeesService.findAllByOrderByEmployeeIdDesc(0, 5, "  chai ");
+
+        // Assert
+        assertEquals(1, result.getTotalElements());
+        verify(employeesDao).search("chai", PageRequest.of(0, 5));
+        verify(employeesDao, never()).findAllByOrderByEmployeeIdDesc(any(Pageable.class));
     }
 
     @Test
